@@ -28,7 +28,11 @@
           </td>
           <td>{{ placement.degreeInSign.toFixed(2) }}°</td>
           <td>{{ placement.house || '—' }}</td>
-          <td>{{ placement.retrograde ? 'Rx' : 'Direct' }}</td>
+          <td>
+            <span class="badge" :class="placement.retrograde ? 'badge--rx' : 'badge--direct'">
+              {{ placement.retrograde ? 'Retrograde' : 'Direct' }}
+            </span>
+          </td>
         </tr>
       </tbody>
     </table>

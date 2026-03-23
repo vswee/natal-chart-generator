@@ -48,7 +48,7 @@
           </div>
         </div>
 
-        <div class="field">
+        <div class="field autocomplete">
           <div class="label-row">
             <label class="label" for="birth-address">Birthplace or address</label>
             <button
@@ -66,8 +66,92 @@
             class="input"
             type="text"
             placeholder="San Fernando, Trinidad and Tobago"
-            required
+            :required="!localForm.useManualCoordinates"
           />
+
+          <div v-if="!localForm.useManualCoordinates && isSearching" class="note">Searching locations...</div>
+          <div v-if="!localForm.useManualCoordinates && searchError" class="error">
+            {{ searchError }}
+          </div>
+
+          <ul v-if="!localForm.useManualCoordinates && locationResults.length" class="suggestion-list">
+            <li v-for="result in locationResults" :key="result.label" class="suggestion-item">
+              <button type="button" class="suggestion-button" @click="selectLocation(result)">
+                {{ result.label }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="advanced-toggle-row">
+          <button
+            class="text-button advanced-toggle"
+            :class="{ 'is-open': advancedOpen }"
+            type="button"
+            :aria-expanded="advancedOpen"
+            aria-controls="birth-advanced"
+            @click="toggleAdvanced"
+          >
+            <span>Advanced</span>
+            <span class="chevron-icon" aria-hidden="true">expand_more</span>
+          </button>
+        </div>
+
+        <div v-if="advancedOpen" id="birth-advanced" class="advanced-section">
+          <label class="checkbox-label">
+            <input v-model="localForm.useManualCoordinates" type="checkbox" />
+            Use manual coordinates instead of search
+          </label>
+
+          <div v-if="localForm.useManualCoordinates" class="row-2">
+            <div class="field">
+              <label class="label" for="birth-lat">Latitude</label>
+              <input
+                id="birth-lat"
+                v-model="localForm.lat"
+                class="input"
+                type="number"
+                step="0.0001"
+                placeholder="51.5074"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="label" for="birth-lon">Longitude</label>
+              <input
+                id="birth-lon"
+                v-model="localForm.lon"
+                class="input"
+                type="number"
+                step="0.0001"
+                placeholder="-0.1278"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="birth-timezone">Time zone override (optional)</label>
+            <input
+              id="birth-timezone"
+              v-model="localForm.timeZoneOverride"
+              class="input"
+              type="text"
+              placeholder="America/New_York"
+              list="timezone-options"
+            />
+            <datalist id="timezone-options">
+              <option value="America/New_York"></option>
+              <option value="America/Chicago"></option>
+              <option value="America/Denver"></option>
+              <option value="America/Los_Angeles"></option>
+              <option value="Europe/London"></option>
+              <option value="Europe/Paris"></option>
+              <option value="Asia/Tokyo"></option>
+              <option value="Australia/Sydney"></option>
+            </datalist>
+          </div>
         </div>
 
         <div class="row-flex-2">
@@ -80,7 +164,12 @@
         </div>
       </form>
 
-      <div v-if="resolvedLocation" class="note">
+      <div v-if="selectedLocation" class="note">
+        Selected location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
+        {{ selectedLocation.lon.toFixed(4) }}
+      </div>
+
+      <div v-else-if="resolvedLocation" class="note">
         Resolved location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
         {{ resolvedLocation.lon.toFixed(4) }}
       </div>
@@ -164,7 +253,8 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { searchLocations } from '../services/geocoding'
 
 defineProps({
   loading: Boolean,
@@ -178,15 +268,90 @@ const localForm = reactive({
   date: '',
   time: '',
   address: '',
-  houseSystem: 'placidus'
+  houseSystem: 'placidus',
+  lat: '',
+  lon: '',
+  timeZoneOverride: '',
+  useManualCoordinates: false
 })
 
 const showHouseInfo = ref(false)
 const showTimeInfo = ref(false)
 const showLocationInfo = ref(false)
+const showAdvanced = ref(false)
+const locationResults = ref([])
+const isSearching = ref(false)
+const searchError = ref('')
+const selectedLocation = ref(null)
+let searchTimeout
+let activeRequest = 0
+
+const advancedOpen = computed(() => showAdvanced.value || localForm.useManualCoordinates)
+
+watch(
+  () => localForm.address,
+  (value) => {
+    if (localForm.useManualCoordinates) return
+    selectedLocation.value = null
+    localForm.lat = ''
+    localForm.lon = ''
+
+    if (!value || value.trim().length < 3) {
+      locationResults.value = []
+      return
+    }
+
+    clearTimeout(searchTimeout)
+    const query = value.trim()
+    searchTimeout = setTimeout(async () => {
+      const requestId = (activeRequest += 1)
+      isSearching.value = true
+      searchError.value = ''
+      try {
+        const results = await searchLocations(query, 5)
+        if (requestId !== activeRequest) return
+        locationResults.value = results
+      } catch (err) {
+        if (requestId !== activeRequest) return
+        searchError.value = err instanceof Error ? err.message : 'Location search failed.'
+        locationResults.value = []
+      } finally {
+        if (requestId === activeRequest) {
+          isSearching.value = false
+        }
+      }
+    }, 350)
+  }
+)
+
+watch(
+  () => localForm.useManualCoordinates,
+  (value) => {
+    if (!value) return
+    clearTimeout(searchTimeout)
+    isSearching.value = false
+    searchError.value = ''
+    locationResults.value = []
+    selectedLocation.value = null
+  }
+)
 
 function submitForm() {
   emit('submit', { ...localForm })
+}
+
+function toggleAdvanced() {
+  if (localForm.useManualCoordinates) return
+  showAdvanced.value = !showAdvanced.value
+}
+
+function selectLocation(result) {
+  localForm.address = result.label
+  localForm.lat = String(result.lat)
+  localForm.lon = String(result.lon)
+  localForm.useManualCoordinates = false
+  selectedLocation.value = result
+  locationResults.value = []
 }
 
 function fillExample() {
@@ -194,5 +359,9 @@ function fillExample() {
   localForm.time = '15:30'
   localForm.address = 'Port of Spain General Hospital, Trinidad and Tobago'
   localForm.houseSystem = 'placidus'
+  localForm.lat = ''
+  localForm.lon = ''
+  localForm.timeZoneOverride = ''
+  localForm.useManualCoordinates = false
 }
 </script>

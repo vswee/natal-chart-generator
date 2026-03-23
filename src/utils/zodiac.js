@@ -13,6 +13,24 @@ export const SIGNS = [
   'pisces'
 ]
 
+export const ELEMENTS = ['fire', 'earth', 'air', 'water']
+export const MODES = ['cardinal', 'fixed', 'mutable']
+
+export const SIGN_INFO = {
+  aries: { element: 'fire', mode: 'cardinal' },
+  taurus: { element: 'earth', mode: 'fixed' },
+  gemini: { element: 'air', mode: 'mutable' },
+  cancer: { element: 'water', mode: 'cardinal' },
+  leo: { element: 'fire', mode: 'fixed' },
+  virgo: { element: 'earth', mode: 'mutable' },
+  libra: { element: 'air', mode: 'cardinal' },
+  scorpio: { element: 'water', mode: 'fixed' },
+  sagittarius: { element: 'fire', mode: 'mutable' },
+  capricorn: { element: 'earth', mode: 'cardinal' },
+  aquarius: { element: 'air', mode: 'fixed' },
+  pisces: { element: 'water', mode: 'mutable' }
+}
+
 export function normaliseDegrees(value) {
   let result = value % 360
   if (result < 0) result += 360

@@ -35,7 +35,7 @@
           </div>
         </div>
 
-        <div class="field">
+        <div class="field autocomplete">
           <label class="label" for="partner-address">Birthplace or address</label>
           <input
             id="partner-address"
@@ -43,8 +43,76 @@
             class="input"
             type="text"
             placeholder="Chicago, IL"
-            required
+            :required="!localForm.useManualCoordinates"
           />
+
+          <div v-if="!localForm.useManualCoordinates && isSearching" class="note">Searching locations...</div>
+          <div v-if="!localForm.useManualCoordinates && searchError" class="error">
+            {{ searchError }}
+          </div>
+
+          <ul v-if="!localForm.useManualCoordinates && locationResults.length" class="suggestion-list">
+            <li v-for="result in locationResults" :key="result.label" class="suggestion-item">
+              <button type="button" class="suggestion-button" @click="selectLocation(result)">
+                {{ result.label }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <label class="checkbox-label">
+          <input v-model="localForm.useManualCoordinates" type="checkbox" />
+          Use manual coordinates instead of search
+        </label>
+
+        <div v-if="localForm.useManualCoordinates" class="row-2">
+          <div class="field">
+            <label class="label" for="partner-lat">Latitude</label>
+            <input
+              id="partner-lat"
+              v-model="localForm.lat"
+              class="input"
+              type="number"
+              step="0.0001"
+              placeholder="41.8781"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label class="label" for="partner-lon">Longitude</label>
+            <input
+              id="partner-lon"
+              v-model="localForm.lon"
+              class="input"
+              type="number"
+              step="0.0001"
+              placeholder="-87.6298"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="partner-timezone">Time zone override (optional)</label>
+          <input
+            id="partner-timezone"
+            v-model="localForm.timeZoneOverride"
+            class="input"
+            type="text"
+            placeholder="America/Chicago"
+            list="partner-timezone-options"
+          />
+          <datalist id="partner-timezone-options">
+            <option value="America/New_York"></option>
+            <option value="America/Chicago"></option>
+            <option value="America/Denver"></option>
+            <option value="America/Los_Angeles"></option>
+            <option value="Europe/London"></option>
+            <option value="Europe/Paris"></option>
+            <option value="Asia/Tokyo"></option>
+            <option value="Australia/Sydney"></option>
+          </datalist>
         </div>
 
         <div class="row-flex-2">
@@ -57,7 +125,12 @@
         </div>
       </form>
 
-      <div v-if="resolvedLocation" class="note">
+      <div v-if="selectedLocation" class="note">
+        Selected location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
+        {{ selectedLocation.lon.toFixed(4) }}
+      </div>
+
+      <div v-else-if="resolvedLocation" class="note">
         Resolved location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
         {{ resolvedLocation.lon.toFixed(4) }}
       </div>
@@ -70,7 +143,8 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import { searchLocations } from '../services/geocoding'
 
 defineProps({
   open: Boolean,
@@ -85,10 +159,78 @@ const localForm = reactive({
   date: '',
   time: '',
   address: '',
-  houseSystem: 'placidus'
+  houseSystem: 'placidus',
+  lat: '',
+  lon: '',
+  timeZoneOverride: '',
+  useManualCoordinates: false
 })
+
+const locationResults = ref([])
+const isSearching = ref(false)
+const searchError = ref('')
+const selectedLocation = ref(null)
+let searchTimeout
+let activeRequest = 0
+
+watch(
+  () => localForm.address,
+  (value) => {
+    if (localForm.useManualCoordinates) return
+    selectedLocation.value = null
+    localForm.lat = ''
+    localForm.lon = ''
+
+    if (!value || value.trim().length < 3) {
+      locationResults.value = []
+      return
+    }
+
+    clearTimeout(searchTimeout)
+    const query = value.trim()
+    searchTimeout = setTimeout(async () => {
+      const requestId = (activeRequest += 1)
+      isSearching.value = true
+      searchError.value = ''
+      try {
+        const results = await searchLocations(query, 5)
+        if (requestId !== activeRequest) return
+        locationResults.value = results
+      } catch (err) {
+        if (requestId !== activeRequest) return
+        searchError.value = err instanceof Error ? err.message : 'Location search failed.'
+        locationResults.value = []
+      } finally {
+        if (requestId === activeRequest) {
+          isSearching.value = false
+        }
+      }
+    }, 350)
+  }
+)
+
+watch(
+  () => localForm.useManualCoordinates,
+  (value) => {
+    if (!value) return
+    clearTimeout(searchTimeout)
+    isSearching.value = false
+    searchError.value = ''
+    locationResults.value = []
+    selectedLocation.value = null
+  }
+)
 
 function submitForm() {
   emit('submit', { ...localForm })
+}
+
+function selectLocation(result) {
+  localForm.address = result.label
+  localForm.lat = String(result.lat)
+  localForm.lon = String(result.lon)
+  localForm.useManualCoordinates = false
+  selectedLocation.value = result
+  locationResults.value = []
 }
 </script>

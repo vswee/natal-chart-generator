@@ -4,6 +4,11 @@ import { buildAspects } from '../utils/aspects'
 import { getDegreeInSign, getSignFromLongitude, normaliseDegrees } from '../utils/zodiac'
 import { buildFocusAreas, buildMetrics } from '../utils/scoring'
 import {
+  buildGenericAspectInterpretation,
+  buildGenericPlacementInterpretation,
+  summarizeInterpretation
+} from '../utils/interpretation-builder'
+import {
   placementInterpretations,
   aspectInterpretations,
   summaryInterpretations
@@ -123,6 +128,23 @@ function resolveTimeZone(lat, lon) {
   }
 }
 
+function assertTimeZone(timeZone) {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone }).format(new Date())
+  } catch (error) {
+    throw new Error('Invalid time zone. Use an IANA name like America/New_York.')
+  }
+}
+
+function resolveTimeZoneWithOverride(lat, lon, override) {
+  if (override && override.trim()) {
+    const cleaned = override.trim()
+    assertTimeZone(cleaned)
+    return cleaned
+  }
+  return resolveTimeZone(lat, lon)
+}
+
 function buildPlacement({ body, longitude, house, retrograde }) {
   const normalised = normaliseDegrees(longitude)
 
@@ -157,68 +179,119 @@ function houseFromCusps(longitude, cusps) {
   return 1
 }
 
+function normalizeInterpretation(payload) {
+  if (!payload) return null
+  const summary = payload.summary || summarizeInterpretation(payload.text)
+  const text = payload.text || payload.summary || ''
+  return {
+    title: payload.title,
+    summary,
+    text
+  }
+}
+
 function buildInterpretationBlocks(placements, aspects, metrics) {
   const blocks = []
+  const placementPriority = [
+    'sun',
+    'moon',
+    'asc',
+    'mercury',
+    'venus',
+    'mars',
+    'jupiter',
+    'saturn',
+    'uranus',
+    'neptune',
+    'pluto',
+    'mc'
+  ]
 
-  placements.forEach((placement) => {
+  const placementByBody = new Map(placements.map((placement) => [placement.body, placement]))
+
+  placementPriority.forEach((body) => {
+    const placement = placementByBody.get(body)
+    if (!placement) return
     const key = `${placement.body}:${placement.sign}`
-    if (placementInterpretations[key]) {
+    const match = placementInterpretations[key]
+    const base = match
+      ? normalizeInterpretation(match)
+      : buildGenericPlacementInterpretation(placement)
+
+    if (base) {
       blocks.push({
         id: key,
-        title: placementInterpretations[key].title,
-        text: placementInterpretations[key].text
+        title: base.title,
+        summary: base.summary,
+        text: base.text
       })
     }
   })
 
-  aspects.slice(0, 5).forEach((aspect) => {
-    const key = `${aspect.bodyA}:${aspect.type}:${aspect.bodyB}`
-    const reverseKey = `${aspect.bodyB}:${aspect.type}:${aspect.bodyA}`
-    const match = aspectInterpretations[key] || aspectInterpretations[reverseKey]
-    if (match) {
-      blocks.push({
+  const aspectBlocks = [...aspects]
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 5)
+    .map((aspect) => {
+      const key = `${aspect.bodyA}:${aspect.type}:${aspect.bodyB}`
+      const reverseKey = `${aspect.bodyB}:${aspect.type}:${aspect.bodyA}`
+      const match = aspectInterpretations[key] || aspectInterpretations[reverseKey]
+      const base = match
+        ? normalizeInterpretation(match)
+        : buildGenericAspectInterpretation(aspect)
+
+      if (!base) return null
+      return {
         id: key,
-        title: match.title,
-        text: match.text
-      })
-    }
-  })
+        title: base.title,
+        summary: base.summary,
+        text: base.text
+      }
+    })
+    .filter(Boolean)
+
+  blocks.push(...aspectBlocks)
 
   if (metrics.emotionalIntensity >= 65) {
+    const text = summaryInterpretations.highEmotionalIntensity
     blocks.push({
       id: 'summary-emotional-intensity',
       title: 'Emotional intensity',
-      text: summaryInterpretations.highEmotionalIntensity
+      summary: summarizeInterpretation(text),
+      text
     })
   }
 
   if (metrics.harmony >= 60) {
+    const text = summaryInterpretations.highHarmony
     blocks.push({
       id: 'summary-harmony',
       title: 'Internal flow',
-      text: summaryInterpretations.highHarmony
+      summary: summarizeInterpretation(text),
+      text
     })
   }
 
   if (metrics.relationshipFocus >= 55) {
+    const text = summaryInterpretations.highRelationshipFocus
     blocks.push({
       id: 'summary-relationship',
       title: 'Relationship focus',
-      text: summaryInterpretations.highRelationshipFocus
+      summary: summarizeInterpretation(text),
+      text
     })
   }
 
-  return blocks.slice(0, 8)
+  return blocks.slice(0, 14)
 }
 
-export async function calculateNatalChart({ date, time, address, lat, lon, houseSystem }) {
+export async function calculateNatalChart({ date, time, address, lat, lon, houseSystem, timeZoneOverride }) {
   if (lat === undefined || lon === undefined) {
     throw new Error('Latitude and longitude are required to calculate a chart.')
   }
 
   const swe = await getSwissEph()
   const components = parseDateTimeInput(date, time)
-  const timeZone = resolveTimeZone(lat, lon)
+  const timeZone = resolveTimeZoneWithOverride(lat, lon, timeZoneOverride)
   const { date: utcDate, offsetMinutes } = zonedTimeToUtc(components, timeZone)
 
   const jd = swe.julday(
@@ -278,8 +351,10 @@ export async function calculateNatalChart({ date, time, address, lat, lon, house
       lon,
       timeZone,
       utcOffsetMinutes: offsetMinutes,
-      houseSystem: houseSystem || 'placidus'
+      houseSystem: houseSystem || 'placidus',
+      timeZoneOverride: timeZoneOverride ? timeZoneOverride.trim() : ''
     },
+    houseCusps: normalisedCusps,
     placements,
     aspects,
     metrics,

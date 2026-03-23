@@ -39,6 +39,20 @@
                 <span class="meta-kicker">Coordinates</span>
                 <div class="meta-value">{{ chart.meta.lat.toFixed(2) }}, {{ chart.meta.lon.toFixed(2) }}</div>
               </article>
+
+              <article class="meta-card">
+                <span class="meta-kicker">Time zone</span>
+                <div class="meta-value">{{ chart.meta.timeZone }}</div>
+                <div class="meta-subvalue">
+                  {{ formatOffset(chart.meta.utcOffsetMinutes) }}
+                  <span v-if="chart.meta.timeZoneOverride" class="meta-hint">(override)</span>
+                </div>
+              </article>
+
+              <article class="meta-card">
+                <span class="meta-kicker">House system</span>
+                <div class="meta-value">{{ formatHouseSystem(chart.meta.houseSystem) }}</div>
+              </article>
             </div>
 
             <p class="footer-note">
@@ -124,6 +138,8 @@
             </section>
           </div>
 
+          <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
+          <ElementModePanel :placements="chart.placements" />
           <SummaryGauges :metrics="chart.metrics" />
           <FocusAreas :areas="chart.focusAreas" />
           <section v-if="!partnerChart" class="panel relationship-cta">
@@ -201,6 +217,8 @@ import PlacementTable from './components/PlacementTable.vue'
 import AspectList from './components/AspectList.vue'
 import InterpretationPanel from './components/InterpretationPanel.vue'
 import ZodiacIcon from './components/ZodiacIcon.vue'
+import ChartWheel from './components/ChartWheel.vue'
+import ElementModePanel from './components/ElementModePanel.vue'
 import { geocodeAddress } from './services/geocoding'
 import { calculateNatalChart } from './services/astrology'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
@@ -261,7 +279,16 @@ async function handleSubmit(formData) {
   error.value = ''
 
   try {
-    const location = await geocodeAddress(formData.address)
+    const manualLat = formData.lat === '' ? NaN : Number(formData.lat)
+    const manualLon = formData.lon === '' ? NaN : Number(formData.lon)
+    const hasManualCoords = Number.isFinite(manualLat) && Number.isFinite(manualLon)
+    const location = hasManualCoords
+      ? {
+          lat: manualLat,
+          lon: manualLon,
+          label: formData.address || 'Custom coordinates'
+        }
+      : await geocodeAddress(formData.address)
     resolvedLocation.value = location
 
     chart.value = await calculateNatalChart({
@@ -270,7 +297,8 @@ async function handleSubmit(formData) {
       address: location.label,
       lat: location.lat,
       lon: location.lon,
-      houseSystem: formData.houseSystem
+      houseSystem: formData.houseSystem,
+      timeZoneOverride: formData.timeZoneOverride
     })
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Something went wrong.'
@@ -330,7 +358,16 @@ async function handlePartnerSubmit(formData) {
   partnerError.value = ''
 
   try {
-    const location = await geocodeAddress(formData.address)
+    const manualLat = formData.lat === '' ? NaN : Number(formData.lat)
+    const manualLon = formData.lon === '' ? NaN : Number(formData.lon)
+    const hasManualCoords = Number.isFinite(manualLat) && Number.isFinite(manualLon)
+    const location = hasManualCoords
+      ? {
+          lat: manualLat,
+          lon: manualLon,
+          label: formData.address || 'Custom coordinates'
+        }
+      : await geocodeAddress(formData.address)
     partnerResolvedLocation.value = location
 
     partnerChart.value = await calculateNatalChart({
@@ -339,7 +376,8 @@ async function handlePartnerSubmit(formData) {
       address: location.label,
       lat: location.lat,
       lon: location.lon,
-      houseSystem: formData.houseSystem
+      houseSystem: formData.houseSystem,
+      timeZoneOverride: formData.timeZoneOverride
     })
 
     isPartnerModalOpen.value = false
@@ -364,5 +402,22 @@ function clearPartnerChart() {
   partnerChart.value = null
   partnerResolvedLocation.value = null
   partnerError.value = ''
+}
+
+function formatOffset(minutes) {
+  if (typeof minutes !== 'number' || Number.isNaN(minutes)) return ''
+  const sign = minutes >= 0 ? '+' : '-'
+  const abs = Math.abs(minutes)
+  const hours = Math.floor(abs / 60)
+  const mins = Math.round(abs % 60)
+  return `UTC${sign}${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+}
+
+function formatHouseSystem(value) {
+  if (!value) return 'Placidus'
+  return value
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }
 </script>

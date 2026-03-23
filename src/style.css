@@ -186,6 +186,7 @@ a {
 .field {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .label {
@@ -204,6 +205,8 @@ a {
 .input,
 .select {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 48px;
   /* border-radius: var(--radius-md); */
   border: 1px solid var(--border);
@@ -222,7 +225,7 @@ a {
 
 .row-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 

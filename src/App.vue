@@ -138,9 +138,11 @@
             </section>
           </div>
 
-          <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
+          <div class="summary-row">
+            <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
+            <SummaryGauges :metrics="chart.metrics" />
+          </div>
           <ElementModePanel :placements="chart.placements" />
-          <SummaryGauges :metrics="chart.metrics" />
           <FocusAreas :areas="chart.focusAreas" />
           <section v-if="!partnerChart" class="panel relationship-cta">
             <div class="panel-inner">

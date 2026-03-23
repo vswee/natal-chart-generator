@@ -327,6 +327,12 @@ a {
   /* gap: 22px; */
 }
 
+.summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* gap: 22px; */
+}
+
 .map-card .panel-inner {
   display: grid;
   gap: 16px;
@@ -448,6 +454,12 @@ a {
 .gauge-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.gauge-list {
+  display: flex;
+  flex-direction: column;
   gap: 28px;
 }
 
@@ -790,6 +802,8 @@ a {
   display: grid;
   gap: 14px;
   margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .aspect-filter-group {
@@ -813,7 +827,8 @@ a {
   gap: 8px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: var(--soft);
+  background: var(--panel-strong-2);
+  border: 1px solid var(--border);
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text);
@@ -822,15 +837,50 @@ a {
 .filter-input {
   width: 14px;
   height: 14px;
+  accent-color: var(--text);
 }
 
 .range-input {
   width: min(260px, 100%);
+  accent-color: var(--text);
+  background: transparent;
 }
 
 .aspect-toggle {
   min-height: 38px;
   justify-self: flex-start;
+}
+
+.range-input::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--soft);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--text);
+  border: 2px solid #fff;
+  margin-top: -6px;
+}
+
+.range-input::-moz-range-track {
+  height: 6px;
+  background: var(--soft);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.range-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--text);
+  border: 2px solid #fff;
 }
 
 .distribution-grid {
@@ -962,6 +1012,7 @@ a {
 .aspect-line {
   stroke-width: 1.2;
   stroke-opacity: 0.55;
+  pointer-events: none;
 }
 
 .aspect-line--conjunction { stroke: #111827; }
@@ -970,10 +1021,23 @@ a {
 .aspect-line--square { stroke: #b91c1c; }
 .aspect-line--opposition { stroke: #b45309; }
 
+.aspect-hit {
+  stroke: transparent;
+  stroke-width: 10;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
 .placement-dot {
   fill: #111827;
   stroke: #fff;
   stroke-width: 1;
+}
+
+.placement-hit {
+  fill: transparent;
+  pointer-events: fill;
+  cursor: pointer;
 }
 
 .placement-label {
@@ -981,6 +1045,7 @@ a {
   fill: var(--text);
   text-anchor: middle;
   dominant-baseline: middle;
+  pointer-events: none;
 }
 
 .chart-note {
@@ -1277,6 +1342,10 @@ a {
   }
 
   .map-row {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-row {
     grid-template-columns: 1fr;
   }
 

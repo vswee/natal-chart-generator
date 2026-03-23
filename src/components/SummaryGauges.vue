@@ -6,7 +6,7 @@
         These gauges are derived from the placement and aspect mix.
       </p>
 
-      <div class="gauge-grid">
+      <div class="gauge-list">
         <article v-for="item in gaugeItems" :key="item.key" class="gauge-card">
           <p class="gauge-label">{{ item.label }}</p>
           <div class="gauge-track">

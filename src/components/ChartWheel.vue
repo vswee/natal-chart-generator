@@ -21,6 +21,7 @@
           :viewBox="`0 0 ${size} ${size}`"
           role="img"
           aria-label="Natal chart wheel"
+          @mouseleave="clearHover"
         >
           <circle class="wheel-ring" :cx="center" :cy="center" :r="outerRadius" />
           <circle class="wheel-ring wheel-ring--inner" :cx="center" :cy="center" :r="aspectRadius" />
@@ -47,18 +48,25 @@
           </g>
 
           <g class="wheel-aspects">
-            <line
-              v-for="aspect in aspectLines"
-              :key="aspect.id"
-              class="aspect-line"
-              :class="`aspect-line--${aspect.type}`"
-              :x1="aspect.from.x"
-              :y1="aspect.from.y"
-              :x2="aspect.to.x"
-              :y2="aspect.to.y"
-            >
-              <title>{{ aspect.title }}</title>
-            </line>
+            <g v-for="aspect in aspectLines" :key="aspect.id">
+              <line
+                class="aspect-line"
+                :class="`aspect-line--${aspect.type}`"
+                :x1="aspect.from.x"
+                :y1="aspect.from.y"
+                :x2="aspect.to.x"
+                :y2="aspect.to.y"
+              />
+              <line
+                class="aspect-hit"
+                :x1="aspect.from.x"
+                :y1="aspect.from.y"
+                :x2="aspect.to.x"
+                :y2="aspect.to.y"
+                @mouseenter="setHover(aspect.title)"
+                @mouseleave="clearHover"
+              />
+            </g>
           </g>
 
           <g class="wheel-placements">
@@ -67,6 +75,14 @@
               :key="placement.body"
               class="placement-point"
             >
+              <circle
+                class="placement-hit"
+                :cx="placement.point.x"
+                :cy="placement.point.y"
+                r="12"
+                @mouseenter="setHover(placement.title)"
+                @mouseleave="clearHover"
+              />
               <circle
                 class="placement-dot"
                 :cx="placement.point.x"
@@ -80,18 +96,17 @@
               >
                 {{ placement.symbol }}
               </text>
-              <title>{{ placement.title }}</title>
             </g>
           </g>
         </svg>
-        <p class="chart-note">Hover a point or line for details.</p>
+        <p class="chart-note">{{ hoverText || defaultHoverText }}</p>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { normaliseDegrees, toTitleCase } from '../utils/zodiac'
 
 const props = defineProps({
@@ -114,6 +129,8 @@ const center = size / 2
 const outerRadius = 150
 const aspectRadius = 110
 const labelRadius = 128
+const defaultHoverText = 'Hover a point or line for details.'
+const hoverText = ref('')
 
 const placementSymbols = {
   sun: '☉',
@@ -247,4 +264,12 @@ const aspectLines = computed(() => {
     })
     .filter(Boolean)
 })
+
+function setHover(text) {
+  hoverText.value = text
+}
+
+function clearHover() {
+  hoverText.value = ''
+}
 </script>

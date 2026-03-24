@@ -15,6 +15,17 @@
 
       <form class="form-grid" @submit.prevent="submitForm">
         <div class="field">
+          <label class="label" for="partner-label">Partner label (optional)</label>
+          <input
+            id="partner-label"
+            v-model="localForm.label"
+            class="input"
+            type="text"
+            placeholder="Partner 1"
+          />
+        </div>
+
+        <div class="field">
           <label class="label" for="partner-date">Date of birth</label>
           <input id="partner-date" v-model="localForm.date" class="input" type="date" required />
         </div>
@@ -156,6 +167,7 @@ defineProps({
 const emit = defineEmits(['submit', 'close'])
 
 const localForm = reactive({
+  label: '',
   date: '',
   time: '',
   address: '',

@@ -1,5 +1,5 @@
 <template>
-  <section class="panel chart-panel">
+  <component :is="embedded ? 'div' : 'section'" :class="embedded ? 'chart-panel embedded' : 'panel chart-panel'">
     <div class="panel-inner">
       <div class="chart-header">
         <div>
@@ -7,11 +7,26 @@
           <p class="section-copy">Houses, placements, and major aspects mapped on a single wheel.</p>
         </div>
         <div class="chart-legend">
-          <span class="legend-item legend-item--conjunction">Conjunction</span>
-          <span class="legend-item legend-item--trine">Trine</span>
-          <span class="legend-item legend-item--sextile">Sextile</span>
-          <span class="legend-item legend-item--square">Square</span>
-          <span class="legend-item legend-item--opposition">Opposition</span>
+          <span class="legend-item legend-item--conjunction">
+            <span class="legend-dot" aria-hidden="true"></span>
+            Conjunction
+          </span>
+          <span class="legend-item legend-item--trine">
+            <span class="legend-dot" aria-hidden="true"></span>
+            Trine
+          </span>
+          <span class="legend-item legend-item--sextile">
+            <span class="legend-dot" aria-hidden="true"></span>
+            Sextile
+          </span>
+          <span class="legend-item legend-item--square">
+            <span class="legend-dot" aria-hidden="true"></span>
+            Square
+          </span>
+          <span class="legend-item legend-item--opposition">
+            <span class="legend-dot" aria-hidden="true"></span>
+            Opposition
+          </span>
         </div>
       </div>
 
@@ -23,13 +38,46 @@
           aria-label="Natal chart wheel"
           @mouseleave="clearHover"
         >
-          <circle class="wheel-ring" :cx="center" :cy="center" :r="outerRadius" />
-          <circle class="wheel-ring wheel-ring--inner" :cx="center" :cy="center" :r="aspectRadius" />
+          <g class="wheel-sign-segments">
+            <path
+              v-for="segment in signSegments"
+              :key="`sign-segment-${segment.sign}`"
+              class="wheel-sign-segment"
+              :class="`wheel-sign-segment--${segment.element}`"
+              :d="segment.path"
+            />
+          </g>
+
+          <circle class="wheel-ring wheel-ring--outer" :cx="center" :cy="center" :r="signOuterRadius" />
+          <circle class="wheel-ring wheel-ring--sign" :cx="center" :cy="center" :r="signInnerRadius" />
+          <circle class="wheel-ring wheel-ring--inner" :cx="center" :cy="center" :r="innerRingRadius" />
+
+          <g class="wheel-signs">
+            <line
+              v-for="sign in signBoundaries"
+              :key="`sign-boundary-${sign.index}`"
+              class="wheel-sign-boundary"
+              :x1="sign.start.x"
+              :y1="sign.start.y"
+              :x2="sign.end.x"
+              :y2="sign.end.y"
+            />
+            <g
+              v-for="sign in signGlyphs"
+              :key="`sign-${sign.sign}`"
+              class="sign-glyph"
+              :class="`sign-glyph--${sign.element}`"
+              :transform="`translate(${sign.point.x - sign.size / 2}, ${sign.point.y - sign.size / 2})`"
+            >
+              <ZodiacIcon :sign="sign.sign" :size="sign.size" class="sign-glyph-icon" />
+            </g>
+          </g>
 
           <g class="wheel-houses">
             <g v-for="house in houseLines" :key="`house-${house.index}`">
               <line
                 class="wheel-house-line"
+                :class="{ 'wheel-house-line--axis': house.isAxis }"
                 :x1="center"
                 :y1="center"
                 :x2="house.point.x"
@@ -94,18 +142,19 @@
                 @mouseenter="setHover(placement.title)"
                 @mouseleave="clearHover"
               />
-              <circle
-                class="placement-dot"
-                :cx="placement.point.x"
-                :cy="placement.point.y"
-                r="6"
-              />
               <text
-                class="placement-label"
-                :x="placement.label.x"
-                :y="placement.label.y"
+                class="placement-glyph"
+                :x="placement.point.x"
+                :y="placement.point.y"
               >
                 {{ placement.symbol }}
+              </text>
+              <text
+                class="placement-degree"
+                :x="placement.degreePoint.x"
+                :y="placement.degreePoint.y"
+              >
+                {{ placement.degreeLabel }}
               </text>
             </g>
           </g>
@@ -113,15 +162,20 @@
         <p class="chart-note">{{ hoverText || defaultHoverText }}</p>
       </div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
 import { getHouseMeaning } from '../utils/houses'
-import { normaliseDegrees, toTitleCase } from '../utils/zodiac'
+import { normaliseDegrees, toTitleCase, SIGNS, SIGN_INFO } from '../utils/zodiac'
+import ZodiacIcon from './ZodiacIcon.vue'
 
 const props = defineProps({
+  embedded: {
+    type: Boolean,
+    default: false
+  },
   placements: {
     type: Array,
     required: true
@@ -138,9 +192,16 @@ const props = defineProps({
 
 const size = 360
 const center = size / 2
-const outerRadius = 150
-const aspectRadius = 110
-const labelRadius = 128
+const signOuterRadius = 162
+const signInnerRadius = 138
+const innerRingRadius = 108
+const signBandThickness = 3
+const signBandOuterRadius = signOuterRadius + signBandThickness
+const houseLineRadius = signInnerRadius
+const houseLabelRadius = 35
+const placementRadius = 126
+const placementDegreeRadius = 102
+const aspectRadius = 92
 const defaultHoverText = 'Hover a point or line for details.'
 const hoverText = ref('')
 
@@ -155,8 +216,8 @@ const placementSymbols = {
   uranus: '♅',
   neptune: '♆',
   pluto: '♇',
-  asc: 'As',
-  mc: 'Mc'
+  asc: 'ASC',
+  mc: 'MC'
 }
 
 const placementLabels = {
@@ -198,6 +259,26 @@ function polarToPoint(angle, radius) {
   }
 }
 
+function describeRingSegment(startAngle, endAngle, outerRadius, innerRadius) {
+  const normalizedStart = normaliseDegrees(startAngle)
+  let normalizedEnd = normaliseDegrees(endAngle)
+  if (normalizedEnd <= normalizedStart) normalizedEnd += 360
+  const largeArcFlag = normalizedEnd - normalizedStart > 180 ? 1 : 0
+
+  const startOuter = polarToPoint(normalizedStart, outerRadius)
+  const endOuter = polarToPoint(normalizedEnd, outerRadius)
+  const endInner = polarToPoint(normalizedEnd, innerRadius)
+  const startInner = polarToPoint(normalizedStart, innerRadius)
+
+  return [
+    `M ${startOuter.x} ${startOuter.y}`,
+    `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${endOuter.x} ${endOuter.y}`,
+    `L ${endInner.x} ${endInner.y}`,
+    `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${startInner.x} ${startInner.y}`,
+    'Z'
+  ].join(' ')
+}
+
 function formatPlacement(placement) {
   const sign = toTitleCase(placement.sign)
   const degree = placement.degreeInSign.toFixed(2)
@@ -211,12 +292,67 @@ function formatPlacement(placement) {
   return parts.join(', ')
 }
 
+function formatDegreeLabel(placement) {
+  const raw = Number(placement.degreeInSign || 0)
+  const base = Math.floor(raw)
+  let minutes = Math.round((raw - base) * 60)
+  let degrees = base
+  if (minutes === 60) {
+    degrees += 1
+    minutes = 0
+  }
+  const minuteText = minutes.toString().padStart(2, '0')
+  const retro = placement.retrograde ? ' R' : ''
+  return `${degrees}°${minuteText}'${retro}`
+}
+
+const signSegments = computed(() =>
+  SIGNS.map((sign, index) => {
+    const startAngle = angleForLongitude(index * 30)
+    const endAngle = angleForLongitude((index + 1) * 30)
+    const info = SIGN_INFO[sign] || { element: 'air' }
+    return {
+      sign,
+      element: info.element,
+      path: describeRingSegment(startAngle, endAngle, signBandOuterRadius, signOuterRadius)
+    }
+  })
+)
+
+const signBoundaries = computed(() =>
+  SIGNS.map((sign, index) => {
+    const angle = angleForLongitude(index * 30)
+    return {
+      index,
+      sign,
+      start: polarToPoint(angle, signOuterRadius),
+      end: polarToPoint(angle, signInnerRadius)
+    }
+  })
+)
+
+const signGlyphs = computed(() => {
+  const radius = (signOuterRadius + signInnerRadius) / 2
+  const size = 18
+  return SIGNS.map((sign, index) => {
+    const angle = angleForLongitude(index * 30 + 15)
+    const info = SIGN_INFO[sign] || { element: 'air' }
+    return {
+      sign,
+      element: info.element,
+      point: polarToPoint(angle, radius),
+      size
+    }
+  })
+})
+
 const houseLines = computed(() =>
   houseCusps.value.map((cusp, index) => {
     const angle = angleForLongitude(cusp)
     return {
       index: index + 1,
-      point: polarToPoint(angle, outerRadius)
+      isAxis: [1, 4, 7, 10].includes(index + 1),
+      point: polarToPoint(angle, houseLineRadius)
     }
   })
 )
@@ -229,7 +365,7 @@ const houseLabels = computed(() => {
     const midAngle = normaliseDegrees(cusp + span / 2)
     return {
       index: index + 1,
-      point: polarToPoint(angleForLongitude(midAngle), labelRadius)
+      point: polarToPoint(angleForLongitude(midAngle), houseLabelRadius)
     }
   })
 })
@@ -240,8 +376,9 @@ const placementPoints = computed(() =>
     return {
       body: placement.body,
       symbol: placementSymbols[placement.body] || toTitleCase(placement.body).slice(0, 2),
-      point: polarToPoint(angle, outerRadius),
-      label: polarToPoint(angle, outerRadius + 16),
+      point: polarToPoint(angle, placementRadius),
+      degreePoint: polarToPoint(angle, placementDegreeRadius),
+      degreeLabel: formatDegreeLabel(placement),
       title: formatPlacement(placement)
     }
   })

@@ -17,8 +17,8 @@
             {{ report.chartB.label }}: {{ formatMeta(report.chartB) }}
           </p>
           <div class="relationship-actions">
-            <button class="subtle-button" type="button" @click="emit('edit')">Re-enter data</button>
-            <button class="subtle-button" type="button" @click="emit('clear')">Clear data</button>
+            <button class="subtle-button" type="button" @click="emit('edit')">{{ primaryActionLabel }}</button>
+            <button class="subtle-button" type="button" @click="emit('clear')">{{ secondaryActionLabel }}</button>
           </div>
         </div>
       </div>
@@ -66,6 +66,14 @@ defineProps({
   report: {
     type: Object,
     required: true
+  },
+  primaryActionLabel: {
+    type: String,
+    default: 'Re-enter data'
+  },
+  secondaryActionLabel: {
+    type: String,
+    default: 'Clear data'
   }
 })
 

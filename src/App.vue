@@ -144,19 +144,41 @@
           </div>
           <ElementModePanel :placements="chart.placements" />
           <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
+          <!-- <AstroDepthPanel
+            :extra-points="chart.extraPoints"
+            :dignities="chart.dignities"
+            :dispositors="chart.dispositors"
+            :chart-ruler="chart.chartRuler"
+            :aspect-patterns="chart.aspectPatterns"
+          /> -->
           <FocusAreas :areas="chart.focusAreas" />
-          <section v-if="!partnerChart" class="panel relationship-cta">
-            <div class="panel-inner">
-              <h2 class="section-title">Relationship chart</h2>
-              <p class="section-copy">
-                Add a second chart to analyse compatibility across attraction, communication, emotional alignment, and overall dynamics.
-              </p>
-              <button class="button" type="button" @click="openPartnerModal">Add partner chart</button>
-            </div>
-          </section>
+          <PartnerComparePanel
+            :partners="partnerReports"
+            :active-id="activePartner?.id || ''"
+            @add="openPartnerModal"
+            @select="selectPartnerChart"
+            @remove="removePartnerChart"
+          />
 
-          <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" @edit="openPartnerModal"
-            @clear="clearPartnerChart" />
+          <div ref="comparisonDetailRef" class="compare-detail">
+            <RelationshipPanel
+              v-if="relationshipReport"
+              :report="relationshipReport"
+              primary-action-label="Add partner"
+              secondary-action-label="Remove partner"
+              @edit="openPartnerModal"
+              @clear="removeActivePartner"
+            />
+
+            <SynastryAspectList
+              v-if="activePartner"
+              :aspects="synastryAspects"
+              :label-a="'You'"
+              :label-b="activePartner?.label || 'Partner'"
+            />
+
+            <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
+          </div>
 
           <div class="card-grid vertical">
             <PlacementTable :placements="chart.placements" />
@@ -208,7 +230,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import BirthForm from './components/BirthForm.vue'
@@ -223,11 +245,15 @@ import ZodiacIcon from './components/ZodiacIcon.vue'
 import ChartWheel from './components/ChartWheel.vue'
 import ElementModePanel from './components/ElementModePanel.vue'
 import PresentTimePanel from './components/PresentTimePanel.vue'
+import PartnerComparePanel from './components/PartnerComparePanel.vue'
+import SynastryAspectList from './components/SynastryAspectList.vue'
+import CompositeChartPanel from './components/CompositeChartPanel.vue'
 import { geocodeAddress } from './services/geocoding'
-import { calculateNatalChart, calculateCurrentTransits } from './services/astrology'
+import { calculateNatalChart, calculateCurrentTransits, calculateCompositeChart } from './services/astrology'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
 import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
+import { buildCrossAspects } from './utils/aspects'
 
 const loading = ref(false)
 const error = ref('')
@@ -235,12 +261,15 @@ const resolvedLocation = ref(null)
 const chart = ref(null)
 const pdfTarget = ref(null)
 const isDownloading = ref(false)
-const partnerChart = ref(null)
+const partnerCharts = ref([])
+const activePartnerId = ref('')
 const partnerLoading = ref(false)
 const partnerError = ref('')
 const partnerResolvedLocation = ref(null)
 const isPartnerModalOpen = ref(false)
 const currentTransits = ref(null)
+const compositeChart = ref(null)
+const comparisonDetailRef = ref(null)
 const corePlacements = computed(() => {
   if (!chart.value) return { sun: null, moon: null, asc: null }
 
@@ -253,9 +282,47 @@ const corePlacements = computed(() => {
     asc: findBody('asc')
   }
 })
+const activePartner = computed(() => {
+  if (!partnerCharts.value.length) return null
+  const match = partnerCharts.value.find((partner) => partner.id === activePartnerId.value)
+  return match || partnerCharts.value[0]
+})
+
+const partnerReports = computed(() => {
+  if (!chart.value) return []
+  return partnerCharts.value.map((partner) => ({
+    ...partner,
+    report: buildRelationshipReport(chart.value, partner.chart, {
+      labelA: 'You',
+      labelB: partner.label
+    })
+  }))
+})
+
 const relationshipReport = computed(() => {
-  if (!chart.value || !partnerChart.value) return null
-  return buildRelationshipReport(chart.value, partnerChart.value)
+  if (!chart.value || !activePartner.value) return null
+  return buildRelationshipReport(chart.value, activePartner.value.chart, {
+    labelA: 'You',
+    labelB: activePartner.value.label
+  })
+})
+
+const synastryAspects = computed(() => {
+  if (!chart.value || !activePartner.value) return []
+  const allowedBodies = [
+    'sun',
+    'moon',
+    'mercury',
+    'venus',
+    'mars',
+    'jupiter',
+    'saturn',
+    'uranus',
+    'neptune',
+    'pluto',
+    'asc'
+  ]
+  return buildCrossAspects(chart.value.placements, activePartner.value.chart.placements, allowedBodies)
 })
 const mapStyle = computed(() => {
   if (!chart.value) return {}
@@ -273,6 +340,23 @@ const mapStyle = computed(() => {
     backgroundImage: `url(${worldMap})`
   }
 })
+
+watch(
+  () => [chart.value, activePartner.value],
+  async ([baseChart, partner]) => {
+    if (!baseChart || !partner) {
+      compositeChart.value = null
+      return
+    }
+    try {
+      compositeChart.value = await calculateCompositeChart(baseChart, partner.chart)
+    } catch (error) {
+      console.warn(error)
+      compositeChart.value = null
+    }
+  },
+  { immediate: true }
+)
 
 function formatPlacement(placement) {
   if (!placement) return '—'
@@ -383,7 +467,7 @@ async function handlePartnerSubmit(formData) {
       : await geocodeAddress(formData.address)
     partnerResolvedLocation.value = location
 
-    partnerChart.value = await calculateNatalChart({
+    const chartData = await calculateNatalChart({
       date: formData.date,
       time: formData.time,
       address: location.label,
@@ -393,6 +477,17 @@ async function handlePartnerSubmit(formData) {
       timeZoneOverride: formData.timeZoneOverride
     })
 
+    const label = formData.label?.trim() || `Partner ${partnerCharts.value.length + 1}`
+    const id = (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`)
+    partnerCharts.value = [
+      ...partnerCharts.value,
+      {
+        id,
+        label,
+        chart: chartData
+      }
+    ]
+    activePartnerId.value = id
     isPartnerModalOpen.value = false
   } catch (err) {
     partnerError.value = err instanceof Error ? err.message : 'Something went wrong.'
@@ -411,10 +506,24 @@ function closePartnerModal() {
   isPartnerModalOpen.value = false
 }
 
-function clearPartnerChart() {
-  partnerChart.value = null
-  partnerResolvedLocation.value = null
-  partnerError.value = ''
+function removePartnerChart(id) {
+  partnerCharts.value = partnerCharts.value.filter((partner) => partner.id !== id)
+  if (activePartnerId.value === id) {
+    activePartnerId.value = partnerCharts.value[0]?.id || ''
+  }
+}
+
+function selectPartnerChart(id) {
+  activePartnerId.value = id
+  nextTick(() => {
+    if (!comparisonDetailRef.value) return
+    comparisonDetailRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
+function removeActivePartner() {
+  if (!activePartner.value) return
+  removePartnerChart(activePartner.value.id)
 }
 
 function formatOffset(minutes) {

@@ -231,7 +231,7 @@ function scoreCategory(key, aspects, weights, base) {
   return clamp(Math.round(total))
 }
 
-export function buildRelationshipReport(chartA, chartB) {
+export function buildRelationshipReport(chartA, chartB, options = {}) {
   if (!chartA || !chartB) return null
 
   const aspects = buildCrossAspects(chartA.placements, chartB.placements, ALLOWED_BODIES)
@@ -253,15 +253,18 @@ export function buildRelationshipReport(chartA, chartB) {
     }
   })
 
+  const labelA = options.labelA || chartA.meta?.label || 'Chart A'
+  const labelB = options.labelB || chartB.meta?.label || 'Chart B'
+
   return {
     chartA: {
-      label: 'Chart A',
+      label: labelA,
       date: chartA.meta?.date,
       time: chartA.meta?.time,
       address: chartA.meta?.address
     },
     chartB: {
-      label: 'Chart B',
+      label: labelB,
       date: chartB.meta?.date,
       time: chartB.meta?.time,
       address: chartB.meta?.address

@@ -1,6 +1,8 @@
 import SwissEph from 'swisseph-wasm'
 import tzLookup from 'tz-lookup'
 import { buildAspects } from '../utils/aspects'
+import { buildAspectPatterns } from '../utils/aspect-patterns'
+import { buildDignityReport, buildDispositorReport, getChartRuler } from '../utils/dignities'
 import { getDegreeInSign, getSignFromLongitude, normaliseDegrees } from '../utils/zodiac'
 import { buildFocusAreas, buildMetrics } from '../utils/scoring'
 import {
@@ -31,6 +33,16 @@ const BODY_DEFS = [
   { body: 'uranus', key: 'SE_URANUS' },
   { body: 'neptune', key: 'SE_NEPTUNE' },
   { body: 'pluto', key: 'SE_PLUTO' }
+]
+
+const EXTRA_BODY_DEFS = [
+  { body: 'northNode', key: 'SE_MEAN_NODE', label: 'North Node' },
+  { body: 'chiron', key: 'SE_CHIRON', label: 'Chiron' },
+  { body: 'lilith', key: 'SE_MEAN_APOG', label: 'Lilith' },
+  { body: 'ceres', key: 'SE_CERES', label: 'Ceres' },
+  { body: 'pallas', key: 'SE_PALLAS', label: 'Pallas' },
+  { body: 'juno', key: 'SE_JUNO', label: 'Juno' },
+  { body: 'vesta', key: 'SE_VESTA', label: 'Vesta' }
 ]
 
 let swePromise
@@ -156,6 +168,28 @@ function resolveTimeZoneFromMeta(meta) {
   return resolveTimeZone(meta.lat, meta.lon)
 }
 
+function getUtcDateFromMeta(meta) {
+  if (!meta) {
+    throw new Error('Chart metadata is required to resolve UTC time.')
+  }
+  const components = parseDateTimeInput(meta.date, meta.time)
+  const timeZone = resolveTimeZoneFromMeta(meta)
+  const { date: utcDate } = zonedTimeToUtc(components, timeZone)
+  return utcDate
+}
+
+function midpointLongitude(a, b) {
+  const radA = (a * Math.PI) / 180
+  const radB = (b * Math.PI) / 180
+  const x = Math.cos(radA) + Math.cos(radB)
+  const y = Math.sin(radA) + Math.sin(radB)
+  if (Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6) {
+    return normaliseDegrees(a + 90)
+  }
+  const angle = (Math.atan2(y, x) * 180) / Math.PI
+  return normaliseDegrees(angle)
+}
+
 function buildNatalHouseCusps(swe, meta) {
   if (!meta) {
     throw new Error('Natal metadata is required to compute house cusps.')
@@ -187,6 +221,46 @@ function buildPlacement({ body, longitude, house, retrograde }) {
     house,
     retrograde
   }
+}
+
+function buildExtraPoints({ swe, jd, cusps, ascLongitude, sunPlacement, moonPlacement }) {
+  const flags = swe.SEFLG_SWIEPH | swe.SEFLG_SPEED
+  const extra = EXTRA_BODY_DEFS.map((def) => {
+    const result = swe.calc_ut(jd, swe[def.key], flags)
+    const longitude = result[0]
+    const retrograde = result[3] < 0
+    const house = cusps.length >= 13 ? houseFromCusps(longitude, cusps) : null
+    return {
+      ...buildPlacement({ body: def.body, longitude, house, retrograde }),
+      label: def.label
+    }
+  })
+
+  const northNode = extra.find((item) => item.body === 'northNode')
+  if (northNode) {
+    const southLongitude = normaliseDegrees(northNode.longitude + 180)
+    const southHouse = cusps.length >= 13 ? houseFromCusps(southLongitude, cusps) : null
+    extra.push({
+      ...buildPlacement({ body: 'southNode', longitude: southLongitude, house: southHouse, retrograde: northNode.retrograde }),
+      label: 'South Node'
+    })
+  }
+
+  if (ascLongitude !== null && sunPlacement && moonPlacement) {
+    const isDayChart = sunPlacement.house ? sunPlacement.house >= 7 : false
+    const fortuneLongitude = normaliseDegrees(
+      isDayChart
+        ? ascLongitude + moonPlacement.longitude - sunPlacement.longitude
+        : ascLongitude + sunPlacement.longitude - moonPlacement.longitude
+    )
+    const fortuneHouse = cusps.length >= 13 ? houseFromCusps(fortuneLongitude, cusps) : null
+    extra.push({
+      ...buildPlacement({ body: 'partOfFortune', longitude: fortuneLongitude, house: fortuneHouse, retrograde: false }),
+      label: 'Part of Fortune'
+    })
+  }
+
+  return extra
 }
 
 function normaliseCusps(cusps) {
@@ -368,10 +442,25 @@ export async function calculateNatalChart({ date, time, address, lat, lon, house
     })
   )
 
+  const sunPlacement = placements.find((placement) => placement.body === 'sun')
+  const moonPlacement = placements.find((placement) => placement.body === 'moon')
+  const extraPoints = buildExtraPoints({
+    swe,
+    jd,
+    cusps: normalisedCusps,
+    ascLongitude,
+    sunPlacement,
+    moonPlacement
+  })
+
   const aspects = buildAspects(placements.filter((item) => item.body !== 'mc'))
   const metrics = buildMetrics(placements, aspects)
   const focusAreas = buildFocusAreas(placements, aspects)
   const interpretations = buildInterpretationBlocks(placements, aspects, metrics)
+  const dignities = buildDignityReport(placements)
+  const dispositors = buildDispositorReport(placements)
+  const chartRuler = getChartRuler(placements)
+  const aspectPatterns = buildAspectPatterns(placements)
 
   return {
     meta: {
@@ -387,9 +476,14 @@ export async function calculateNatalChart({ date, time, address, lat, lon, house
     },
     houseCusps: normalisedCusps,
     placements,
+    extraPoints,
     aspects,
     metrics,
     focusAreas,
+    dignities,
+    dispositors,
+    chartRuler,
+    aspectPatterns,
     interpretations
   }
 }
@@ -462,5 +556,64 @@ export async function calculateCurrentTransits(natalChart) {
         }
       : null,
     retrogrades: placements.filter((placement) => placement.retrograde)
+  }
+}
+
+export async function calculateCompositeChart(chartA, chartB) {
+  if (!chartA || !chartB) {
+    throw new Error('Both charts are required to calculate a composite chart.')
+  }
+
+  const swe = await getSwissEph()
+  const utcA = getUtcDateFromMeta(chartA.meta)
+  const utcB = getUtcDateFromMeta(chartB.meta)
+  const midDate = new Date((utcA.getTime() + utcB.getTime()) / 2)
+
+  const jd = swe.julday(
+    midDate.getUTCFullYear(),
+    midDate.getUTCMonth() + 1,
+    midDate.getUTCDate(),
+    midDate.getUTCHours() + midDate.getUTCMinutes() / 60 + midDate.getUTCSeconds() / 3600
+  )
+
+  const avgLat = (chartA.meta.lat + chartB.meta.lat) / 2
+  const avgLon = (chartA.meta.lon + chartB.meta.lon) / 2
+  const systemCode = HOUSE_SYSTEMS[chartA.meta.houseSystem] || HOUSE_SYSTEMS.placidus
+  const { cusps } = swe.houses(jd, avgLat, avgLon, systemCode)
+  const normalisedCusps = normaliseCusps(cusps)
+
+  const mapA = new Map(chartA.placements.map((placement) => [placement.body, placement]))
+  const mapB = new Map(chartB.placements.map((placement) => [placement.body, placement]))
+  const compositeBodies = [...BODY_DEFS.map((def) => def.body), 'asc', 'mc']
+
+  const placements = compositeBodies
+    .map((body) => {
+      const first = mapA.get(body)
+      const second = mapB.get(body)
+      if (!first || !second) return null
+      const longitude = midpointLongitude(first.longitude, second.longitude)
+      const house = normalisedCusps.length >= 13 ? houseFromCusps(longitude, normalisedCusps) : null
+      return buildPlacement({
+        body,
+        longitude,
+        house,
+        retrograde: false
+      })
+    })
+    .filter(Boolean)
+
+  const aspects = buildAspects(placements.filter((item) => item.body !== 'mc'))
+
+  return {
+    meta: {
+      date: midDate.toISOString().slice(0, 10),
+      time: midDate.toISOString().slice(11, 16),
+      lat: avgLat,
+      lon: avgLon,
+      houseSystem: chartA.meta.houseSystem
+    },
+    houseCusps: normalisedCusps,
+    placements,
+    aspects
   }
 }

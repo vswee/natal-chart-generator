@@ -283,6 +283,7 @@ const locationResults = ref([])
 const isSearching = ref(false)
 const searchError = ref('')
 const selectedLocation = ref(null)
+const suppressSearch = ref(false)
 let searchTimeout
 let activeRequest = 0
 
@@ -291,6 +292,13 @@ const advancedOpen = computed(() => showAdvanced.value || localForm.useManualCoo
 watch(
   () => localForm.address,
   (value) => {
+    if (suppressSearch.value) {
+      suppressSearch.value = false
+      locationResults.value = []
+      isSearching.value = false
+      searchError.value = ''
+      return
+    }
     if (localForm.useManualCoordinates) return
     selectedLocation.value = null
     localForm.lat = ''
@@ -355,6 +363,11 @@ function selectLocation(result) {
 }
 
 function fillExample() {
+  suppressSearch.value = true
+  locationResults.value = []
+  isSearching.value = false
+  searchError.value = ''
+  selectedLocation.value = null
   localForm.date = '1990-01-05'
   localForm.time = '15:30'
   localForm.address = 'Port of Spain General Hospital, Trinidad and Tobago'

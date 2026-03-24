@@ -145,6 +145,37 @@ function resolveTimeZoneWithOverride(lat, lon, override) {
   return resolveTimeZone(lat, lon)
 }
 
+function resolveTimeZoneFromMeta(meta) {
+  if (meta?.timeZoneOverride) {
+    return resolveTimeZoneWithOverride(meta.lat, meta.lon, meta.timeZoneOverride)
+  }
+  if (meta?.timeZone) {
+    assertTimeZone(meta.timeZone)
+    return meta.timeZone
+  }
+  return resolveTimeZone(meta.lat, meta.lon)
+}
+
+function buildNatalHouseCusps(swe, meta) {
+  if (!meta) {
+    throw new Error('Natal metadata is required to compute house cusps.')
+  }
+  const components = parseDateTimeInput(meta.date, meta.time)
+  const timeZone = resolveTimeZoneFromMeta(meta)
+  const { date: utcDate } = zonedTimeToUtc(components, timeZone)
+
+  const jd = swe.julday(
+    utcDate.getUTCFullYear(),
+    utcDate.getUTCMonth() + 1,
+    utcDate.getUTCDate(),
+    utcDate.getUTCHours() + utcDate.getUTCMinutes() / 60 + utcDate.getUTCSeconds() / 3600
+  )
+
+  const systemCode = HOUSE_SYSTEMS[meta.houseSystem] || HOUSE_SYSTEMS.placidus
+  const { cusps } = swe.houses(jd, meta.lat, meta.lon, systemCode)
+  return normaliseCusps(cusps)
+}
+
 function buildPlacement({ body, longitude, house, retrograde }) {
   const normalised = normaliseDegrees(longitude)
 
@@ -360,5 +391,76 @@ export async function calculateNatalChart({ date, time, address, lat, lon, house
     metrics,
     focusAreas,
     interpretations
+  }
+}
+
+function lunarPhaseName(angle) {
+  if (angle < 22.5 || angle >= 337.5) return 'New Moon'
+  if (angle < 67.5) return 'Waxing Crescent'
+  if (angle < 112.5) return 'First Quarter'
+  if (angle < 157.5) return 'Waxing Gibbous'
+  if (angle < 202.5) return 'Full Moon'
+  if (angle < 247.5) return 'Waning Gibbous'
+  if (angle < 292.5) return 'Last Quarter'
+  return 'Waning Crescent'
+}
+
+export async function calculateCurrentTransits(natalChart) {
+  if (!natalChart) {
+    throw new Error('Natal chart data is required to calculate current transits.')
+  }
+
+  const swe = await getSwissEph()
+  const now = new Date()
+  const jd = swe.julday(
+    now.getUTCFullYear(),
+    now.getUTCMonth() + 1,
+    now.getUTCDate(),
+    now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600
+  )
+
+  const flags = swe.SEFLG_SWIEPH | swe.SEFLG_SPEED
+  let rawCusps = Array.isArray(natalChart.houseCusps) ? natalChart.houseCusps : []
+  if (rawCusps.length < 12) {
+    try {
+      rawCusps = buildNatalHouseCusps(swe, natalChart.meta)
+    } catch (error) {
+      console.warn(error)
+      rawCusps = []
+    }
+  }
+  const cusps = rawCusps.length === 12 ? [null, ...rawCusps] : rawCusps
+
+  const placements = BODY_DEFS.map(({ body, key }) => {
+    const result = swe.calc_ut(jd, swe[key], flags)
+    const longitude = result[0]
+    const retrograde = result[3] < 0
+    const house = cusps.length >= 13 ? houseFromCusps(longitude, cusps) : null
+
+    return buildPlacement({
+      body,
+      longitude,
+      house,
+      retrograde
+    })
+  })
+
+  const sun = placements.find((placement) => placement.body === 'sun')
+  const moon = placements.find((placement) => placement.body === 'moon')
+  const phaseAngle = sun && moon ? normaliseDegrees(moon.longitude - sun.longitude) : 0
+  const illumination = Math.round(((1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2) * 100)
+
+  return {
+    generatedAt: now.toISOString(),
+    placements,
+    moon: moon
+      ? {
+          sign: moon.sign,
+          phaseAngle,
+          phaseName: lunarPhaseName(phaseAngle),
+          illumination
+        }
+      : null,
+    retrogrades: placements.filter((placement) => placement.retrograde)
   }
 }

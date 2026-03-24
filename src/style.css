@@ -460,7 +460,7 @@ a {
 .gauge-list {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  /* gap: 28px; */
 }
 
 .gauge-card {
@@ -470,8 +470,16 @@ a {
   background: var(--panel-strong);
 }
 
+.gauge-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 .gauge-label {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 0.9rem;
   color: var(--muted);
 }
@@ -946,6 +954,170 @@ a {
   background: linear-gradient(90deg, #d4dce7 0%, #111827 100%);
 }
 
+.present-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.present-meta {
+  padding: 10px 12px;
+  background: var(--panel-strong);
+  min-width: 180px;
+}
+
+.present-meta-label {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.present-meta-value {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.present-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.present-card {
+  padding: 16px;
+  background: var(--panel-strong);
+  display: grid;
+  gap: 12px;
+}
+
+.present-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.present-card-title {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.present-list {
+  display: grid;
+  gap: 10px;
+}
+
+.present-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.present-item-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.present-item-value {
+  color: var(--muted);
+  text-align: right;
+}
+
+.house-button {
+  border: 0;
+  background: var(--soft);
+  color: var(--text);
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.house-button > span {
+  display: flex; 
+  gap: .25rem;
+}
+
+.house-button:hover {
+  background: var(--accent-soft);
+}
+
+.house-button--plain {
+  background: transparent;
+  padding: 2px 4px;
+}
+
+.house-button--plain:hover {
+  background: var(--accent-soft);
+}
+
+.house-icon {
+  font-family: 'Material Symbols Rounded', ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.house-number {
+  display: inline-flex;
+  align-items: start;
+  gap: 1px;
+}
+
+.house-suffix {
+  font-size: 0.7em;
+  vertical-align: super;
+  line-height: 1;
+}
+
+.present-moon-main {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.present-moon-sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.present-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.present-tag {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.present-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .chart-header {
   display: flex;
   flex-wrap: wrap;
@@ -1007,6 +1179,14 @@ a {
   fill: var(--muted);
   text-anchor: middle;
   dominant-baseline: middle;
+  cursor: pointer;
+}
+
+.house-hit {
+  stroke: transparent;
+  stroke-width: 10;
+  pointer-events: stroke;
+  cursor: pointer;
 }
 
 .aspect-line {
@@ -1067,6 +1247,7 @@ a {
   place-items: center;
   padding: 20px;
   z-index: 30;
+  backdrop-filter: blur(10px);
 }
 
 .modal-card {

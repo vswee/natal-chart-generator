@@ -143,6 +143,7 @@
             <SummaryGauges :metrics="chart.metrics" />
           </div>
           <ElementModePanel :placements="chart.placements" />
+          <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
           <FocusAreas :areas="chart.focusAreas" />
           <section v-if="!partnerChart" class="panel relationship-cta">
             <div class="panel-inner">
@@ -221,8 +222,9 @@ import InterpretationPanel from './components/InterpretationPanel.vue'
 import ZodiacIcon from './components/ZodiacIcon.vue'
 import ChartWheel from './components/ChartWheel.vue'
 import ElementModePanel from './components/ElementModePanel.vue'
+import PresentTimePanel from './components/PresentTimePanel.vue'
 import { geocodeAddress } from './services/geocoding'
-import { calculateNatalChart } from './services/astrology'
+import { calculateNatalChart, calculateCurrentTransits } from './services/astrology'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
 import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
@@ -238,6 +240,7 @@ const partnerLoading = ref(false)
 const partnerError = ref('')
 const partnerResolvedLocation = ref(null)
 const isPartnerModalOpen = ref(false)
+const currentTransits = ref(null)
 const corePlacements = computed(() => {
   if (!chart.value) return { sun: null, moon: null, asc: null }
 
@@ -279,6 +282,7 @@ function formatPlacement(placement) {
 async function handleSubmit(formData) {
   loading.value = true
   error.value = ''
+  currentTransits.value = null
 
   try {
     const manualLat = formData.lat === '' ? NaN : Number(formData.lat)
@@ -293,7 +297,7 @@ async function handleSubmit(formData) {
       : await geocodeAddress(formData.address)
     resolvedLocation.value = location
 
-    chart.value = await calculateNatalChart({
+    const chartData = await calculateNatalChart({
       date: formData.date,
       time: formData.time,
       address: location.label,
@@ -302,6 +306,13 @@ async function handleSubmit(formData) {
       houseSystem: formData.houseSystem,
       timeZoneOverride: formData.timeZoneOverride
     })
+    chart.value = chartData
+    try {
+      currentTransits.value = await calculateCurrentTransits(chartData)
+    } catch (transitError) {
+      console.warn(transitError)
+      currentTransits.value = null
+    }
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Something went wrong.'
   } finally {

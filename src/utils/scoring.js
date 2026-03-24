@@ -6,6 +6,7 @@ export function buildMetrics(placements, aspects) {
   let emotionalIntensity = 35
   let harmony = 50
   let relationshipFocus = 30
+  let healthFocus = 35
 
   placements.forEach((placement) => {
     if (placement.body === 'moon') emotionalIntensity += 12
@@ -18,6 +19,13 @@ export function buildMetrics(placements, aspects) {
     if (placement.body === 'asc' && placement.sign === 'taurus') {
       harmony += 6
     }
+
+    if (placement.house === 1) healthFocus += 10
+    if (placement.house === 6) healthFocus += 12
+    if (placement.body === 'sun') healthFocus += 8
+    if (placement.body === 'mars') healthFocus += 6
+    if (placement.body === 'saturn') healthFocus += 4
+    if (placement.body === 'asc') healthFocus += 6
   })
 
   aspects.forEach((aspect) => {
@@ -37,12 +45,19 @@ export function buildMetrics(placements, aspects) {
     ) {
       relationshipFocus += 5
     }
+
+    if (['sun', 'mars', 'asc'].includes(aspect.bodyA) || ['sun', 'mars', 'asc'].includes(aspect.bodyB)) {
+      if (aspect.type === 'trine' || aspect.type === 'sextile') healthFocus += 6
+      if (aspect.type === 'square' || aspect.type === 'opposition') healthFocus -= 6
+      if (aspect.type === 'conjunction') healthFocus += 4
+    }
   })
 
   return {
     emotionalIntensity: clamp(emotionalIntensity),
     harmony: clamp(harmony),
-    relationshipFocus: clamp(relationshipFocus)
+    relationshipFocus: clamp(relationshipFocus),
+    healthFocus: clamp(healthFocus)
   }
 }
 

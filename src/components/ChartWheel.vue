@@ -27,21 +27,32 @@
           <circle class="wheel-ring wheel-ring--inner" :cx="center" :cy="center" :r="aspectRadius" />
 
           <g class="wheel-houses">
-            <line
-              v-for="house in houseLines"
-              :key="`house-${house.index}`"
-              class="wheel-house-line"
-              :x1="center"
-              :y1="center"
-              :x2="house.point.x"
-              :y2="house.point.y"
-            />
+            <g v-for="house in houseLines" :key="`house-${house.index}`">
+              <line
+                class="wheel-house-line"
+                :x1="center"
+                :y1="center"
+                :x2="house.point.x"
+                :y2="house.point.y"
+              />
+              <line
+                class="house-hit"
+                :x1="center"
+                :y1="center"
+                :x2="house.point.x"
+                :y2="house.point.y"
+                @mouseenter="setHouseHover(house.index)"
+                @mouseleave="clearHover"
+              />
+            </g>
             <text
               v-for="house in houseLabels"
               :key="`label-${house.index}`"
               class="wheel-house-label"
               :x="house.point.x"
               :y="house.point.y"
+              @mouseenter="setHouseHover(house.index)"
+              @mouseleave="clearHover"
             >
               {{ house.index }}
             </text>
@@ -107,6 +118,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { getHouseMeaning } from '../utils/houses'
 import { normaliseDegrees, toTitleCase } from '../utils/zodiac'
 
 const props = defineProps({
@@ -271,5 +283,14 @@ function setHover(text) {
 
 function clearHover() {
   hoverText.value = ''
+}
+
+function setHouseHover(house) {
+  const meaning = getHouseMeaning(house)
+  if (!meaning) {
+    setHover(`House ${house}`)
+    return
+  }
+  setHover(`${meaning.title} — ${meaning.body}`)
 }
 </script>

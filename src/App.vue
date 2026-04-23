@@ -1,22 +1,29 @@
 <template>
   <main class="app-shell">
     <header class="app-header">
-      <div>
+      <div class="hero-content">
         <div class="brand-mark">
           <span class="brand-dot"></span>
           Natal chart app by Flat 18
         </div>
-        <h1 class="hero-title">Natal chart generator</h1>
+        <h1 class="hero-title">Natal Chart Generator</h1>
         <p class="hero-copy">
           A fast, open-source natal chart generator using Swiss Ephemeris for accurate calculations.
           <span v-if="!chart">Enter your birth data, resolve location, and get a complete chart with clear, structured
             outputs.</span>
         </p>
-        <div class="hero-actions">
-          <button class="subtle-button" type="button" @click="isAboutModalOpen = true">
-            About this app
-          </button>
-        </div>
+      </div>
+
+      <div class="hero-atmosphere" aria-hidden="true">
+        <div class="hero-orbit hero-orbit--outer"></div>
+        <div class="hero-orbit hero-orbit--inner"></div>
+        <div class="hero-aura hero-aura--gold"></div>
+        <div class="hero-aura hero-aura--blue"></div>
+        <div class="hero-star hero-star--one"></div>
+        <div class="hero-star hero-star--two"></div>
+        <div class="hero-star hero-star--three"></div>
+        <div class="hero-moon"></div>
+        <div class="hero-glyph">✦</div>
       </div>
     </header>
 
@@ -194,7 +201,13 @@
         </template>
 
         <section v-else class="panel empty-state">
-          <div>
+          <div class="empty-state-inner">
+            <div class="empty-state-orbit" aria-hidden="true">
+              <span class="empty-state-ring empty-state-ring--outer"></span>
+              <span class="empty-state-ring empty-state-ring--inner"></span>
+              <span class="empty-state-core"></span>
+            </div>
+            <p class="empty-state-kicker">Birth chart preview</p>
             <h3>No chart loaded</h3>
             <p>
               Enter a birth date, exact time, and birthplace to generate a complete natal chart with accurate planetary positions and structured insights.
@@ -206,6 +219,11 @@
 
     <footer class="app-footer">
       <div class="footer-title">Attribution & Licensing</div>
+      <div class="footer-actions">
+        <button class="footer-link-button" type="button" @click="isAboutModalOpen = true">
+          About this app
+        </button>
+      </div>
       <ul class="footer-list">
         <li>
           Built with ❤️ by <a href="https://flat18.co.uk">Flat 18</a>

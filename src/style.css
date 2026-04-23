@@ -2308,16 +2308,30 @@ a {
 
 .app-header {
   position: relative;
+  min-height: 330px;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) 320px;
-  align-items: center;
-  gap: 40px;
-  padding: 18px 0 36px;
+  align-items: end;
+  margin-bottom: 20px;
+  padding: 34px clamp(24px, 4vw, 42px) 54px;
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+.app-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(244, 239, 233, 0), rgba(244, 239, 233, 0.94) 68%, var(--bg));
+  pointer-events: none;
 }
 
 .hero-content {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 18px;
+  gap: 14px;
+  max-width: 700px;
 }
 
 .brand-mark {
@@ -2344,69 +2358,81 @@ a {
 
 .hero-title {
   margin: 0;
-  font-size: clamp(3.4rem, 8vw, 5.6rem);
-  line-height: 0.9;
+  font-size: clamp(3.35rem, 8vw, 5.35rem);
+  line-height: 0.88;
   letter-spacing: -0.045em;
-  max-width: 10ch;
+  max-width: 8ch;
   text-wrap: balance;
 }
 
 .hero-copy {
-  max-width: 62ch;
-  font-size: 1.02rem;
-  line-height: 1.9;
-  color: var(--muted);
-}
-
-.hero-pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.hero-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid rgba(124, 110, 148, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 252, 248, 0.58);
-  backdrop-filter: blur(10px);
-  color: rgba(58, 47, 74, 0.88);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  max-width: 58ch;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: rgba(78, 69, 94, 0.9);
 }
 
 .hero-atmosphere {
-  position: relative;
-  width: min(100%, 320px);
-  aspect-ratio: 1;
-  justify-self: end;
-  border-radius: 36px;
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle at 34% 32%, rgba(255, 251, 246, 0.98), rgba(248, 242, 235, 0.72) 34%, rgba(240, 234, 246, 0.28) 68%, transparent 78%),
-    linear-gradient(145deg, rgba(255, 252, 248, 0.6), rgba(233, 229, 242, 0.2));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    radial-gradient(circle at 20% 18%, rgba(255, 252, 247, 0.98) 0%, rgba(255, 248, 239, 0.94) 24%, rgba(249, 234, 216, 0.76) 40%, rgba(236, 222, 244, 0.28) 62%, rgba(228, 220, 243, 0.1) 76%, transparent 100%),
+    radial-gradient(circle at 86% 26%, rgba(189, 179, 239, 0.54), rgba(177, 167, 232, 0.26) 26%, rgba(171, 178, 229, 0.16) 44%, transparent 70%),
+    radial-gradient(circle at 92% 78%, rgba(178, 164, 231, 0.28), transparent 26%),
+    linear-gradient(135deg, rgba(255, 249, 242, 0.98) 0%, rgba(250, 239, 228, 0.88) 34%, rgba(229, 222, 245, 0.86) 72%, rgba(217, 212, 241, 0.92) 100%);
   overflow: hidden;
+  pointer-events: none;
 }
 
 .hero-atmosphere::before {
   content: '';
   position: absolute;
-  inset: 18px;
-  border-radius: 30px;
-  border: 1px solid rgba(123, 110, 148, 0.08);
+  inset: auto -8% -8% -8%;
+  height: 58%;
+  background:
+    radial-gradient(120% 100% at 12% 12%, rgba(255, 255, 255, 0.44), transparent 48%),
+    linear-gradient(180deg, rgba(255, 247, 238, 0) 0%, rgba(255, 245, 233, 0.32) 34%, rgba(232, 225, 244, 0.72) 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 18%, #000 100%);
 }
 
+.hero-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: auto auto 14% -12%;
+  width: 64%;
+  height: 74%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 38%, rgba(255, 255, 255, 0.42), rgba(255, 244, 230, 0.18) 34%, rgba(255, 255, 255, 0) 64%),
+    linear-gradient(180deg, rgba(255, 251, 245, 0.3), rgba(255, 242, 225, 0.06));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.28) inset,
+    0 0 0 28px rgba(255, 255, 255, 0.04) inset;
+  filter: blur(1px);
+}
+
+.hero-chart,
 .hero-orbit,
 .hero-aura,
+.hero-planet,
 .hero-star,
 .hero-moon,
 .hero-glyph {
   position: absolute;
+}
+
+.hero-chart {
+  top: 50%;
+  right: 6%;
+  width: min(39vw, 480px);
+  aspect-ratio: 1;
+  transform: translateY(-44%);
+  border-radius: 50%;
+  opacity: 0.72;
+  background:
+    radial-gradient(circle, transparent 0 19%, rgba(255, 255, 255, 0.3) 19.4%, transparent 19.8%, transparent 30%, rgba(255, 255, 255, 0.28) 30.4%, transparent 30.8%, transparent 41%, rgba(255, 255, 255, 0.24) 41.4%, transparent 41.8%, transparent 50%, rgba(255, 255, 255, 0.18) 50.3%, transparent 50.7%),
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.16) 0deg 1deg, transparent 1deg 30deg);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
 }
 
 .hero-orbit {
@@ -2415,69 +2441,105 @@ a {
 }
 
 .hero-orbit--outer {
-  inset: 11%;
+  width: 88%;
+  height: 150%;
+  right: -12%;
+  top: -42%;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .hero-orbit--inner {
-  inset: 28%;
+  width: 42%;
+  height: 62%;
+  right: 7%;
+  bottom: -28%;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .hero-aura {
   border-radius: 50%;
-  filter: blur(18px);
+  filter: blur(24px);
 }
 
 .hero-aura--gold {
-  inset: 18% 12% 38% 26%;
-  background: rgba(232, 189, 129, 0.28);
+  inset: 8% 48% 34% 8%;
+  background: rgba(255, 224, 191, 0.34);
 }
 
 .hero-aura--blue {
-  inset: 44% 24% 16% 34%;
-  background: rgba(157, 170, 220, 0.24);
+  inset: 14% 4% 18% 54%;
+  background: rgba(170, 166, 235, 0.32);
+}
+
+.hero-planet {
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 251, 247, 0.95), rgba(238, 214, 218, 0.84) 34%, rgba(164, 148, 214, 0.88) 100%);
+  box-shadow: 0 18px 38px rgba(124, 110, 174, 0.18);
+}
+
+.hero-planet--large {
+  top: 12%;
+  right: 4%;
+  width: clamp(92px, 12vw, 162px);
+  aspect-ratio: 1;
+}
+
+.hero-planet--mid {
+  top: 28%;
+  right: 34%;
+  width: 38px;
+  aspect-ratio: 1;
+  opacity: 0.78;
+}
+
+.hero-planet--small {
+  bottom: 16%;
+  right: 26%;
+  width: 62px;
+  aspect-ratio: 1;
+  opacity: 0.84;
 }
 
 .hero-star {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(61, 53, 78, 0.72);
-  box-shadow: 0 0 0 7px rgba(95, 81, 122, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.08);
 }
 
 .hero-star--one {
-  top: 22%;
-  left: 24%;
+  top: 18%;
+  left: 76%;
 }
 
 .hero-star--two {
-  top: 34%;
-  right: 22%;
+  top: 58%;
+  right: 9%;
 }
 
 .hero-star--three {
-  bottom: 20%;
-  left: 34%;
+  bottom: 24%;
+  left: 58%;
 }
 
 .hero-moon {
-  right: 17%;
-  bottom: 18%;
-  width: 82px;
+  top: 14%;
+  right: 19%;
+  width: 18px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: linear-gradient(145deg, rgba(53, 42, 74, 0.96), rgba(89, 76, 118, 0.88));
+  background: rgba(255, 255, 255, 0.92);
   box-shadow:
-    -16px 0 0 0 rgba(250, 246, 240, 0.92) inset,
-    0 18px 40px rgba(61, 50, 82, 0.22);
+    -6px 0 0 0 rgba(188, 172, 232, 0.42) inset,
+    0 0 18px rgba(255, 255, 255, 0.28);
 }
 
 .hero-glyph {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: rgba(61, 50, 82, 0.84);
-  font-size: 2rem;
+  left: 74%;
+  top: 22%;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1.8rem;
   line-height: 1;
 }
 
@@ -3036,14 +3098,21 @@ a {
 
 @media (max-width: 1080px) {
   .app-header {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    padding-bottom: 28px;
+    min-height: 290px;
+    padding: 28px 24px 44px;
   }
 
   .hero-atmosphere {
-    justify-self: start;
-    width: min(100%, 280px);
+    inset: 0;
+  }
+
+  .hero-chart {
+    width: min(44vw, 420px);
+    right: -2%;
+  }
+
+  .hero-planet--large {
+    right: 2%;
   }
 
   .layout {
@@ -3066,24 +3135,53 @@ a {
     padding: 18px 0 64px;
   }
 
+  .app-header {
+    min-height: 240px;
+    padding: 22px 20px 34px;
+    border-radius: 30px;
+  }
+
   .hero-title {
-    font-size: clamp(2.9rem, 16vw, 4.2rem);
+    font-size: clamp(2.8rem, 16vw, 4rem);
     max-width: 12ch;
   }
 
   .hero-copy {
-    font-size: 0.95rem;
-    line-height: 1.8;
+    max-width: 34ch;
+    font-size: 0.92rem;
+    line-height: 1.72;
   }
 
-  .hero-pill-row {
-    gap: 8px;
+  .hero-chart {
+    right: -18%;
+    top: 58%;
+    width: 300px;
   }
 
-  .hero-pill {
-    min-height: 32px;
-    padding: 0 12px;
-    font-size: 0.72rem;
+  .hero-planet--large {
+    width: 82px;
+    top: 16%;
+    right: -4%;
+  }
+
+  .hero-planet--mid,
+  .hero-planet--small,
+  .hero-orbit--inner,
+  .hero-glyph {
+    display: none;
+  }
+
+  .hero-star--one {
+    left: 68%;
+  }
+
+  .hero-star--two {
+    top: 50%;
+    right: 12%;
+  }
+
+  .hero-star--three {
+    left: 46%;
   }
 
   .panel-inner,

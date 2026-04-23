@@ -15,10 +15,14 @@
       </div>
 
       <div class="hero-atmosphere" aria-hidden="true">
+        <div class="hero-chart"></div>
         <div class="hero-orbit hero-orbit--outer"></div>
         <div class="hero-orbit hero-orbit--inner"></div>
         <div class="hero-aura hero-aura--gold"></div>
         <div class="hero-aura hero-aura--blue"></div>
+        <div class="hero-planet hero-planet--large"></div>
+        <div class="hero-planet hero-planet--mid"></div>
+        <div class="hero-planet hero-planet--small"></div>
         <div class="hero-star hero-star--one"></div>
         <div class="hero-star hero-star--two"></div>
         <div class="hero-star hero-star--three"></div>
@@ -252,7 +256,7 @@
         <div class="modal-header">
           <div>
             <p class="modal-kicker">About</p>
-            <h3 id="about-modal-title" class="modal-title">How this app works and how accurate it is</h3>
+            <h3 id="about-modal-title" class="modal-title">How does this app works and how accurate is it?</h3>
           </div>
           <button class="subtle-button" type="button" @click="isAboutModalOpen = false">Close</button>
         </div>

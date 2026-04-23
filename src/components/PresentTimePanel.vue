@@ -5,7 +5,7 @@
         <div>
           <h2 class="section-title">Present time</h2>
           <p class="section-copy">
-            A quick read of the current sky compared to this natal chart.
+            A quick look at the current sky against this natal chart.
           </p>
         </div>
         <div class="present-meta">
@@ -71,7 +71,7 @@
               Illumination: {{ transits.moon.illumination }}%
             </p>
           </div>
-          <p v-else class="present-empty">Moon data unavailable.</p>
+          <p v-else class="present-empty">Moon data is not available.</p>
         </article>
 
         <article class="present-card">
@@ -196,17 +196,17 @@ const infoMap = {
   houses: {
     title: 'Transit houses',
     body:
-      'Shows which natal houses the current planets occupy, highlighting which life areas are being activated right now.'
+      'This shows which natal houses today’s planets are moving through, and which areas of life are getting more attention.'
   },
   moon: {
     title: 'Current Moon',
     body:
-      "Moon sign and phase offer a quick emotional and energetic snapshot for the day, based on the Moon's current position relative to the Sun."
+      "The Moon’s sign and phase give a quick feel for the day, based on where the Moon is now in relation to the Sun."
   },
   retrograde: {
     title: 'Retrograde now',
     body:
-      'Highlights planets currently retrograde, which can correlate with slower pace, review, or internal focus around their themes.'
+      'This lists planets that are currently retrograde, often linked with slowing down, reviewing things or turning inward.'
   }
 }
 

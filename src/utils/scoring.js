@@ -69,50 +69,50 @@ function addSignal(map, label, weight) {
 
 function summarizeFocus(key, score) {
   if (key === 'relationship') {
-    if (score >= 70) return 'Partnership themes carry more weight than average.'
-    if (score >= 55) return 'Relationship energy is present but shared with other priorities.'
-    return 'Relationship focus is lighter, with attention pulled to other areas.'
+    if (score >= 70) return 'Relationships carry extra weight here.'
+    if (score >= 55) return 'Relationships matter, but they share space with other priorities.'
+    return 'Relationships are less central here.'
   }
 
   if (key === 'work') {
-    if (score >= 70) return 'Career and vocation themes are pronounced here.'
-    if (score >= 55) return 'Work themes are steady without dominating the chart.'
-    return 'Work focus is subtler, with emphasis elsewhere.'
+    if (score >= 70) return 'Work and vocation stand out here.'
+    if (score >= 55) return 'Work matters, without taking over the chart.'
+    return 'Work is less central here.'
   }
 
-  if (score >= 70) return 'Life direction and self-definition feel strongly emphasised.'
-  if (score >= 55) return 'Life direction is steady and balanced across themes.'
-  return 'Life direction indicators are quieter and more distributed.'
+  if (score >= 70) return 'Direction and identity stand out strongly.'
+  if (score >= 55) return 'Direction feels fairly steady and balanced.'
+  return 'Direction is quieter and spread across the chart.'
 }
 
 function summarizeFocusLong(key, score) {
   if (key === 'relationship') {
     if (score >= 70) {
-      return 'Partnership, attachment and close one-to-one dynamics are strongly emphasised. The chart is more likely to process key lessons through intimacy, trust, attraction and emotional exchange.'
+      return 'Partnership and close one-to-one bonds matter a lot here. Intimacy, trust, attraction and emotional exchange are likely to play a big part in the chart.'
     }
     if (score >= 55) {
-      return 'Relationship themes are clearly present, though they share space with other priorities. Close bonds, mutual support and interpersonal balance matter, but they are not the only focus.'
+      return 'Relationship themes are clearly present, though they share space with other priorities. Close bonds and mutual support matter, but they are not the whole story.'
     }
-    return 'Relationship energy is present in a lighter way. Personal focus is more likely to fall on other areas before partnership becomes the main organising theme.'
+    return 'Relationship themes are lighter here. Personal focus is more likely to fall on other areas before partnership becomes a main organising theme.'
   }
 
   if (key === 'work') {
     if (score >= 70) {
-      return 'Career, responsibility and practical direction are strongly emphasised. The chart is more likely to channel effort into structure, output, reputation and long-term progress.'
+      return 'Career, responsibility and practical direction matter a lot here. Effort is more likely to go into structure, output, reputation and long-term progress.'
     }
     if (score >= 55) {
-      return 'Work themes are steady and clearly relevant without dominating the whole chart. Productivity, skill-building and purpose matter, alongside other concerns.'
+      return 'Work themes are steady and clearly relevant without dominating the whole chart. Productivity, skill and purpose matter, alongside other concerns.'
     }
-    return 'Work focus is present but less dominant. Motivation may be spread more evenly across personal, emotional or relational priorities.'
+    return 'Work focus is present but less dominant. Motivation may be spread more evenly across personal, emotional and relational priorities.'
   }
 
   if (score >= 70) {
-    return 'Life direction and self-definition are strongly emphasised. The chart places more weight on identity, personal path, meaning and the overall shape of one’s development.'
+    return 'Direction and identity stand out strongly. The chart puts more weight on personal path, meaning and the overall shape of one’s development.'
   }
   if (score >= 55) {
-    return 'Life direction is present in a steady, balanced way. Personal growth, identity and longer-term meaning are relevant, without crowding out other themes.'
+    return 'Direction is present in a steady, balanced way. Personal growth, identity and longer-term meaning matter, without crowding out other themes.'
   }
-  return 'Life direction is quieter and more distributed across the chart. Emphasis is more likely to be shared between circumstance, relationships and day-to-day concerns.'
+  return 'Direction is quieter and more spread across the chart. Emphasis is more likely to be shared between circumstance, relationships and day-to-day concerns.'
 }
 
 export function buildFocusAreas(placements, aspects) {

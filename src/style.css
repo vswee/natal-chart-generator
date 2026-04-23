@@ -2190,7 +2190,8 @@ a {
 }
 
 .footer-title {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  margin-top: 10px;
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;

@@ -8,9 +8,8 @@
         </div>
         <h1 class="hero-title">Natal Chart Generator</h1>
         <p class="hero-copy">
-          A fast, open-source natal chart generator using Swiss Ephemeris for accurate calculations.
-          <span v-if="!chart">Enter your birth data, resolve location, and get a complete chart with clear, structured
-            outputs.</span>
+          A fast, open-source natal chart app built with Swiss Ephemeris.
+          <span v-if="!chart">Enter your birth details to generate a chart with clear, simple readings.</span>
         </p>
       </div>
 
@@ -37,8 +36,8 @@
 
         <section v-if="chart" class="panel">
           <div class="panel-inner">
-            <h2 class="section-title">Chart meta</h2>
-            <p class="section-copy">Precise birth data and coordinates used to generate this chart.</p>
+            <h2 class="section-title">Chart details</h2>
+            <p class="section-copy">The birth details and coordinates used for this chart.</p>
 
             <div class="meta-grid">
               <article class="meta-card">
@@ -72,9 +71,8 @@
             </div>
 
             <p class="footer-note">
-              Chart math now runs on Swiss Ephemeris (WebAssembly) with the birth time converted to UTC using the
-              location’s
-              inferred time zone. House system choices are applied directly to the ephemeris calculation.
+              This chart is calculated with Swiss Ephemeris. Birth time is converted to UTC using the location time
+              zone, and your chosen house system is used in the calculation.
             </p>
             <div class="meta-actions">
               <button class="button" type="button" :disabled="isDownloading" @click="downloadPdf">
@@ -114,7 +112,7 @@
             <section class="panel core-card">
               <div class="panel-inner">
                 <h2 class="section-title">Core triad</h2>
-                <p class="section-copy">The three primary placements that define identity, emotional response, and outward presentation.</p>
+                <p class="section-copy">The three main placements for identity, feelings and first impressions.</p>
 
                 <div class="core-list">
                   <article class="core-item">
@@ -125,7 +123,7 @@
                       </span>
                       {{ formatPlacement(corePlacements.sun) }}
                     </div>
-                    <div class="core-copy">Core vitality, ego, and life direction.</div>
+                    <div class="core-copy">Your basic drive, sense of self and direction.</div>
                   </article>
 
                   <article class="core-item">
@@ -136,7 +134,7 @@
                       </span>
                       {{ formatPlacement(corePlacements.moon) }}
                     </div>
-                    <div class="core-copy">Emotional needs, instincts, and inner climate.</div>
+                    <div class="core-copy">Your feelings, instincts and emotional needs.</div>
                   </article>
 
                   <article class="core-item">
@@ -147,7 +145,7 @@
                       </span>
                       {{ formatPlacement(corePlacements.asc) }}
                     </div>
-                    <div class="core-copy">How you meet the world and how others first perceive you.</div>
+                    <div class="core-copy">How you come across and how you meet the world.</div>
                   </article>
                 </div>
               </div>
@@ -168,30 +166,15 @@
             :aspect-patterns="chart.aspectPatterns"
           /> -->
           <FocusAreas :areas="chart.focusAreas" />
-          <PartnerComparePanel
-            :partners="partnerReports"
-            :active-id="activePartner?.id || ''"
-            @add="openPartnerModal"
-            @select="selectPartnerChart"
-            @remove="removePartnerChart"
-          />
+          <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''" @add="openPartnerModal"
+            @select="selectPartnerChart" @remove="removePartnerChart" />
 
           <div ref="comparisonDetailRef" class="compare-detail">
-            <RelationshipPanel
-              v-if="relationshipReport"
-              :report="relationshipReport"
-              primary-action-label="Add partner"
-              secondary-action-label="Remove partner"
-              @edit="openPartnerModal"
-              @clear="removeActivePartner"
-            />
+            <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" primary-action-label="Add partner"
+              secondary-action-label="Remove partner" @edit="openPartnerModal" @clear="removeActivePartner" />
 
-            <SynastryAspectList
-              v-if="activePartner"
-              :aspects="synastryAspects"
-              :label-a="'You'"
-              :label-b="activePartner?.label || 'Partner'"
-            />
+            <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
+              :label-b="activePartner?.label || 'Partner'" />
 
             <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
           </div>
@@ -214,7 +197,8 @@
             <p class="empty-state-kicker">Birth chart preview</p>
             <h3>No chart loaded</h3>
             <p>
-              Enter a birth date, exact time, and birthplace to generate a complete natal chart with accurate planetary positions and structured insights.
+              Enter a birth date, exact time and birthplace to generate a natal chart with accurate placements and clear
+              readings.
             </p>
           </div>
         </section>
@@ -222,18 +206,22 @@
     </div>
 
     <footer class="app-footer">
-      <div class="footer-title">Attribution & Licensing</div>
-      <div class="footer-actions">
-        <button class="footer-link-button" type="button" @click="isAboutModalOpen = true">
-          About this app
-        </button>
-      </div>
+      <div class="footer-title">Docs</div>
+      <ul class="footer-list">
+        <li><button class="footer-link-button" type="button" @click="isAboutModalOpen = true">
+            About this app
+          </button></li>
+        <li><button class="footer-link-button" type="button" @click="isPrivacyModalOpen = true">
+            Privacy
+          </button></li>
+        </ul>
+      <div class="footer-title">Attribution & licensing</div>
       <ul class="footer-list">
         <li>
           Built with ❤️ by <a href="https://flat18.co.uk">Flat 18</a>
         </li>
         <li>
-          Sourcecode on <a href="https://github.com/vswee/natal-chart-generator">GitHub</a>
+          Source code on <a href="https://github.com/vswee/natal-chart-generator">GitHub</a>
         </li>
         <li>
           Geocoding: <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noreferrer">Nominatim</a> on
@@ -264,22 +252,21 @@
         <section class="about-hero">
           <div class="about-hero-copy">
             <p class="modal-copy about-intro-copy">
-              This guide explains what is scientifically precise in a natal chart, what remains interpretive,
-              and why this app’s calculations can still be trusted as highly accurate and professional.
+              This explains what is exact in the chart, what is interpretive, and how the app works.
             </p>
 
             <div class="about-pill-row">
               <span class="about-pill">
                 <IconStars :size="16" stroke-width="1.8" />
-                Astronomy-led calculation
+                Based on astronomy
               </span>
               <span class="about-pill">
                 <IconShieldCheck :size="16" stroke-width="1.8" />
-                Professional-grade ephemeris
+                Trusted chart engine
               </span>
               <span class="about-pill">
                 <IconSparkles :size="16" stroke-width="1.8" />
-                Interpretive, not deterministic
+                Interpretive, not fixed
               </span>
             </div>
           </div>
@@ -306,23 +293,29 @@
 
         <section class="about-stats" aria-label="About highlights">
           <article class="about-stat">
-            <span class="about-stat-icon"><IconClock :size="18" stroke-width="1.9" /></span>
+            <span class="about-stat-icon">
+              <IconClock :size="18" stroke-width="1.9" />
+            </span>
             <div>
-              <div class="about-stat-label">Time handling</div>
-              <div class="about-stat-value">Birth time converted to UTC</div>
+              <div class="about-stat-label">Time</div>
+              <div class="about-stat-value">Birth time is converted to UTC</div>
             </div>
           </article>
 
           <article class="about-stat">
-            <span class="about-stat-icon"><IconMapPin :size="18" stroke-width="1.9" /></span>
+            <span class="about-stat-icon">
+              <IconMapPin :size="18" stroke-width="1.9" />
+            </span>
             <div>
-              <div class="about-stat-label">Location handling</div>
-              <div class="about-stat-value">Coordinates resolved from birthplace</div>
+              <div class="about-stat-label">Location</div>
+              <div class="about-stat-value">Coordinates come from the birthplace</div>
             </div>
           </article>
 
           <article class="about-stat">
-            <span class="about-stat-icon"><IconChartDots3 :size="18" stroke-width="1.9" /></span>
+            <span class="about-stat-icon">
+              <IconChartDots3 :size="18" stroke-width="1.9" />
+            </span>
             <div>
               <div class="about-stat-label">Chart engine</div>
               <div class="about-stat-value">Swiss Ephemeris in WebAssembly</div>
@@ -336,20 +329,19 @@
               <span class="about-card-icon">
                 <IconNorthStar :size="20" stroke-width="1.8" />
               </span>
-              <p class="about-kicker">Astronomy, astrology, and method</p>
+              <p class="about-kicker">Astronomy, astrology and method</p>
             </div>
-            <h3 class="about-title">The chart is built from real celestial positions</h3>
+            <h3 class="about-title">The chart is based on real sky positions</h3>
             <p class="about-copy">
-              Astrology starts with astronomy: the exact observed or modeled positions of the Sun, Moon, planets,
-              and key angles for a specific moment and place on Earth. A natal chart is therefore a mathematically
-              defined sky map for birth time and location.
+              Astrology starts with astronomy. The chart uses the measured or modelled positions of the Sun, Moon,
+              planets and key angles for a specific time and place on Earth. In simple terms, it is a sky map for the
+              moment of birth.
             </p>
             <div class="about-divider" aria-hidden="true"></div>
             <p class="about-copy">
-              The interpretive layer is different. Astrology is a symbolic tradition with long historical use, but it
-              is not established by mainstream science as a proven predictive discipline in the way physics or
-              medicine are. In practice, most astrologers use it as a structured interpretive framework for patterns,
-              timing, temperament, and reflection rather than as deterministic proof about a person’s life.
+              The meaning side is different. Astrology is a symbolic system, not a scientific fact in the same way as
+              physics or medicine. Most people use it as a tool for reflection, patterns and timing, not as proof that
+              life has to unfold in one fixed way.
             </p>
           </article>
 
@@ -358,21 +350,21 @@
               <span class="about-card-icon">
                 <IconAtom2 :size="20" stroke-width="1.8" />
               </span>
-              <p class="about-kicker">Technology stack</p>
+              <p class="about-kicker">Technology</p>
             </div>
-            <h3 class="about-title">How our app calculates charts</h3>
+            <h3 class="about-title">How the app calculates charts</h3>
             <p class="about-copy">
-              Our app uses Swiss Ephemeris via WebAssembly in the browser, which is the same class of ephemeris
-              engine trusted in professional astrology software. That means the planetary longitudes, house cusps,
-              Ascendant, Midheaven, retrograde status, and aspect geometry are calculated from a serious astronomical
-              library rather than approximated from simplified lookup tables.
+              The app uses Swiss Ephemeris in the browser. It is the same kind of ephemeris engine used in professional
+              astrology software. That means planetary positions, house cusps, the Ascendant, the Midheaven,
+              retrogrades and aspects are calculated properly rather than guessed from simple lookup tables.
             </p>
             <div class="about-divider" aria-hidden="true"></div>
             <ul class="about-list">
-              <li>Birthplace is resolved to latitude and longitude through geocoding.</li>
-              <li>Time zone is inferred from coordinates, then converted to UTC before calculation.</li>
-              <li>House systems such as Placidus, Koch, and Whole Sign are applied directly in chart math.</li>
-              <li>Interpretations are then built from the computed placements, aspects, dignities, and emphasis scores.</li>
+              <li>The birthplace is turned into latitude and longitude through geocoding.</li>
+              <li>The time zone is worked out from the coordinates, then converted to UTC before calculation.</li>
+              <li>House systems such as Placidus, Koch and Whole Sign are applied directly in the chart calculation.
+              </li>
+              <li>The written readings are then built from the placements, aspects, dignities and chart scores.</li>
             </ul>
           </article>
 
@@ -383,25 +375,169 @@
               </span>
               <p class="about-kicker">Accuracy and trust</p>
             </div>
-            <h3 class="about-title">What is highly accurate, and what should be read with care</h3>
+            <h3 class="about-title">What is exact, and what to read more lightly</h3>
             <p class="about-copy">
-              If the birth date, birth time, and birthplace are correct, the astronomical side of the chart should be
-              highly accurate and in line with professional-grade chart software. The strongest source of error is
-              usually not the ephemeris engine, but the input data: even small birth-time differences can noticeably
-              shift the Ascendant, house cusps, and sometimes the Moon.
+              If the birth date, birth time and birthplace are correct, the chart calculation should line up closely
+              with professional chart software. The biggest source of error is usually the birth data itself. Even a
+              small change in birth time can shift the Ascendant, the house cusps and sometimes the Moon.
             </p>
             <div class="about-divider" aria-hidden="true"></div>
             <p class="about-copy">
-              The app’s written meanings are best understood as professional-style astrological interpretations, not as
-              scientifically guaranteed facts. You can trust the chart construction, the coordinate and time handling,
-              and the consistency of the astrological techniques used. You should treat the interpretive text as a
-              thoughtful reading framework whose usefulness depends on accurate birth data, the chosen house system,
-              and how strongly you resonate with astrological symbolism.
+              The written meanings are interpretations, not guarantees. You can trust the chart calculation, location
+              handling and time handling. The written text is there to help you read the chart, and its value depends
+              on accurate birth data, the house system you choose and whether the symbolism feels useful to you.
             </p>
 
             <div class="about-note">
               <IconMoonStars :size="18" stroke-width="1.8" />
-              <span>The calculations are exacting; the meaning layer remains symbolic and personal.</span>
+              <span>The calculations are exact. The meaning stays symbolic and personal.</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isPrivacyModalOpen" class="modal-overlay" @click.self="isPrivacyModalOpen = false">
+      <div class="modal-card about-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title">
+        <div class="modal-header">
+          <div>
+            <p class="modal-kicker">Privacy</p>
+            <h3 id="privacy-modal-title" class="modal-title">How your data is handled</h3>
+          </div>
+          <button class="subtle-button" type="button" @click="isPrivacyModalOpen = false">Close</button>
+        </div>
+
+        <section class="about-hero">
+          <div class="about-hero-copy">
+            <p class="modal-copy about-intro-copy">
+              This app does not store your birth data or chart results. Most of the work happens locally in your
+              browser.
+            </p>
+
+            <div class="about-pill-row">
+              <span class="about-pill">
+                <IconShieldCheck :size="16" stroke-width="1.8" />
+                Nothing stored
+              </span>
+              <span class="about-pill">
+                <IconChartDots3 :size="16" stroke-width="1.8" />
+                Charts generated locally
+              </span>
+              <span class="about-pill">
+                <IconMapPin :size="16" stroke-width="1.8" />
+                Address used only for coordinates
+              </span>
+            </div>
+          </div>
+
+          <div class="about-hero-art" aria-hidden="true">
+            <div class="about-orbit about-orbit--outer"></div>
+            <div class="about-orbit about-orbit--inner"></div>
+            <div class="about-glow about-glow--a"></div>
+            <div class="about-glow about-glow--b"></div>
+            <div class="about-star about-star--a"></div>
+            <div class="about-star about-star--b"></div>
+            <div class="about-star about-star--c"></div>
+            <div class="about-planet about-planet--major">
+              <IconShieldCheck :size="34" stroke-width="1.8" />
+            </div>
+            <div class="about-planet about-planet--minor">
+              <IconMapPin :size="22" stroke-width="1.8" />
+            </div>
+            <div class="about-center-glyph">
+              <IconChartDots3 :size="20" stroke-width="1.8" />
+            </div>
+          </div>
+        </section>
+
+        <section class="about-stats" aria-label="Privacy highlights">
+          <article class="about-stat">
+            <span class="about-stat-icon">
+              <IconShieldCheck :size="18" stroke-width="1.9" />
+            </span>
+            <div>
+              <div class="about-stat-label">Storage</div>
+              <div class="about-stat-value">Birth details are not stored by the app</div>
+            </div>
+          </article>
+
+          <article class="about-stat">
+            <span class="about-stat-icon">
+              <IconMapPin :size="18" stroke-width="1.9" />
+            </span>
+            <div>
+              <div class="about-stat-label">Third parties</div>
+              <div class="about-stat-value">Only the address is sent for geocoding</div>
+            </div>
+          </article>
+
+          <article class="about-stat">
+            <span class="about-stat-icon">
+              <IconChartDots3 :size="18" stroke-width="1.9" />
+            </span>
+            <div>
+              <div class="about-stat-label">Chart work</div>
+              <div class="about-stat-value">Everything else is generated in the browser</div>
+            </div>
+          </article>
+        </section>
+
+        <div class="about-grid">
+          <article class="about-card">
+            <div class="about-card-head">
+              <span class="about-card-icon">
+                <IconShieldCheck :size="20" stroke-width="1.8" />
+              </span>
+              <p class="about-kicker">What we keep</p>
+            </div>
+            <h3 class="about-title">We do not store your chart information</h3>
+            <p class="about-copy">
+              Birth date, birth time, birthplace, chart data and written readings are not stored by this app. Once the
+              chart is generated, the information stays in your browser session unless you choose to save or export it
+              yourself.
+            </p>
+            <div class="about-divider" aria-hidden="true"></div>
+            <p class="about-copy">
+              We do not keep a copy of your chart details on a server, and we do not use them to build a profile about
+              you.
+            </p>
+          </article>
+
+          <article class="about-card">
+            <div class="about-card-head">
+              <span class="about-card-icon">
+                <IconMapPin :size="20" stroke-width="1.8" />
+              </span>
+              <p class="about-kicker">What is shared</p>
+            </div>
+            <h3 class="about-title">The address is only used to get coordinates</h3>
+            <p class="about-copy">
+              The only information sent to a third party is the address or birthplace you enter for geocoding. This is
+              needed to turn the location into latitude and longitude so the chart can be calculated correctly.
+            </p>
+            <div class="about-divider" aria-hidden="true"></div>
+            <p class="about-copy">
+              No birth time, chart interpretation, compatibility reading or other chart data is sent along with that
+              request.
+            </p>
+          </article>
+
+          <article class="about-card">
+            <div class="about-card-head">
+              <span class="about-card-icon">
+                <IconChartDots3 :size="20" stroke-width="1.8" />
+              </span>
+              <p class="about-kicker">Local processing</p>
+            </div>
+            <h3 class="about-title">Everything else stays on your device</h3>
+            <p class="about-copy">
+              After the coordinates are found, the chart calculations happen locally in the app using Swiss Ephemeris in
+              your browser. The readings, scores and chart views are generated there as well.
+            </p>
+            <div class="about-divider" aria-hidden="true"></div>
+            <div class="about-note">
+              <IconMoonStars :size="18" stroke-width="1.8" />
+              <span>The address helps find coordinates. Everything else stays local and is not stored.</span>
             </div>
           </article>
         </div>
@@ -464,6 +600,7 @@ const partnerError = ref('')
 const partnerResolvedLocation = ref(null)
 const isPartnerModalOpen = ref(false)
 const isAboutModalOpen = ref(false)
+const isPrivacyModalOpen = ref(false)
 const currentTransits = ref(null)
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
@@ -571,10 +708,10 @@ async function handleSubmit(formData) {
     const hasManualCoords = Number.isFinite(manualLat) && Number.isFinite(manualLon)
     const location = hasManualCoords
       ? {
-          lat: manualLat,
-          lon: manualLon,
-          label: formData.address || 'Custom coordinates'
-        }
+        lat: manualLat,
+        lon: manualLon,
+        label: formData.address || 'Custom coordinates'
+      }
       : await geocodeAddress(formData.address)
     resolvedLocation.value = location
 
@@ -657,10 +794,10 @@ async function handlePartnerSubmit(formData) {
     const hasManualCoords = Number.isFinite(manualLat) && Number.isFinite(manualLon)
     const location = hasManualCoords
       ? {
-          lat: manualLat,
-          lon: manualLon,
-          label: formData.address || 'Custom coordinates'
-        }
+        lat: manualLat,
+        lon: manualLon,
+        label: formData.address || 'Custom coordinates'
+      }
       : await geocodeAddress(formData.address)
     partnerResolvedLocation.value = location
 

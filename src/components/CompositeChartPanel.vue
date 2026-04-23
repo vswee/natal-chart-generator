@@ -4,7 +4,7 @@
       <div class="composite-header">
         <div>
           <h2 class="section-title">Composite chart</h2>
-          <p class="section-copy">Midpoint chart showing the relationship dynamic as its own entity.</p>
+          <p class="section-copy">A midpoint chart that reads the relationship as its own whole.</p>
         </div>
         <button class="info-toggle" type="button" aria-label="About composite charts" @click="openInfo">
           info
@@ -47,12 +47,12 @@
                 <p class="composite-aspect-sub">Orb: {{ aspect.orb.toFixed(2) }}°</p>
               </div>
             </div>
-            <p v-else class="composite-empty">No composite aspects available.</p>
+            <p v-else class="composite-empty">No composite aspects found.</p>
           </div>
         </div>
       </div>
 
-      <p v-else class="composite-empty">Composite data unavailable.</p>
+      <p v-else class="composite-empty">Composite data is not available.</p>
     </div>
 
     <div v-if="showInfo" class="modal-overlay" @click.self="closeInfo">
@@ -60,14 +60,13 @@
         <div class="modal-header">
           <div>
             <p class="modal-kicker">Composite charts</p>
-            <h3 class="modal-title">What the composite chart means</h3>
+            <h3 class="modal-title">What a composite chart shows</h3>
           </div>
           <button class="subtle-button" type="button" @click="closeInfo">Close</button>
         </div>
         <p class="modal-copy">
-          A composite chart takes the midpoint between two charts for each planet. It describes the relationship as
-          its own entity, highlighting how the connection behaves over time. Use the placements and aspects here to
-          see the overall tone and dynamics.
+          A composite chart takes the midpoint between two charts for each planet. It looks at the relationship as its
+          own chart, showing the overall tone of the connection and how it tends to work.
         </p>
       </div>
     </div>

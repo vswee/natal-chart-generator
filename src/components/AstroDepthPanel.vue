@@ -4,7 +4,7 @@
       <div class="depth-header">
         <div>
           <h2 class="section-title">Astro depth</h2>
-          <p class="section-copy">Extended points, rulerships, and pattern highlights.</p>
+          <p class="section-copy">Extra points, rulerships and larger chart patterns.</p>
         </div>
       </div>
 
@@ -39,7 +39,7 @@
               </div>
             </div>
           </div>
-          <p v-else class="depth-empty">No extended points available.</p>
+          <p v-else class="depth-empty">No extra points available.</p>
         </article>
 
         <article class="depth-card">
@@ -126,7 +126,7 @@
               </div>
             </div>
           </div>
-          <p v-else class="depth-empty">No major patterns detected.</p>
+          <p v-else class="depth-empty">No major patterns found.</p>
         </article>
       </div>
     </div>
@@ -252,17 +252,17 @@ const infoMap = {
   points: {
     title: 'Extended points',
     body:
-      'North/South Node highlight growth direction and familiar patterns. Chiron points to healing and sensitivity. Lilith (mean apogee) reflects raw instinct and autonomy. Part of Fortune shows where flow and ease are supported. Ceres, Pallas, Juno, and Vesta add themes of care, strategy, commitment, and devotion. Use the sign and house below to see where each theme is emphasized in this chart.'
+      'These points add extra layers to the chart. The Nodes relate to direction and old patterns, Chiron to healing, Lilith to raw instinct, and the Part of Fortune to ease and flow. Ceres, Pallas, Juno and Vesta add themes of care, strategy, commitment and devotion.'
   },
   rulerships: {
     title: 'Rulerships and dignities',
     body:
-      'Rulerships connect each sign to a ruling planet (modern rulers used here). Dignities show planets in domicile/exaltation (supportive) or detriment/fall (challenging). The chart ruler is the ruler of the Ascendant and sets an overall tone.'
+      'Rulerships link each sign to its ruling planet. Dignities show where a planet is strong, comfortable, stretched or under pressure. The chart ruler is the ruler of the Ascendant, and it helps set the tone of the chart.'
   },
   patterns: {
     title: 'Aspect patterns',
     body:
-      'Patterns like Grand Trine, T-Square, and Yod describe how multiple aspects combine. If listed, they can highlight natural flow, productive tension, or adjustment points in the chart.'
+      'Patterns such as a Grand Trine, T-square or Yod show how several aspects work together. They can point to ease, tension or places where the chart keeps asking for adjustment.'
   }
 }
 

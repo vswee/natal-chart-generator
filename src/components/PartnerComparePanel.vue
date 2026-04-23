@@ -4,13 +4,13 @@
       <div class="compare-header">
         <div>
           <h2 class="section-title">Compare partners</h2>
-          <p class="section-copy">Side-by-side scoring for each partner chart.</p>
+          <p class="section-copy">A quick side-by-side view of each partner chart.</p>
         </div>
         <button class="button" type="button" @click="emit('add')">Add partner chart</button>
       </div>
 
       <div v-if="!partners.length" class="compare-empty">
-        <p>No partner charts yet. Add one to see comparisons.</p>
+        <p>No partner charts yet. Add one to compare.</p>
       </div>
 
       <div v-else class="compare-grid">
@@ -52,7 +52,7 @@
               <span class="compare-score-value">{{ item.score }}</span>
             </div>
           </div>
-          <p v-else class="compare-empty">No report available.</p>
+          <p v-else class="compare-empty">No comparison available.</p>
         </article>
       </div>
     </div>

@@ -4,7 +4,7 @@
       <div class="chart-header">
         <div>
           <h2 class="section-title">Chart wheel</h2>
-          <p class="section-copy">Houses, placements, and major aspects mapped on a single wheel.</p>
+          <p class="section-copy">Houses, placements and major aspects on one wheel.</p>
         </div>
         <div class="chart-legend">
           <span class="legend-item legend-item--conjunction">
@@ -202,7 +202,7 @@ const houseLabelRadius = 35
 const placementRadius = 126
 const placementDegreeRadius = 102
 const aspectRadius = 92
-const defaultHoverText = 'Hover a point or line for details.'
+const defaultHoverText = 'Hover over a point or line for details.'
 const hoverText = ref('')
 
 const placementSymbols = {

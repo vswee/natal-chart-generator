@@ -125,66 +125,66 @@ function matchesPair(aspect, pair) {
 
 function summarizeCategory(key, score) {
   if (key === 'sex') {
-    if (score >= 70) return 'Strong physical chemistry stands out.'
-    if (score >= 55) return 'Attraction is present but balanced.'
-    return 'Physical chemistry is lighter and more situational.'
+    if (score >= 70) return 'Strong physical chemistry.'
+    if (score >= 55) return 'Attraction is there, but balanced.'
+    return 'Physical chemistry is lighter here.'
   }
 
   if (key === 'friendship') {
-    if (score >= 70) return 'Easy rapport and shared interests stand out.'
-    if (score >= 55) return 'Friendship energy is steady without dominating.'
-    return 'Friendship ease is lighter and may need more effort.'
+    if (score >= 70) return 'Easy rapport and shared interests.'
+    if (score >= 55) return 'A steady friendship tone.'
+    return 'Friendship may take a bit more effort.'
   }
 
   if (key === 'romance') {
     if (score >= 70) return 'Romance feels warm and present.'
-    if (score >= 55) return 'Romance is balanced with other priorities.'
-    return 'Romantic tone is quieter and less emphasised.'
+    if (score >= 55) return 'Romance is there, but balanced.'
+    return 'Romance is quieter here.'
   }
 
-  if (score >= 70) return 'Overall compatibility feels strong and supportive.'
-  if (score >= 55) return 'Overall compatibility is balanced with some friction.'
-  return 'Overall compatibility is more mixed and nuanced.'
+  if (score >= 70) return 'Overall compatibility feels strong.'
+  if (score >= 55) return 'Overall compatibility is fairly balanced.'
+  return 'Overall compatibility is more mixed.'
 }
 
 function summarizeCategoryLong(key, score) {
   if (key === 'sex') {
     if (score >= 70) {
-      return 'Physical attraction and chemistry are strongly emphasised. The connection is more likely to express itself through desire, magnetism and a noticeable pull between both people.'
+      return 'Physical attraction and chemistry are strong here. There is likely to be clear desire, magnetism and a noticeable pull between you.'
     }
     if (score >= 55) {
-      return 'Attraction is clearly present, though it shares space with other dynamics. Physical interest exists without dominating the entire connection.'
+      return 'Attraction is clearly present, though it shares space with other parts of the relationship. Physical interest is there without taking over everything.'
     }
-    return 'Physical chemistry is present in a lighter way. Attraction may depend more on context, timing or emotional connection rather than being immediate or intense.'
+    return 'Physical chemistry is lighter here. Attraction may depend more on timing, mood or emotional connection than on instant intensity.'
   }
 
   if (key === 'friendship') {
     if (score >= 70) {
-      return 'Communication, shared interests and mutual understanding are strongly emphasised. The connection is likely to feel easy, engaging and mentally aligned.'
+      return 'Communication, shared interests and mutual understanding are strong here. The connection is likely to feel easy, engaging and mentally in step.'
     }
     if (score >= 55) {
-      return 'Friendship energy is steady and supportive without being the dominant theme. There is enough common ground for connection, alongside other priorities.'
+      return 'Friendship is steady and supportive without being the main theme. There is enough common ground to build on, alongside other priorities.'
     }
-    return 'Friendship dynamics are present but less immediate. Building rapport may take more time, intention or shared experience.'
+    return 'Friendship is possible, but it may take more time, intention or shared experience to build.'
   }
 
   if (key === 'romance') {
     if (score >= 70) {
-      return 'Romantic expression is strongly emphasised, with warmth, affection and emotional bonding playing a clear role in the connection.'
+      return 'Romance is strong here, with warmth, affection and emotional closeness playing a clear part in the connection.'
     }
     if (score >= 55) {
-      return 'Romance is present in a balanced way, contributing to the connection without defining it entirely.'
+      return 'Romance is present in a balanced way. It adds to the connection without defining all of it.'
     }
-    return 'Romantic tone is quieter and less emphasised. The connection may lean more toward practical, mental or situational dynamics than overt affection.'
+    return 'Romance is quieter here. The connection may lean more towards practical, mental or situational dynamics than open affection.'
   }
 
   if (score >= 70) {
-    return 'Overall compatibility is strongly supportive, with more reinforcing dynamics than conflicting ones. The connection is more likely to feel cohesive and workable.'
+    return 'Overall compatibility is strong, with more supportive dynamics than conflicting ones. The connection is likely to feel workable.'
   }
   if (score >= 55) {
-    return 'Overall compatibility is balanced, with a mix of supportive and challenging dynamics. The connection can work, though it requires some adjustment.'
+    return 'Overall compatibility is balanced, with both supportive and challenging dynamics. The connection can work, though it may need some adjustment.'
   }
-  return 'Overall compatibility is more mixed, with noticeable tension or differences. The connection may feel less stable or require more conscious effort to maintain.'
+  return 'Overall compatibility is more mixed, with noticeable tension or differences. It may need more effort to keep steady.'
 }
 
 function buildHighlights(aspects, weights) {
@@ -197,7 +197,7 @@ function buildHighlights(aspects, weights) {
     .filter((item) => item.absWeight > 0)
 
   if (weighted.length === 0) {
-    return ['No tight cross-aspects stand out yet.']
+    return ['No tight cross-aspects stand out.']
   }
 
   return weighted

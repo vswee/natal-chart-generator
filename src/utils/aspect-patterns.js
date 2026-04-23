@@ -77,7 +77,7 @@ export function buildAspectPatterns(placements) {
               type: 'grand-trine',
               title: 'Grand Trine',
               bodies: [a.body, b.body, c.body],
-              description: 'Three planets in mutual trines, creating an easy flow of energy.'
+              description: 'Three planets in trine, creating an easy flow between them.'
             })
           }
         }
@@ -102,7 +102,7 @@ export function buildAspectPatterns(placements) {
                   title: 'T-Square',
                   bodies: [pair.first.body, pair.second.body, pair.third.body],
                   apex: pair.third.body,
-                  description: 'An opposition with a third planet squaring both, creating dynamic tension.'
+                  description: 'An opposition with a third planet squaring both, creating strong tension and drive.'
                 })
               }
             }
@@ -121,7 +121,7 @@ export function buildAspectPatterns(placements) {
                   title: 'Yod',
                   bodies: [pair.first.body, pair.second.body, pair.third.body],
                   apex: pair.third.body,
-                  description: 'Two planets sextile, both quincunx to an apex planet, highlighting adjustment.'
+                  description: 'Two planets in sextile, both quincunx to an apex planet, pointing to adjustment.'
                 })
               }
             }

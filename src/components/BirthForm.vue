@@ -3,7 +3,7 @@
     <div class="panel-inner">
       <h2 class="section-title">Birth data</h2>
       <p class="section-copy">
-        Enter date, time and birthplace. We'll resolve the coordinates and build the chart.
+        Enter your date, time and birthplace. We’ll look up the coordinates and build the chart.
       </p>
 
       <form class="form-grid" @submit.prevent="submitForm">
@@ -69,7 +69,7 @@
             :required="!localForm.useManualCoordinates"
           />
 
-          <div v-if="!localForm.useManualCoordinates && isSearching" class="note">Searching locations...</div>
+          <div v-if="!localForm.useManualCoordinates && isSearching" class="note">Searching locations…</div>
           <div v-if="!localForm.useManualCoordinates && searchError" class="error">
             {{ searchError }}
           </div>
@@ -92,7 +92,7 @@
             aria-controls="birth-advanced"
             @click="toggleAdvanced"
           >
-            <span>Advanced</span>
+            <span>More options</span>
             <span class="chevron-icon" aria-hidden="true">expand_more</span>
           </button>
         </div>
@@ -100,7 +100,7 @@
         <div v-if="advancedOpen" id="birth-advanced" class="advanced-section">
           <label class="checkbox-label">
             <input v-model="localForm.useManualCoordinates" type="checkbox" />
-            Use manual coordinates instead of search
+            Enter coordinates manually
           </label>
 
           <div v-if="localForm.useManualCoordinates" class="row-2">
@@ -156,21 +156,21 @@
 
         <div class="row-flex-2">
           <button class="button" type="submit" :disabled="loading">
-            {{ loading ? 'Calculating…' : 'Calculate chart' }}
+            {{ loading ? 'Calculating…' : 'Generate chart' }}
           </button>
           <button class="subtle-button" type="button" @click="fillExample" :disabled="loading">
-            Load sample
+            Use sample data
           </button>
         </div>
       </form>
 
       <div v-if="selectedLocation" class="note">
-        Selected location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
+        Chosen location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
         {{ selectedLocation.lon.toFixed(4) }}
       </div>
 
       <div v-else-if="resolvedLocation" class="note">
-        Resolved location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
+        Found location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
         {{ resolvedLocation.lon.toFixed(4) }}
       </div>
 
@@ -190,15 +190,15 @@
         </div>
 
         <p class="modal-copy">
-          House systems only change the house cusps and which house each planet lands in. The planet sign/degree and
-          aspects do not change. Different systems can shift relationship, career, or home emphasis depending on where
-          the cusps fall.
+          House systems change the house cusps and the house each planet falls in. They do not change the sign,
+          degree or aspects. Different systems can shift the focus between areas such as home, work and
+          relationships.
         </p>
 
         <ul class="modal-list">
-          <li><strong>Placidus</strong>: time-based quadrant houses, popular modern default.</li>
-          <li><strong>Koch</strong>: another time-based system with slightly different cusp math.</li>
-          <li><strong>Whole Sign</strong>: each sign becomes a house; the Ascendant sign is the 1st.</li>
+          <li><strong>Placidus</strong>: a time-based system and a common modern default.</li>
+          <li><strong>Koch</strong>: another time-based system with slightly different cusp maths.</li>
+          <li><strong>Whole Sign</strong>: each sign becomes a house, starting from the Ascendant sign.</li>
         </ul>
       </div>
     </div>
@@ -214,15 +214,15 @@
         </div>
 
         <p class="modal-copy">
-          The exact birth time changes the Ascendant and houses, which can shift life area emphasis. If you are unsure,
-          use the most accurate time you have, or choose a rounded estimate. Results for planets and aspects will still
-          be consistent, but house placements may vary.
+          Birth time changes the Ascendant and houses, so it can shift the chart quite a bit. If you are unsure, use
+          the best time you have or a sensible estimate. Planet positions and aspects will usually stay steady, but
+          house placements may change.
         </p>
 
         <ul class="modal-list">
           <li>Use a birth certificate or hospital record if available.</li>
-          <li>If you only know a range, choose the middle for a balanced estimate.</li>
-          <li>Unknown time? Use 12:00 to keep a neutral reference point.</li>
+          <li>If you only know a range, choose the middle as a rough estimate.</li>
+          <li>If the time is unknown, use 12:00 as a neutral placeholder.</li>
         </ul>
       </div>
     </div>
@@ -238,14 +238,14 @@
         </div>
 
         <p class="modal-copy">
-          The birthplace sets your chart’s latitude and longitude, which changes the Ascendant and house cusps.
-          Planet sign and degree stay the same, but life-area emphasis can shift if the location is off.
+          The birthplace sets the latitude and longitude for the chart, which affects the Ascendant and house cusps.
+          The planet sign and degree stay the same, but the house focus can shift if the location is wrong.
         </p>
 
         <ul class="modal-list">
           <li>Use the city and country where you were born if possible.</li>
           <li>If you only know a nearby city, pick the closest major one.</li>
-          <li>Addresses work too; the app will resolve coordinates automatically.</li>
+          <li>Full addresses work too; the app will look up the coordinates automatically.</li>
         </ul>
       </div>
     </div>

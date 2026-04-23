@@ -5,7 +5,7 @@
         <div>
           <h2 class="section-title">Relationship chart</h2>
           <p class="section-copy">
-            Compare two birth charts to surface compatibility, friendship, romance, and chemistry highlights.
+            Compare two birth charts to look at compatibility, friendship, romance and chemistry.
           </p>
         </div>
         <div class="relationship-meta">

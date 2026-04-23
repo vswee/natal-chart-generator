@@ -3,7 +3,7 @@
     <div class="panel-inner">
       <h2 class="section-title">Chart summary</h2>
       <p class="section-copy">
-        These gauges are derived from the placement and aspect mix.
+        These scores come from the overall mix of placements and aspects.
       </p>
 
       <div class="gauge-list">
@@ -68,22 +68,22 @@ const infoMap = {
   emotionalIntensity: {
     title: 'Emotional intensity',
     body:
-      'Derived from Moon emphasis, water-sign placements (Cancer, Scorpio, Pisces), and hard aspects involving the Moon.'
+      'This looks at Moon emphasis, water-sign placements and tougher Moon aspects.'
   },
   harmony: {
     title: 'Internal harmony',
     body:
-      'Based on the balance of supportive (trine/sextile) versus challenging (square/opposition) aspects, with a small boost for stabilizing placements.'
+      'This looks at the balance between easier aspects and more challenging ones, with a small boost from steadier placements.'
   },
   relationshipFocus: {
     title: 'Relationship focus',
     body:
-      'Weighted by Venus/Mars emphasis, 5th and 7th house placements, and relationship-linked aspects.'
+      'This is based on Venus and Mars, 5th and 7th house placements, and aspects linked to relationships.'
   },
   healthFocus: {
     title: 'Health & vitality',
     body:
-      'Derived from 1st & 6th house placements, Sun/Mars/Ascendant emphasis, and the balance of supportive vs. hard aspects involving Sun or Mars.'
+      'This is based on 1st and 6th house placements, Sun, Mars and Ascendant emphasis, and the balance of easier and harder Sun or Mars aspects.'
   }
 }
 

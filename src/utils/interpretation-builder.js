@@ -70,7 +70,7 @@ const SIGN_PROFILES = {
   cancer: { adjectives: 'protective, intuitive, nurturing', focus: 'emotional security and belonging' },
   leo: { adjectives: 'expressive, warm, confident', focus: 'creativity, visibility, and pride' },
   virgo: { adjectives: 'precise, practical, discerning', focus: 'craft, improvement, and service' },
-  libra: { adjectives: 'harmonizing, fair, relational', focus: 'balance, beauty, and cooperation' },
+  libra: { adjectives: 'harmonising, fair, relational', focus: 'balance, beauty, and cooperation' },
   scorpio: { adjectives: 'intense, private, transformative', focus: 'depth, loyalty, and emotional truth' },
   sagittarius: { adjectives: 'expansive, candid, adventurous', focus: 'growth, travel, and meaning' },
   capricorn: { adjectives: 'disciplined, strategic, grounded', focus: 'structure, goals, and responsibility' },
@@ -101,7 +101,7 @@ const ASPECT_PROFILES = {
   },
   opposition: {
     label: 'oppose',
-    tone: 'polarizes and balances',
+    tone: 'polarises and balances',
     detail: 'asking for perspective and integration'
   }
 }
@@ -135,7 +135,7 @@ export function buildGenericPlacementInterpretation(placement) {
   const sign = signProfile(placement.sign)
   const signLabel = toTitleCase(placement.sign)
   const title = `${body.label} in ${signLabel}`
-  const summary = `${body.label} in ${signLabel} emphasizes ${sign.adjectives} energy in ${body.themes}.`
+  const summary = `${body.label} in ${signLabel} brings a ${sign.adjectives} style to ${body.themes}.`
   const text = `${summary} It often shows up through ${sign.focus}, shaping ${body.focus}.`
   return { title, summary, text }
 }
@@ -150,6 +150,6 @@ export function buildGenericAspectInterpretation(aspect) {
   }
   const title = `${bodyA.label} ${aspectProfile.label} ${bodyB.label}`
   const summary = `${title} links ${bodyA.themes} with ${bodyB.themes} in a way that ${aspectProfile.tone}.`
-  const text = `${summary} This aspect can highlight ${aspectProfile.detail} between ${bodyA.focus} and ${bodyB.focus}.`
+  const text = `${summary} It can show ${aspectProfile.detail} between ${bodyA.focus} and ${bodyB.focus}.`
   return { title, summary, text }
 }

@@ -3,7 +3,7 @@
     <div class="panel-inner">
       <h2 class="section-title">Elements & modes</h2>
       <p class="section-copy">
-        A quick breakdown of elemental balance and modality emphasis across the planets.
+        A simple breakdown of the elements and modes across the planets.
       </p>
 
       <div class="distribution-grid">

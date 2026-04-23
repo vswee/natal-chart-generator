@@ -2,7 +2,7 @@
   <section class="panel aspect-wrap">
     <div class="panel-inner">
       <h2 class="section-title">Major aspects</h2>
-      <p class="section-copy">A simple list view for the strongest detected angular relationships.</p>
+      <p class="section-copy">The strongest aspect links in the chart.</p>
 
       <div class="aspect-controls">
         <div class="aspect-filter-group">
@@ -37,7 +37,7 @@
       </article>
 
       <div v-if="!visibleAspects.length" class="note">
-        No aspects match the current filters.
+        No aspects match these filters.
       </div>
     </div>
   </section>

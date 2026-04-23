@@ -10,7 +10,7 @@
       </div>
 
       <p class="modal-copy">
-        Enter the second person's birth details to compare compatibility, friendship, romance, and chemistry.
+        Enter the other person’s birth details to compare the charts.
       </p>
 
       <form class="form-grid" @submit.prevent="submitForm">
@@ -57,7 +57,7 @@
             :required="!localForm.useManualCoordinates"
           />
 
-          <div v-if="!localForm.useManualCoordinates && isSearching" class="note">Searching locations...</div>
+          <div v-if="!localForm.useManualCoordinates && isSearching" class="note">Searching locations…</div>
           <div v-if="!localForm.useManualCoordinates && searchError" class="error">
             {{ searchError }}
           </div>
@@ -73,7 +73,7 @@
 
         <label class="checkbox-label">
           <input v-model="localForm.useManualCoordinates" type="checkbox" />
-          Use manual coordinates instead of search
+          Enter coordinates manually
         </label>
 
         <div v-if="localForm.useManualCoordinates" class="row-2">
@@ -137,12 +137,12 @@
       </form>
 
       <div v-if="selectedLocation" class="note">
-        Selected location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
+        Chosen location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
         {{ selectedLocation.lon.toFixed(4) }}
       </div>
 
       <div v-else-if="resolvedLocation" class="note">
-        Resolved location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
+        Found location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
         {{ resolvedLocation.lon.toFixed(4) }}
       </div>
 

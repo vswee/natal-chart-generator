@@ -4,7 +4,7 @@
       <div class="synastry-header">
         <div>
           <h2 class="section-title">Synastry aspects</h2>
-          <p class="section-copy">Cross-aspects between two charts, filtered by type and orb.</p>
+          <p class="section-copy">Aspects between two charts, filtered by type and closeness.</p>
         </div>
         <button class="info-toggle" type="button" aria-label="About synastry" @click="openInfo">
           info
@@ -44,7 +44,7 @@
       </article>
 
       <div v-if="!visibleAspects.length" class="note">
-        No synastry aspects match the current filters.
+        No synastry aspects match these filters.
       </div>
     </div>
 
@@ -58,9 +58,8 @@
           <button class="subtle-button" type="button" @click="closeInfo">Close</button>
         </div>
         <p class="modal-copy">
-          Synastry compares the angles between planets in two charts. Tight aspects highlight where energy flows
-          naturally, where there is friction, and where the two people are activated by one another. Filter by orb
-          to see the strongest links.
+          Synastry compares the angles between planets in two charts. Closer aspects usually feel stronger, showing
+          where things flow easily, where there is friction, and where each person strongly affects the other.
         </p>
       </div>
     </div>

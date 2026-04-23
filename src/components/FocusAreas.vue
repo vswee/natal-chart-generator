@@ -3,7 +3,7 @@
     <div class="panel-inner">
       <h2 class="section-title">Relationship, work & life</h2>
       <p class="section-copy">
-        A quick read on how the chart emphasizes partnership, vocation, and life direction.
+        A quick look at how the chart leans in relationships, work and direction.
       </p>
 
       <div class="focus-grid">

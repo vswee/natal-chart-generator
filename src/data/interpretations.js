@@ -1,55 +1,55 @@
 export const placementInterpretations = {
   'sun:gemini': {
     title: 'Sun in Gemini',
-    text: 'Identity is expressed through curiosity, language, movement and mental variety. This placement often wants options, stimulation and room to adapt.'
+    text: 'This placement leans towards curiosity, words, movement and variety. It usually wants options, stimulation and room to adapt.'
   },
   'sun:pisces': {
     title: 'Sun in Pisces',
-    text: 'Identity is expressed through sensitivity, intuition, imagination and permeability. This placement often moves by feeling and atmosphere before logic.'
+    text: 'This placement leans towards sensitivity, intuition and imagination. It often moves by feeling before logic.'
   },
   'moon:scorpio': {
     title: 'Moon in Scorpio',
-    text: 'Emotions tend to run deep, private and intense. This placement often seeks loyalty, honesty and emotional depth rather than surface ease.'
+    text: 'Feelings tend to run deep, private and intense. This placement often wants loyalty, honesty and emotional depth rather than surface ease.'
   },
   'moon:cancer': {
     title: 'Moon in Cancer',
-    text: 'Emotional life is strong, protective and instinctive. This placement is often responsive to mood, memory and belonging.'
+    text: 'Emotional life is strong, protective and instinctive. This placement often responds strongly to mood, memory and belonging.'
   },
   'asc:taurus': {
     title: 'Taurus Rising',
-    text: 'The outer style appears steady, composed and grounded. Others may read this chart as calm, tactile and resistant to unnecessary disruption.'
+    text: 'The outward style seems steady, composed and grounded. Other people may read this chart as calm, practical and not easily rushed.'
   },
   'venus:taurus': {
     title: 'Venus in Taurus',
-    text: 'Affection, pleasure and attraction are filtered through consistency, sensuality and taste. This placement usually prefers realness over spectacle.'
+    text: 'Affection, pleasure and attraction tend to come through steadiness, sensuality and taste. This placement usually prefers what feels real over what looks flashy.'
   },
   'mars:aries': {
     title: 'Mars in Aries',
-    text: 'Drive is direct, fast and forceful. This placement acts quickly, competes instinctively and prefers movement over delay.'
+    text: 'Drive is direct, quick and forceful. This placement acts fast, competes on instinct and prefers action over delay.'
   },
   'mercury:gemini': {
     title: 'Mercury in Gemini',
-    text: 'Thinking style is agile, verbal and responsive. This placement often learns quickly and prefers to keep information moving.'
+    text: 'Thinking style is quick, verbal and responsive. This placement often learns fast and likes to keep information moving.'
   }
 }
 
 export const aspectInterpretations = {
   'moon:square:mars': {
     title: 'Moon square Mars',
-    text: 'Feelings and reactions can be immediate and forceful. This aspect often adds urgency, protectiveness and emotional heat.'
+    text: 'Feelings and reactions can be fast and forceful. This aspect often adds urgency, protectiveness and emotional heat.'
   },
   'sun:trine:moon': {
     title: 'Sun trine Moon',
-    text: 'Identity and emotional life support one another more easily. This can create a stronger sense of internal coherence.'
+    text: 'Identity and emotional life tend to support each other more easily. This can create a stronger sense of inner balance.'
   },
   'venus:conjunction:mars': {
     title: 'Venus conjunct Mars',
-    text: 'Attraction, desire and style can feel concentrated and vivid. This often adds magnetism and a more direct expression of wanting.'
+    text: 'Attraction, desire and style can feel strong and vivid. This often adds magnetism and a more direct way of showing desire.'
   }
 }
 
 export const summaryInterpretations = {
-  highEmotionalIntensity: 'This chart leans toward stronger emotional weather, deeper internal processing and a more pronounced instinctive response style.',
-  highHarmony: 'There is a relatively smooth internal flow here, with more placements reinforcing one another than sharply conflicting.',
-  highRelationshipFocus: 'Partnership themes, mirroring and interpersonal exchange appear more central than average in the chart profile.'
+  highEmotionalIntensity: 'This chart leans towards stronger feelings, deeper inner processing and quicker instinctive reactions.',
+  highHarmony: 'There is a fairly smooth internal flow here, with more placements working together than pulling against each other.',
+  highRelationshipFocus: 'Partnership, connection and one-to-one dynamics play a bigger part than usual in this chart.'
 }

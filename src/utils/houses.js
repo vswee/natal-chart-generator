@@ -11,7 +11,7 @@ export const HOUSE_MEANINGS = {
     name: 'Money and Values',
     icon: 'savings',
     body:
-      'Covers income, possessions, personal resources, and what you value or prioritize.'
+      'Covers income, possessions, personal resources, and what you value or prioritise.'
   },
   3: {
     title: '3rd House: Communication',

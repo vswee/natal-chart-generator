@@ -239,20 +239,90 @@
           <button class="subtle-button" type="button" @click="isAboutModalOpen = false">Close</button>
         </div>
 
-        <p class="modal-copy">
-          This guide explains what is scientifically precise in a natal chart, what remains interpretive,
-          and why this app’s calculations can still be trusted as highly accurate and professional.
-        </p>
+        <section class="about-hero">
+          <div class="about-hero-copy">
+            <p class="modal-copy about-intro-copy">
+              This guide explains what is scientifically precise in a natal chart, what remains interpretive,
+              and why this app’s calculations can still be trusted as highly accurate and professional.
+            </p>
+
+            <div class="about-pill-row">
+              <span class="about-pill">
+                <IconStars :size="16" stroke-width="1.8" />
+                Astronomy-led calculation
+              </span>
+              <span class="about-pill">
+                <IconShieldCheck :size="16" stroke-width="1.8" />
+                Professional-grade ephemeris
+              </span>
+              <span class="about-pill">
+                <IconSparkles :size="16" stroke-width="1.8" />
+                Interpretive, not deterministic
+              </span>
+            </div>
+          </div>
+
+          <div class="about-hero-art" aria-hidden="true">
+            <div class="about-orbit about-orbit--outer"></div>
+            <div class="about-orbit about-orbit--inner"></div>
+            <div class="about-glow about-glow--a"></div>
+            <div class="about-glow about-glow--b"></div>
+            <div class="about-star about-star--a"></div>
+            <div class="about-star about-star--b"></div>
+            <div class="about-star about-star--c"></div>
+            <div class="about-planet about-planet--major">
+              <IconPlanet :size="34" stroke-width="1.8" />
+            </div>
+            <div class="about-planet about-planet--minor">
+              <IconMoonStars :size="22" stroke-width="1.8" />
+            </div>
+            <div class="about-center-glyph">
+              <IconNorthStar :size="20" stroke-width="1.8" />
+            </div>
+          </div>
+        </section>
+
+        <section class="about-stats" aria-label="About highlights">
+          <article class="about-stat">
+            <span class="about-stat-icon"><IconClock :size="18" stroke-width="1.9" /></span>
+            <div>
+              <div class="about-stat-label">Time handling</div>
+              <div class="about-stat-value">Birth time converted to UTC</div>
+            </div>
+          </article>
+
+          <article class="about-stat">
+            <span class="about-stat-icon"><IconMapPin :size="18" stroke-width="1.9" /></span>
+            <div>
+              <div class="about-stat-label">Location handling</div>
+              <div class="about-stat-value">Coordinates resolved from birthplace</div>
+            </div>
+          </article>
+
+          <article class="about-stat">
+            <span class="about-stat-icon"><IconChartDots3 :size="18" stroke-width="1.9" /></span>
+            <div>
+              <div class="about-stat-label">Chart engine</div>
+              <div class="about-stat-value">Swiss Ephemeris in WebAssembly</div>
+            </div>
+          </article>
+        </section>
 
         <div class="about-grid">
           <article class="about-card">
-            <p class="about-kicker">Astronomy, astrology, and method</p>
+            <div class="about-card-head">
+              <span class="about-card-icon">
+                <IconNorthStar :size="20" stroke-width="1.8" />
+              </span>
+              <p class="about-kicker">Astronomy, astrology, and method</p>
+            </div>
             <h3 class="about-title">The chart is built from real celestial positions</h3>
             <p class="about-copy">
               Astrology starts with astronomy: the exact observed or modeled positions of the Sun, Moon, planets,
               and key angles for a specific moment and place on Earth. A natal chart is therefore a mathematically
               defined sky map for birth time and location.
             </p>
+            <div class="about-divider" aria-hidden="true"></div>
             <p class="about-copy">
               The interpretive layer is different. Astrology is a symbolic tradition with long historical use, but it
               is not established by mainstream science as a proven predictive discipline in the way physics or
@@ -262,7 +332,12 @@
           </article>
 
           <article class="about-card">
-            <p class="about-kicker">Technology stack</p>
+            <div class="about-card-head">
+              <span class="about-card-icon">
+                <IconAtom2 :size="20" stroke-width="1.8" />
+              </span>
+              <p class="about-kicker">Technology stack</p>
+            </div>
             <h3 class="about-title">How our app calculates charts</h3>
             <p class="about-copy">
               Our app uses Swiss Ephemeris via WebAssembly in the browser, which is the same class of ephemeris
@@ -270,6 +345,7 @@
               Ascendant, Midheaven, retrograde status, and aspect geometry are calculated from a serious astronomical
               library rather than approximated from simplified lookup tables.
             </p>
+            <div class="about-divider" aria-hidden="true"></div>
             <ul class="about-list">
               <li>Birthplace is resolved to latitude and longitude through geocoding.</li>
               <li>Time zone is inferred from coordinates, then converted to UTC before calculation.</li>
@@ -279,7 +355,12 @@
           </article>
 
           <article class="about-card">
-            <p class="about-kicker">Accuracy and trust</p>
+            <div class="about-card-head">
+              <span class="about-card-icon">
+                <IconShieldCheck :size="20" stroke-width="1.8" />
+              </span>
+              <p class="about-kicker">Accuracy and trust</p>
+            </div>
             <h3 class="about-title">What is highly accurate, and what should be read with care</h3>
             <p class="about-copy">
               If the birth date, birth time, and birthplace are correct, the astronomical side of the chart should be
@@ -287,6 +368,7 @@
               usually not the ephemeris engine, but the input data: even small birth-time differences can noticeably
               shift the Ascendant, house cusps, and sometimes the Moon.
             </p>
+            <div class="about-divider" aria-hidden="true"></div>
             <p class="about-copy">
               The app’s written meanings are best understood as professional-style astrological interpretations, not as
               scientifically guaranteed facts. You can trust the chart construction, the coordinate and time handling,
@@ -294,6 +376,11 @@
               thoughtful reading framework whose usefulness depends on accurate birth data, the chosen house system,
               and how strongly you resonate with astrological symbolism.
             </p>
+
+            <div class="about-note">
+              <IconMoonStars :size="18" stroke-width="1.8" />
+              <span>The calculations are exacting; the meaning layer remains symbolic and personal.</span>
+            </div>
           </article>
         </div>
       </div>
@@ -306,6 +393,18 @@
 
 <script setup>
 import { ref, computed, nextTick, watch } from 'vue'
+import {
+  IconAtom2,
+  IconChartDots3,
+  IconClock,
+  IconMapPin,
+  IconMoonStars,
+  IconNorthStar,
+  IconPlanet,
+  IconShieldCheck,
+  IconSparkles,
+  IconStars
+} from '@tabler/icons-vue'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import BirthForm from './components/BirthForm.vue'

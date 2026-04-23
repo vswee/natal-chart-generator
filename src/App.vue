@@ -12,6 +12,11 @@
           <span v-if="!chart">Enter your birth data, resolve location, and get a complete chart with clear, structured
             outputs.</span>
         </p>
+        <div class="hero-actions">
+          <button class="subtle-button" type="button" @click="isAboutModalOpen = true">
+            About this app
+          </button>
+        </div>
       </div>
     </header>
 
@@ -224,6 +229,76 @@
       </ul>
     </footer>
 
+    <div v-if="isAboutModalOpen" class="modal-overlay" @click.self="isAboutModalOpen = false">
+      <div class="modal-card about-modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
+        <div class="modal-header">
+          <div>
+            <p class="modal-kicker">About</p>
+            <h3 id="about-modal-title" class="modal-title">How this app works and how accurate it is</h3>
+          </div>
+          <button class="subtle-button" type="button" @click="isAboutModalOpen = false">Close</button>
+        </div>
+
+        <p class="modal-copy">
+          This guide explains what is scientifically precise in a natal chart, what remains interpretive,
+          and why this app’s calculations can still be trusted as highly accurate and professional.
+        </p>
+
+        <div class="about-grid">
+          <article class="about-card">
+            <p class="about-kicker">Astronomy, astrology, and method</p>
+            <h3 class="about-title">The chart is built from real celestial positions</h3>
+            <p class="about-copy">
+              Astrology starts with astronomy: the exact observed or modeled positions of the Sun, Moon, planets,
+              and key angles for a specific moment and place on Earth. A natal chart is therefore a mathematically
+              defined sky map for birth time and location.
+            </p>
+            <p class="about-copy">
+              The interpretive layer is different. Astrology is a symbolic tradition with long historical use, but it
+              is not established by mainstream science as a proven predictive discipline in the way physics or
+              medicine are. In practice, most astrologers use it as a structured interpretive framework for patterns,
+              timing, temperament, and reflection rather than as deterministic proof about a person’s life.
+            </p>
+          </article>
+
+          <article class="about-card">
+            <p class="about-kicker">Technology stack</p>
+            <h3 class="about-title">How our app calculates charts</h3>
+            <p class="about-copy">
+              Our app uses Swiss Ephemeris via WebAssembly in the browser, which is the same class of ephemeris
+              engine trusted in professional astrology software. That means the planetary longitudes, house cusps,
+              Ascendant, Midheaven, retrograde status, and aspect geometry are calculated from a serious astronomical
+              library rather than approximated from simplified lookup tables.
+            </p>
+            <ul class="about-list">
+              <li>Birthplace is resolved to latitude and longitude through geocoding.</li>
+              <li>Time zone is inferred from coordinates, then converted to UTC before calculation.</li>
+              <li>House systems such as Placidus, Koch, and Whole Sign are applied directly in chart math.</li>
+              <li>Interpretations are then built from the computed placements, aspects, dignities, and emphasis scores.</li>
+            </ul>
+          </article>
+
+          <article class="about-card">
+            <p class="about-kicker">Accuracy and trust</p>
+            <h3 class="about-title">What is highly accurate, and what should be read with care</h3>
+            <p class="about-copy">
+              If the birth date, birth time, and birthplace are correct, the astronomical side of the chart should be
+              highly accurate and in line with professional-grade chart software. The strongest source of error is
+              usually not the ephemeris engine, but the input data: even small birth-time differences can noticeably
+              shift the Ascendant, house cusps, and sometimes the Moon.
+            </p>
+            <p class="about-copy">
+              The app’s written meanings are best understood as professional-style astrological interpretations, not as
+              scientifically guaranteed facts. You can trust the chart construction, the coordinate and time handling,
+              and the consistency of the astrological techniques used. You should treat the interpretive text as a
+              thoughtful reading framework whose usefulness depends on accurate birth data, the chosen house system,
+              and how strongly you resonate with astrological symbolism.
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+
     <PartnerModal :open="isPartnerModalOpen" :loading="partnerLoading" :error="partnerError"
       :resolved-location="partnerResolvedLocation" @submit="handlePartnerSubmit" @close="closePartnerModal" />
   </main>
@@ -267,6 +342,7 @@ const partnerLoading = ref(false)
 const partnerError = ref('')
 const partnerResolvedLocation = ref(null)
 const isPartnerModalOpen = ref(false)
+const isAboutModalOpen = ref(false)
 const currentTransits = ref(null)
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)

@@ -3208,6 +3208,13 @@ a {
     justify-self: start;
   }
 
+  .table td .badge,
+  .table td button {
+    border-width: 0px;
+    padding-left: 0px;
+    background: unset;
+  }
+
   .house-button {
     padding-left: 0;
   }

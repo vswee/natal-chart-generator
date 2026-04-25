@@ -12,7 +12,7 @@
       </thead>
       <tbody>
         <tr v-for="placement in placementRows" :key="placement.body">
-          <td>
+          <td data-label="Body">
             <span class="body-label">
               <span v-if="symbolForBody(placement.body)" class="body-symbol">
                 {{ symbolForBody(placement.body) }}
@@ -20,14 +20,14 @@
               {{ labelForBody(placement.body) }}
             </span>
           </td>
-          <td>
+          <td data-label="Sign">
             <span class="badge sign-label">
               <ZodiacIcon :sign="placement.sign" />
               {{ titleCase(placement.sign) }}
             </span>
           </td>
-          <td>{{ placement.degreeInSign.toFixed(2) }}°</td>
-          <td>
+          <td data-label="Degree">{{ placement.degreeInSign.toFixed(2) }}°</td>
+          <td data-label="House">
             <button
               v-if="placement.house"
               class="house-button"
@@ -44,7 +44,7 @@
             </button>
             <span v-else>—</span>
           </td>
-          <td>
+          <td data-label="Motion">
             <span class="badge" :class="placement.retrograde ? 'badge--rx' : 'badge--direct'">
               {{ placement.retrograde ? 'Retrograde' : 'Direct' }}
             </span>

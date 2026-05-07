@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Natal Chart Browser by Flat18 social preview</title>
+  <desc id="desc">A branded social sharing image for the Natal Chart Browser web app.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbfcff"/>
+      <stop offset="0.56" stop-color="#eef3f8"/>
+      <stop offset="1" stop-color="#f7efe8"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="0.45" stop-color="#6d5c8f"/>
+      <stop offset="1" stop-color="#c78d64"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <path d="M0 438 C180 382 300 432 452 388 C620 340 720 228 912 260 C1040 282 1128 350 1200 318 L1200 630 L0 630 Z" fill="#fff8f2" opacity="0.72"/>
+  <path d="M88 96 H456 M88 178 H382 M88 260 H430" stroke="#d8dee9" stroke-width="1"/>
+  <path d="M788 72 H1112 M824 556 H1102" stroke="#d8dee9" stroke-width="1"/>
+
+  <g transform="translate(78 72)">
+    <g font-family="Manrope, Inter, Arial, sans-serif" fill="#0f172a">
+      <g transform="translate(0 0)">
+        <circle cx="10" cy="10" r="10" fill="#111827"/>
+        <text x="34" y="15" font-size="26" font-weight="800">Flat18</text>
+      </g>
+      <text x="0" y="126" font-size="76" font-weight="800" letter-spacing="0">Natal Chart</text>
+      <text x="0" y="207" font-size="76" font-weight="800" letter-spacing="0">Browser</text>
+      <text x="4" y="272" font-size="29" fill="#4b5563">Birth charts. Partners. PDFs.</text>
+    </g>
+
+    <g transform="translate(0 340)" font-family="Manrope, Inter, Arial, sans-serif">
+      <rect x="0" y="0" width="184" height="58" rx="8" fill="#111827"/>
+      <text x="28" y="38" fill="#ffffff" font-size="22" font-weight="800">Open app</text>
+      <rect x="210" y="0" width="256" height="58" rx="8" fill="#ffffff" stroke="#d8dee9"/>
+      <text x="238" y="38" fill="#0f172a" font-size="22" font-weight="700">natal-chart.flat18.app</text>
+    </g>
+  </g>
+
+  <g transform="translate(760 314)" filter="url(#soft-shadow)">
+    <circle cx="0" cy="0" r="210" fill="#ffffff" opacity="0.92"/>
+    <circle cx="0" cy="0" r="174" fill="#f8fafc" stroke="#d7dde7" stroke-width="2"/>
+    <circle cx="0" cy="0" r="132" fill="#ffffff" stroke="#e6e9ef" stroke-width="2"/>
+    <circle cx="0" cy="0" r="72" fill="#f7f3f8" stroke="#e0d6e8" stroke-width="2"/>
+    <circle cx="0" cy="0" r="174" fill="none" stroke="url(#orbit)" stroke-width="7"/>
+
+    <g stroke="#c9d0dc" stroke-width="2">
+      <path d="M0 -174 V174"/>
+      <path d="M-174 0 H174"/>
+      <path d="M-151 -87 L151 87"/>
+      <path d="M-87 -151 L87 151"/>
+      <path d="M87 -151 L-87 151"/>
+      <path d="M151 -87 L-151 87"/>
+    </g>
+
+    <g stroke-width="3" fill="none" opacity="0.86">
+      <path d="M-118 -34 L12 88 L92 -112" stroke="#6d5c8f"/>
+      <path d="M-82 122 L118 54 L44 -132" stroke="#0f766e"/>
+      <path d="M-146 36 L-18 -126 L148 -24" stroke="#c78d64"/>
+    </g>
+
+    <g font-family="Manrope, Inter, Arial, sans-serif" font-size="23" font-weight="800" fill="#111827">
+      <text x="-18" y="-188">MC</text>
+      <text x="184" y="9">DSC</text>
+      <text x="-30" y="204">IC</text>
+      <text x="-226" y="9">ASC</text>
+    </g>
+
+    <g fill="#111827">
+      <circle cx="-118" cy="-34" r="9"/>
+      <circle cx="12" cy="88" r="9"/>
+      <circle cx="92" cy="-112" r="9"/>
+      <circle cx="-82" cy="122" r="9"/>
+      <circle cx="118" cy="54" r="9"/>
+      <circle cx="44" cy="-132" r="9"/>
+      <circle cx="-146" cy="36" r="9"/>
+      <circle cx="-18" cy="-126" r="9"/>
+      <circle cx="148" cy="-24" r="9"/>
+    </g>
+  </g>
+
+  <g transform="translate(994 126)" font-family="Manrope, Inter, Arial, sans-serif">
+    <rect x="0" y="0" width="118" height="118" rx="8" fill="#111827"/>
+    <circle cx="59" cy="59" r="34" stroke="#ffffff" stroke-width="4" fill="none"/>
+    <circle cx="59" cy="59" r="6" fill="#ffffff"/>
+    <path d="M59 18 V31 M59 87 V100 M18 59 H31 M87 59 H100" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

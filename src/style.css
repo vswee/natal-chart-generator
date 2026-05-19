@@ -524,6 +524,10 @@ a {
   gap: 12px;
 }
 
+.birth-date-time-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
 .row-flex-2 {
   display: grid;
   grid-template-columns: auto auto;
@@ -1777,8 +1781,11 @@ a {
 }
 
 .chart-wheel {
+  display: block;
   width: min(360px, 100%);
   height: auto;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .wheel-ring {
@@ -3095,6 +3102,11 @@ a {
 
   .row-2, .row-flex-2 {
     grid-template-columns: 1fr;
+  }
+
+  .birth-date-time-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
   }
 
   .panel-inner {

@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Natal Chart Browser by Flat18 social graphic</title>
+  <desc id="desc">A square Flat18 marketing graphic for the Natal Chart Browser app, showing a product-inspired chart wheel and compact feature panels.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbfcff"/>
+      <stop offset="0.54" stop-color="#eef3f8"/>
+      <stop offset="1" stop-color="#f7efe8"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5f938b"/>
+      <stop offset="0.46" stop-color="#756682"/>
+      <stop offset="1" stop-color="#ba9068"/>
+    </linearGradient>
+    <linearGradient id="score" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#cab69e"/>
+      <stop offset="0.48" stop-color="#8a729b"/>
+      <stop offset="1" stop-color="#3f3156"/>
+    </linearGradient>
+    <filter id="panel-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="wheel-shadow" x="-18%" y="-18%" width="136%" height="136%">
+      <feDropShadow dx="0" dy="34" stdDeviation="34" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+    <style>
+      .sans { font-family: Manrope, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .serif { font-family: "Cormorant Garamond", Georgia, serif; }
+      .navy { fill: #111827; }
+      .muted { fill: #5b6474; }
+      .soft-line { stroke: #d8dee9; }
+      .panel-line { stroke: rgba(15, 23, 42, 0.08); }
+      .label { fill: #756682; letter-spacing: 4px; }
+      .glyph { fill: #222033; font-size: 16px; font-weight: 800; text-anchor: middle; dominant-baseline: central; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <path d="M0 736 C160 684 282 721 425 675 C582 624 707 514 882 551 C982 572 1030 625 1080 604 L1080 1080 L0 1080 Z" fill="#fff8f2" opacity="0.72"/>
+  <path d="M78 96 H420 M78 191 H360 M704 100 H1002 M784 976 H1004" class="soft-line" stroke-width="1.2" fill="none"/>
+
+  <g class="sans" transform="translate(78 76)">
+    <g>
+      <circle cx="11" cy="11" r="11" fill="#111827"/>
+      <text x="36" y="18" class="navy" font-size="30" font-weight="800">Flat18</text>
+    </g>
+    <text x="0" y="148" class="navy" font-size="86" font-weight="800">Natal Chart</text>
+    <text x="0" y="236" class="navy" font-size="86" font-weight="800">Browser</text>
+    <text x="4" y="304" class="muted" font-size="31" font-weight="500">Birth charts. Transits. Partners.</text>
+  </g>
+
+  <g transform="translate(826 116)">
+    <rect x="0" y="0" width="126" height="126" rx="28" fill="#111827"/>
+    <circle cx="63" cy="63" r="34" stroke="#ffffff" stroke-width="4" fill="none"/>
+    <circle cx="63" cy="63" r="6" fill="#ffffff"/>
+    <path d="M63 19 V32 M63 94 V107 M19 63 H32 M94 63 H107" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(650 610) scale(0.9)" filter="url(#wheel-shadow)">
+    <circle cx="0" cy="0" r="316" fill="#ffffff" opacity="0.96"/>
+    <circle cx="0" cy="0" r="258" fill="#f8fafc" stroke="#d7dde7" stroke-width="2.5"/>
+    <circle cx="0" cy="0" r="220" fill="#ffffff" stroke="#e7ebf1" stroke-width="2"/>
+    <circle cx="0" cy="0" r="148" fill="#fbf8fc" stroke="#e5ddea" stroke-width="2"/>
+    <circle cx="0" cy="0" r="258" fill="none" stroke="url(#orbit)" stroke-width="8"/>
+
+    <g stroke="#cbd3df" stroke-width="2">
+      <path d="M0 -258 V258"/>
+      <path d="M-258 0 H258"/>
+      <path d="M-223 -129 L223 129"/>
+      <path d="M-129 -223 L129 223"/>
+      <path d="M129 -223 L-129 223"/>
+      <path d="M223 -129 L-223 129"/>
+    </g>
+
+    <g class="sans glyph">
+      <text x="0" y="-236">CAP</text>
+      <text x="118" y="-204">AQU</text>
+      <text x="205" y="-118">PIS</text>
+      <text x="236" y="0">ARI</text>
+      <text x="205" y="118">TAU</text>
+      <text x="118" y="204">GEM</text>
+      <text x="0" y="236">CAN</text>
+      <text x="-118" y="204">LEO</text>
+      <text x="-205" y="118">VIR</text>
+      <text x="-236" y="0">LIB</text>
+      <text x="-205" y="-118">SCO</text>
+      <text x="-118" y="-204">SAG</text>
+    </g>
+
+    <g stroke-width="3.6" fill="none" opacity="0.9">
+      <path d="M-166 -52 L15 128 L142 -172" stroke="#756682"/>
+      <path d="M-128 185 L174 82 L68 -198" stroke="#5f938b"/>
+      <path d="M-214 58 L-28 -188 L218 -35" stroke="#ba9068"/>
+      <path d="M-86 -184 L184 96" stroke="#748cbc" opacity="0.74"/>
+      <path d="M-188 82 L82 188" stroke="#bc7778" opacity="0.72"/>
+    </g>
+
+    <g class="sans" fill="#111827">
+      <text x="-26" y="-285" font-size="30" font-weight="800">MC</text>
+      <text x="274" y="11" font-size="30" font-weight="800">DSC</text>
+      <text x="-21" y="304" font-size="30" font-weight="800">IC</text>
+      <text x="-324" y="11" font-size="30" font-weight="800">ASC</text>
+    </g>
+
+    <g fill="#111827">
+      <circle cx="-166" cy="-52" r="10"/>
+      <circle cx="15" cy="128" r="10"/>
+      <circle cx="142" cy="-172" r="10"/>
+      <circle cx="-128" cy="185" r="10"/>
+      <circle cx="174" cy="82" r="10"/>
+      <circle cx="68" cy="-198" r="10"/>
+      <circle cx="-214" cy="58" r="10"/>
+      <circle cx="-28" cy="-188" r="10"/>
+      <circle cx="218" cy="-35" r="10"/>
+    </g>
+  </g>
+
+  <g class="sans" transform="translate(76 672)" filter="url(#panel-shadow)">
+    <rect x="0" y="0" width="344" height="104" rx="20" fill="#ffffff" opacity="0.92" stroke="#e8e1e8"/>
+    <text x="26" y="37" class="label" font-size="13" font-weight="700">CALCULATION</text>
+    <text x="26" y="72" class="navy" font-size="25" font-weight="800">Swiss Ephemeris</text>
+    <path d="M252 66 H316" stroke="url(#score)" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <g class="sans" transform="translate(76 798)" filter="url(#panel-shadow)">
+    <rect x="0" y="0" width="344" height="104" rx="20" fill="#ffffff" opacity="0.92" stroke="#e8e1e8"/>
+    <text x="26" y="37" class="label" font-size="13" font-weight="700">PRODUCT</text>
+    <text x="26" y="72" class="navy" font-size="25" font-weight="800">Partner insights</text>
+    <circle cx="286" cy="54" r="28" fill="#3f3156"/>
+    <text x="286" y="63" fill="#ffffff" font-size="25" font-weight="800" text-anchor="middle">98</text>
+  </g>
+
+  <g class="sans" transform="translate(76 932)">
+    <rect x="0" y="0" width="446" height="58" rx="10" fill="#111827"/>
+    <text x="30" y="38" fill="#ffffff" font-size="22" font-weight="800">natal-chart.flat18.app</text>
+  </g>
+</svg>

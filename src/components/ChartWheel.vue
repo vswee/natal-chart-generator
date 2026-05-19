@@ -33,6 +33,8 @@
       <div class="chart-wheel-wrap">
         <svg
           class="chart-wheel"
+          :width="size"
+          :height="size"
           :viewBox="`0 0 ${size} ${size}`"
           role="img"
           aria-label="Natal chart wheel"
@@ -185,7 +187,7 @@ const props = defineProps({
     required: true
   },
   cusps: {
-    type: Array,
+    type: [Array, Object],
     required: true
   }
 })
@@ -236,7 +238,9 @@ const placementLabels = {
 }
 
 const houseCusps = computed(() => {
-  const raw = Array.isArray(props.cusps) ? props.cusps : []
+  const raw = Array.isArray(props.cusps) || ArrayBuffer.isView(props.cusps)
+    ? Array.from(props.cusps)
+    : []
   if (raw.length >= 13) return raw.slice(1)
   if (raw.length === 12) return raw
   return Array.from({ length: 12 }, (_, index) => index * 30)

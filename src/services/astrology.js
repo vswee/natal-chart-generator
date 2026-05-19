@@ -264,7 +264,10 @@ function buildExtraPoints({ swe, jd, cusps, ascLongitude, sunPlacement, moonPlac
 }
 
 function normaliseCusps(cusps) {
-  return cusps.map((cusp, index) => (index === 0 ? cusp : normaliseDegrees(cusp)))
+  return Array.from(cusps || [], (cusp, index) => {
+    const degree = Number(cusp)
+    return index === 0 ? degree : normaliseDegrees(degree)
+  })
 }
 
 function houseFromCusps(longitude, cusps) {

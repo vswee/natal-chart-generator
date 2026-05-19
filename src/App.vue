@@ -738,6 +738,90 @@ async function handleSubmit(formData) {
   }
 }
 
+function isIOSBrowser() {
+  if (typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+function getPdfRenderScale(width, height) {
+  if (!width || !height) return 1
+  const maxPixels = isIOSBrowser() ? 5_000_000 : 16_000_000
+  const maxSide = isIOSBrowser() ? 4096 : 8192
+  const areaScale = Math.sqrt(maxPixels / (width * height))
+  const sideScale = Math.min(maxSide / width, maxSide / height)
+  return Math.max(1, Math.min(2, areaScale, sideScale))
+}
+
+function getPdfChunkHeight(width, pageHeight, scale) {
+  const maxPixels = isIOSBrowser() ? 5_000_000 : 16_000_000
+  const maxSide = isIOSBrowser() ? 4096 : 8192
+  const maxByPixels = Math.floor(maxPixels / (width * scale * scale))
+  const maxBySide = Math.floor(maxSide / scale)
+  const maxHeight = Math.max(pageHeight, Math.min(maxByPixels, maxBySide))
+  const pagesPerChunk = Math.max(1, Math.floor(maxHeight / pageHeight))
+  return pageHeight * pagesPerChunk
+}
+
+function createPdfSlice(target, offsetY, width, height) {
+  const host = document.createElement('div')
+  Object.assign(host.style, {
+    position: 'fixed',
+    left: '0',
+    top: '0',
+    width: `${width}px`,
+    height: `${height}px`,
+    overflow: 'hidden',
+    pointerEvents: 'none',
+    background: '#f5f7fb',
+    zIndex: '-1'
+  })
+
+  const clone = target.cloneNode(true)
+  Object.assign(clone.style, {
+    width: `${width}px`,
+    maxWidth: 'none',
+    transform: `translateY(-${offsetY}px)`,
+    transformOrigin: 'top left'
+  })
+
+  host.appendChild(clone)
+  document.body.appendChild(host)
+
+  return host
+}
+
+async function waitForImages(root) {
+  const images = Array.from(root.querySelectorAll('img')).filter((image) => !image.complete)
+  if (!images.length) return
+
+  await Promise.all(images.map((image) => new Promise((resolve) => {
+    image.addEventListener('load', resolve, { once: true })
+    image.addEventListener('error', resolve, { once: true })
+  })))
+}
+
+async function renderPdfSlice(target, offsetY, width, height, scale) {
+  const host = createPdfSlice(target, offsetY, width, height)
+
+  try {
+    await waitForImages(host)
+    return await html2canvas(host, {
+      scale,
+      backgroundColor: '#f5f7fb',
+      useCORS: true,
+      width,
+      height,
+      windowWidth: document.documentElement.clientWidth,
+      windowHeight: Math.max(document.documentElement.clientHeight, height),
+      scrollX: 0,
+      scrollY: 0
+    })
+  } finally {
+    host.remove()
+  }
+}
+
 async function downloadPdf() {
   if (!chart.value || !pdfTarget.value || isDownloading.value) return
   isDownloading.value = true
@@ -745,32 +829,39 @@ async function downloadPdf() {
   try {
     await nextTick()
 
-    const canvas = await html2canvas(pdfTarget.value, {
-      scale: 2,
-      backgroundColor: '#f5f7fb',
-      useCORS: true
-    })
-
-    const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
     const pageWidth = pdf.internal.pageSize.getWidth()
     const pageHeight = pdf.internal.pageSize.getHeight()
-    const imgWidth = canvas.width
-    const imgHeight = canvas.height
-    const scale = pageWidth / imgWidth
-    const scaledHeight = imgHeight * scale
+    const target = pdfTarget.value
+    const targetWidth = Math.max(1, Math.ceil(target.getBoundingClientRect().width))
+    const targetHeight = Math.max(1, Math.ceil(target.scrollHeight))
+    const pageCssHeight = Math.max(1, Math.floor(targetWidth * (pageHeight / pageWidth)))
+    const renderScale = getPdfRenderScale(targetWidth, pageCssHeight)
+    const chunkCssHeight = getPdfChunkHeight(targetWidth, pageCssHeight, renderScale)
 
-    let position = 0
-    let heightLeft = scaledHeight
+    let offsetY = 0
+    let pageIndex = 0
 
-    pdf.addImage(imgData, 'PNG', 0, position, pageWidth, scaledHeight)
-    heightLeft -= pageHeight
+    while (offsetY < targetHeight) {
+      const sliceHeight = Math.min(chunkCssHeight, targetHeight - offsetY)
+      const canvas = await renderPdfSlice(target, offsetY, targetWidth, sliceHeight, renderScale)
+      const imgData = canvas.toDataURL('image/png')
+      const scaledHeight = (sliceHeight * pageWidth) / targetWidth
+      let pageOffset = 0
+      let remainingHeight = scaledHeight
 
-    while (heightLeft > 0) {
-      position -= pageHeight
-      pdf.addPage()
-      pdf.addImage(imgData, 'PNG', 0, position, pageWidth, scaledHeight)
-      heightLeft -= pageHeight
+      while (remainingHeight > 0) {
+        if (pageIndex > 0) {
+          pdf.addPage()
+        }
+
+        pdf.addImage(imgData, 'PNG', 0, -pageOffset, pageWidth, scaledHeight)
+        pageOffset += pageHeight
+        remainingHeight -= pageHeight
+        pageIndex += 1
+      }
+
+      offsetY += sliceHeight
     }
 
     const filename = chart.value?.meta?.date

@@ -7,12 +7,12 @@
       </p>
 
       <form class="form-grid" @submit.prevent="submitForm">
-        <div class="field">
-          <label class="label" for="birth-date">Date of birth</label>
-          <input id="birth-date" v-model="localForm.date" class="input" type="date" required />
-        </div>
+        <div class="row-2 birth-date-time-row">
+          <div class="field">
+            <label class="label" for="birth-date">Date of birth</label>
+            <input id="birth-date" v-model="localForm.date" class="input" type="date" required />
+          </div>
 
-        <div class="row-2">
           <div class="field">
             <div class="label-row">
               <label class="label" for="birth-time">Time of birth</label>
@@ -26,25 +26,6 @@
               </button>
             </div>
             <input id="birth-time" v-model="localForm.time" class="input" type="time" required />
-          </div>
-
-          <div class="field">
-            <div class="label-row">
-              <label class="label" for="house-system">House system</label>
-              <button
-                class="info-toggle"
-                type="button"
-                aria-label="About house systems"
-                @click="showHouseInfo = true"
-              >
-                info
-              </button>
-            </div>
-            <select id="house-system" v-model="localForm.houseSystem" class="select">
-              <option value="placidus">Placidus</option>
-              <option value="whole-sign">Whole Sign</option>
-              <option value="koch">Koch</option>
-            </select>
           </div>
         </div>
 
@@ -98,6 +79,25 @@
         </div>
 
         <div v-if="advancedOpen" id="birth-advanced" class="advanced-section">
+          <div class="field">
+            <div class="label-row">
+              <label class="label" for="house-system">House system</label>
+              <button
+                class="info-toggle"
+                type="button"
+                aria-label="About house systems"
+                @click="showHouseInfo = true"
+              >
+                info
+              </button>
+            </div>
+            <select id="house-system" v-model="localForm.houseSystem" class="select">
+              <option value="placidus">Placidus</option>
+              <option value="whole-sign">Whole Sign</option>
+              <option value="koch">Koch</option>
+            </select>
+          </div>
+
           <label class="checkbox-label">
             <input v-model="localForm.useManualCoordinates" type="checkbox" />
             Enter coordinates manually

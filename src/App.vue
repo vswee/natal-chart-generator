@@ -6,10 +6,10 @@
           <span class="brand-dot"></span>
           Natal chart app by Flat 18
         </div>
-        <h1 class="hero-title">Natal Chart Generator</h1>
+        <h1 class="hero-title">Simplified Natal Chart</h1>
         <p class="hero-copy">
-          A fast, open-source natal chart app built with Swiss Ephemeris.
-          <span v-if="!chart">Enter your birth details to generate a chart with clear, simple readings.</span>
+          Sun, Moon, Rising, personality highlights and a practical look at today and the year ahead.
+          <span v-if="!chart">Enter your birth details to generate the simple chart first.</span>
         </p>
       </div>
 
@@ -33,158 +33,189 @@
     <div :class="`layout ${chart ? '' : 'flex'}`">
       <div class="stack">
         <BirthForm :loading="loading" :error="error" :resolved-location="resolvedLocation" @submit="handleSubmit" />
-
-        <section v-if="chart" class="panel">
-          <div class="panel-inner">
-            <h2 class="section-title">Chart details</h2>
-            <p class="section-copy">The birth details and coordinates used for this chart.</p>
-
-            <div class="meta-grid">
-              <article class="meta-card">
-                <span class="meta-kicker">Date</span>
-                <div class="meta-value">{{ chart.meta.date }}</div>
-              </article>
-
-              <article class="meta-card">
-                <span class="meta-kicker">Time</span>
-                <div class="meta-value">{{ chart.meta.time }}</div>
-              </article>
-
-              <article class="meta-card">
-                <span class="meta-kicker">Coordinates</span>
-                <div class="meta-value">{{ chart.meta.lat.toFixed(2) }}, {{ chart.meta.lon.toFixed(2) }}</div>
-              </article>
-
-              <article class="meta-card">
-                <span class="meta-kicker">Time zone</span>
-                <div class="meta-value">{{ chart.meta.timeZone }}</div>
-                <div class="meta-subvalue">
-                  {{ formatOffset(chart.meta.utcOffsetMinutes) }}
-                  <span v-if="chart.meta.timeZoneOverride" class="meta-hint">(override)</span>
-                </div>
-              </article>
-
-              <article class="meta-card">
-                <span class="meta-kicker">House system</span>
-                <div class="meta-value">{{ formatHouseSystem(chart.meta.houseSystem) }}</div>
-              </article>
-            </div>
-
-            <p class="footer-note">
-              This chart is calculated with Swiss Ephemeris. Birth time is converted to UTC using the location time
-              zone, and your chosen house system is used in the calculation.
-            </p>
-            <div class="meta-actions">
-              <button class="button" type="button" :disabled="isDownloading" @click="downloadPdf">
-                {{ isDownloading ? 'Preparing PDF…' : 'Download chart PDF' }}
-              </button>
-            </div>
-          </div>
-        </section>
       </div>
 
-      <section ref="pdfTarget" :class="`results-grid ${chart ? '' : 'empty'}`">
+      <section :class="`results-grid ${chart ? '' : 'empty'}`">
         <template v-if="chart">
-          <div class="map-row">
-            <section class="panel map-card">
+          <SimplifiedChart
+            :chart="chart"
+            :current-transits="currentTransits"
+            :partner-reports="partnerReports"
+            :resolved-location="resolvedLocation"
+            @add-partner="openPartnerModal"
+            @select-partner="selectPartnerChart"
+            @remove-partner="removePartnerChart"
+          />
+
+          <section class="panel advanced-entry">
+            <div class="panel-inner advanced-entry-inner">
+              <div>
+                <p class="simple-kicker">Advanced</p>
+                <h2 class="section-title">Full chart data</h2>
+                <p class="section-copy">Placements, aspects, houses, charts, compatibility and the PDF export.</p>
+              </div>
+              <button
+                class="subtle-button advanced-view-button"
+                type="button"
+                :aria-expanded="isAdvancedView"
+                @click="isAdvancedView = !isAdvancedView"
+              >
+                <IconAdjustmentsHorizontal :size="18" stroke-width="2" />
+                <span>{{ isAdvancedView ? 'Hide advanced view' : 'Open advanced view' }}</span>
+              </button>
+            </div>
+          </section>
+
+          <div v-if="isAdvancedView" ref="pdfTarget" class="advanced-results">
+            <section class="panel">
               <div class="panel-inner">
-                <div class="map-visual">
-                  <div class="map-circle" :style="mapStyle">
-                    <span class="map-crosshair map-crosshair--h"></span>
-                    <span class="map-crosshair map-crosshair--v"></span>
-                    <span class="map-marker"></span>
-                  </div>
+                <h2 class="section-title">Chart details</h2>
+                <p class="section-copy">The birth details and coordinates used for this chart.</p>
+
+                <div class="meta-grid">
+                  <article class="meta-card">
+                    <span class="meta-kicker">Date</span>
+                    <div class="meta-value">{{ chart.meta.date }}</div>
+                  </article>
+
+                  <article class="meta-card">
+                    <span class="meta-kicker">Time</span>
+                    <div class="meta-value">{{ chart.meta.time }}</div>
+                  </article>
+
+                  <article class="meta-card">
+                    <span class="meta-kicker">Coordinates</span>
+                    <div class="meta-value">{{ chart.meta.lat.toFixed(2) }}, {{ chart.meta.lon.toFixed(2) }}</div>
+                  </article>
+
+                  <article class="meta-card">
+                    <span class="meta-kicker">Time zone</span>
+                    <div class="meta-value">{{ chart.meta.timeZone }}</div>
+                    <div class="meta-subvalue">
+                      {{ formatOffset(chart.meta.utcOffsetMinutes) }}
+                      <span v-if="chart.meta.timeZoneOverride" class="meta-hint">(override)</span>
+                    </div>
+                  </article>
+
+                  <article class="meta-card">
+                    <span class="meta-kicker">House system</span>
+                    <div class="meta-value">{{ formatHouseSystem(chart.meta.houseSystem) }}</div>
+                  </article>
                 </div>
-                <div class="map-meta">
-                  <div class="map-meta-title">Birth data</div>
-                  <div class="map-meta-copy">
-                    {{ chart.meta.date }} · {{ chart.meta.time }}
-                  </div>
-                  <div class="map-meta-copy">
-                    {{ resolvedLocation.label }}.
-                    {{ resolvedLocation.lat }},
-                    {{ resolvedLocation.lon }}
-                  </div>
+
+                <p class="footer-note">
+                  This chart is calculated with Swiss Ephemeris. Birth time is converted to UTC using the location time
+                  zone, and your chosen house system is used in the calculation.
+                </p>
+                <div class="meta-actions">
+                  <button class="button" type="button" :disabled="isDownloading" @click="downloadPdf">
+                    {{ isDownloading ? 'Preparing PDF...' : 'Download chart PDF' }}
+                  </button>
                 </div>
               </div>
             </section>
 
-            <section class="panel core-card">
-              <div class="panel-inner">
-                <h2 class="section-title">Core triad</h2>
-                <p class="section-copy">The three main placements for identity, feelings and first impressions.</p>
-
-                <div class="core-list">
-                  <article class="core-item">
-                    <div class="core-title">Sun</div>
-                    <div class="core-value">
-                      <span v-if="corePlacements.sun" class="core-icon">
-                        <ZodiacIcon :sign="corePlacements.sun.sign" :size="18" />
-                      </span>
-                      {{ formatPlacement(corePlacements.sun) }}
+            <div class="map-row">
+              <section class="panel map-card">
+                <div class="panel-inner">
+                  <div class="map-visual">
+                    <div class="map-circle" :style="mapStyle">
+                      <span class="map-crosshair map-crosshair--h"></span>
+                      <span class="map-crosshair map-crosshair--v"></span>
+                      <span class="map-marker"></span>
                     </div>
-                    <div class="core-copy">Your basic drive, sense of self and direction.</div>
-                  </article>
-
-                  <article class="core-item">
-                    <div class="core-title">Moon</div>
-                    <div class="core-value">
-                      <span v-if="corePlacements.moon" class="core-icon">
-                        <ZodiacIcon :sign="corePlacements.moon.sign" :size="18" />
-                      </span>
-                      {{ formatPlacement(corePlacements.moon) }}
+                  </div>
+                  <div class="map-meta">
+                    <div class="map-meta-title">Birth data</div>
+                    <div class="map-meta-copy">
+                      {{ chart.meta.date }} · {{ chart.meta.time }}
                     </div>
-                    <div class="core-copy">Your feelings, instincts and emotional needs.</div>
-                  </article>
-
-                  <article class="core-item">
-                    <div class="core-title">Ascendant</div>
-                    <div class="core-value">
-                      <span v-if="corePlacements.asc" class="core-icon">
-                        <ZodiacIcon :sign="corePlacements.asc.sign" :size="18" />
-                      </span>
-                      {{ formatPlacement(corePlacements.asc) }}
+                    <div class="map-meta-copy">
+                      {{ resolvedLocation.label }}.
+                      {{ resolvedLocation.lat }},
+                      {{ resolvedLocation.lon }}
                     </div>
-                    <div class="core-copy">How you come across and how you meet the world.</div>
-                  </article>
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
+
+              <section class="panel core-card">
+                <div class="panel-inner">
+                  <h2 class="section-title">Core triad</h2>
+                  <p class="section-copy">The three main placements for identity, feelings and first impressions.</p>
+
+                  <div class="core-list">
+                    <article class="core-item">
+                      <div class="core-title">Sun</div>
+                      <div class="core-value">
+                        <span v-if="corePlacements.sun" class="core-icon">
+                          <ZodiacIcon :sign="corePlacements.sun.sign" :size="18" />
+                        </span>
+                        {{ formatPlacement(corePlacements.sun) }}
+                      </div>
+                      <div class="core-copy">Your basic drive, sense of self and direction.</div>
+                    </article>
+
+                    <article class="core-item">
+                      <div class="core-title">Moon</div>
+                      <div class="core-value">
+                        <span v-if="corePlacements.moon" class="core-icon">
+                          <ZodiacIcon :sign="corePlacements.moon.sign" :size="18" />
+                        </span>
+                        {{ formatPlacement(corePlacements.moon) }}
+                      </div>
+                      <div class="core-copy">Your feelings, instincts and emotional needs.</div>
+                    </article>
+
+                    <article class="core-item">
+                      <div class="core-title">Ascendant</div>
+                      <div class="core-value">
+                        <span v-if="corePlacements.asc" class="core-icon">
+                          <ZodiacIcon :sign="corePlacements.asc.sign" :size="18" />
+                        </span>
+                        {{ formatPlacement(corePlacements.asc) }}
+                      </div>
+                      <div class="core-copy">How you come across and how you meet the world.</div>
+                    </article>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="summary-row">
+              <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
+              <SummaryGauges :metrics="chart.metrics" />
+            </div>
+            <ElementModePanel :placements="chart.placements" />
+            <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
+            <!-- <AstroDepthPanel
+              :extra-points="chart.extraPoints"
+              :dignities="chart.dignities"
+              :dispositors="chart.dispositors"
+              :chart-ruler="chart.chartRuler"
+              :aspect-patterns="chart.aspectPatterns"
+            /> -->
+            <FocusAreas :areas="chart.focusAreas" />
+            <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''" @add="openPartnerModal"
+              @select="selectPartnerChart" @remove="removePartnerChart" />
+
+            <div ref="comparisonDetailRef" class="compare-detail">
+              <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" primary-action-label="Add partner"
+                secondary-action-label="Remove partner" @edit="openPartnerModal" @clear="removeActivePartner" />
+
+              <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
+                :label-b="activePartner?.label || 'Partner'" />
+
+              <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
+            </div>
+
+            <div class="card-grid vertical">
+              <PlacementTable :placements="chart.placements" />
+              <AspectList :aspects="chart.aspects" />
+            </div>
+
+            <InterpretationPanel :items="chart.interpretations" />
           </div>
-
-          <div class="summary-row">
-            <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
-            <SummaryGauges :metrics="chart.metrics" />
-          </div>
-          <ElementModePanel :placements="chart.placements" />
-          <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
-          <!-- <AstroDepthPanel
-            :extra-points="chart.extraPoints"
-            :dignities="chart.dignities"
-            :dispositors="chart.dispositors"
-            :chart-ruler="chart.chartRuler"
-            :aspect-patterns="chart.aspectPatterns"
-          /> -->
-          <FocusAreas :areas="chart.focusAreas" />
-          <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''" @add="openPartnerModal"
-            @select="selectPartnerChart" @remove="removePartnerChart" />
-
-          <div ref="comparisonDetailRef" class="compare-detail">
-            <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" primary-action-label="Add partner"
-              secondary-action-label="Remove partner" @edit="openPartnerModal" @clear="removeActivePartner" />
-
-            <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
-              :label-b="activePartner?.label || 'Partner'" />
-
-            <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
-          </div>
-
-          <div class="card-grid vertical">
-            <PlacementTable :placements="chart.placements" />
-            <AspectList :aspects="chart.aspects" />
-          </div>
-
-          <InterpretationPanel :items="chart.interpretations" />
         </template>
 
         <section v-else class="panel empty-state">
@@ -552,6 +583,7 @@
 <script setup>
 import { ref, computed, nextTick, watch } from 'vue'
 import {
+  IconAdjustmentsHorizontal,
   IconAtom2,
   IconChartDots3,
   IconClock,
@@ -580,6 +612,7 @@ import PresentTimePanel from './components/PresentTimePanel.vue'
 import PartnerComparePanel from './components/PartnerComparePanel.vue'
 import SynastryAspectList from './components/SynastryAspectList.vue'
 import CompositeChartPanel from './components/CompositeChartPanel.vue'
+import SimplifiedChart from './components/SimplifiedChart.vue'
 import { geocodeAddress } from './services/geocoding'
 import { calculateNatalChart, calculateCurrentTransits, calculateCompositeChart } from './services/astrology'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
@@ -604,6 +637,7 @@ const isPrivacyModalOpen = ref(false)
 const currentTransits = ref(null)
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
+const isAdvancedView = ref(false)
 const corePlacements = computed(() => {
   if (!chart.value) return { sun: null, moon: null, asc: null }
 
@@ -701,6 +735,7 @@ async function handleSubmit(formData) {
   loading.value = true
   error.value = ''
   currentTransits.value = null
+  isAdvancedView.value = false
 
   try {
     const manualLat = formData.lat === '' ? NaN : Number(formData.lat)

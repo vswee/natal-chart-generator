@@ -32,7 +32,13 @@
 
     <div :class="`layout ${chart ? '' : 'flex'}`">
       <div class="stack">
-        <BirthForm :loading="loading" :error="error" :resolved-location="resolvedLocation" @submit="handleSubmit" />
+        <BirthForm
+          :loading="loading"
+          :error="error"
+          :resolved-location="resolvedLocation"
+          :compact-summary="Boolean(chart)"
+          @submit="handleSubmit"
+        />
       </div>
 
       <section :class="`results-grid ${chart ? '' : 'empty'}`">

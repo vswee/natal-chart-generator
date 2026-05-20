@@ -1,12 +1,48 @@
 <template>
-  <section class="panel">
+  <section class="panel birth-form-panel" :class="{ 'is-compact': props.compactSummary, 'is-editing': isEditingBirthInfo }">
     <div class="panel-inner">
-      <h2 class="section-title">Birth data</h2>
-      <p class="section-copy">
-        Enter your date, time and birthplace. We’ll look up the coordinates and build the chart.
-      </p>
+      <div class="birth-form-header">
+        <div>
+          <h2 class="section-title">Birth data</h2>
+          <p class="section-copy">
+            Enter your date, time and birthplace. We’ll look up the coordinates and build the chart.
+          </p>
+        </div>
+        <button
+          v-if="props.compactSummary && isEditingBirthInfo"
+          class="subtle-button birth-summary-close"
+          type="button"
+          @click="isEditingBirthInfo = false"
+        >
+          Collapse
+        </button>
+      </div>
 
-      <form class="form-grid" @submit.prevent="submitForm">
+      <div v-if="props.compactSummary && !isEditingBirthInfo" class="birth-summary-card">
+        <div class="birth-summary-main">
+          <span class="birth-summary-icon" aria-hidden="true">✦</span>
+          <div>
+            <p class="birth-summary-kicker">Current birth info</p>
+            <p class="birth-summary-title">{{ summaryDate }} · {{ summaryTime }}</p>
+            <p class="birth-summary-location">{{ summaryLocation }}</p>
+          </div>
+        </div>
+        <dl class="birth-summary-meta">
+          <div>
+            <dt>House</dt>
+            <dd>{{ summaryHouseSystem }}</dd>
+          </div>
+          <div>
+            <dt>Coordinates</dt>
+            <dd>{{ summaryCoordinates }}</dd>
+          </div>
+        </dl>
+        <button class="subtle-button birth-summary-change" type="button" @click="isEditingBirthInfo = true">
+          Change birth info
+        </button>
+      </div>
+
+      <form class="form-grid birth-form-body" @submit.prevent="submitForm">
         <div class="row-2 birth-date-time-row">
           <div class="field">
             <label class="label" for="birth-date">Date of birth</label>
@@ -164,12 +200,12 @@
         </div>
       </form>
 
-      <div v-if="selectedLocation" class="note">
+      <div v-if="selectedLocation" class="note birth-form-note">
         Chosen location: {{ selectedLocation.label }} · {{ selectedLocation.lat.toFixed(4) }},
         {{ selectedLocation.lon.toFixed(4) }}
       </div>
 
-      <div v-else-if="resolvedLocation" class="note">
+      <div v-else-if="resolvedLocation" class="note birth-form-note">
         Found location: {{ resolvedLocation.label }} · {{ resolvedLocation.lat.toFixed(4) }},
         {{ resolvedLocation.lon.toFixed(4) }}
       </div>
@@ -256,10 +292,11 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { searchLocations } from '../services/geocoding'
 
-defineProps({
+const props = defineProps({
   loading: Boolean,
   error: String,
-  resolvedLocation: Object
+  resolvedLocation: Object,
+  compactSummary: Boolean
 })
 
 const emit = defineEmits(['submit'])
@@ -279,6 +316,7 @@ const showHouseInfo = ref(false)
 const showTimeInfo = ref(false)
 const showLocationInfo = ref(false)
 const showAdvanced = ref(false)
+const isEditingBirthInfo = ref(false)
 const locationResults = ref([])
 const isSearching = ref(false)
 const searchError = ref('')
@@ -288,6 +326,38 @@ let searchTimeout
 let activeRequest = 0
 
 const advancedOpen = computed(() => showAdvanced.value || localForm.useManualCoordinates)
+
+const summaryDate = computed(() => {
+  if (!localForm.date) return 'Date not set'
+  const [year, month, day] = localForm.date.split('-')
+  if (!year || !month || !day) return localForm.date
+  return `${day}/${month}/${year}`
+})
+
+const summaryTime = computed(() => localForm.time || 'Time not set')
+
+const summaryLocation = computed(() => (
+  selectedLocation.value?.label
+  || props.resolvedLocation?.label
+  || localForm.address
+  || 'Location not set'
+))
+
+const summaryHouseSystem = computed(() => {
+  const labels = {
+    placidus: 'Placidus',
+    'whole-sign': 'Whole Sign',
+    koch: 'Koch'
+  }
+  return labels[localForm.houseSystem] || localForm.houseSystem
+})
+
+const summaryCoordinates = computed(() => {
+  const lat = selectedLocation.value?.lat ?? props.resolvedLocation?.lat ?? Number(localForm.lat)
+  const lon = selectedLocation.value?.lon ?? props.resolvedLocation?.lon ?? Number(localForm.lon)
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Pending'
+  return `${lat.toFixed(2)}, ${lon.toFixed(2)}`
+})
 
 watch(
   () => localForm.address,
@@ -346,6 +416,7 @@ watch(
 
 function submitForm() {
   emit('submit', { ...localForm })
+  if (props.compactSummary) isEditingBirthInfo.value = false
 }
 
 function toggleAdvanced() {

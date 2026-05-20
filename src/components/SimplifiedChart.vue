@@ -703,14 +703,17 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
-function getPreferredReelMimeType() {
-  if (typeof MediaRecorder === 'undefined') return ''
-  const types = [
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm'
+function getPreferredReelFormat() {
+  if (typeof MediaRecorder === 'undefined') return null
+  const formats = [
+    { mimeType: 'video/mp4;codecs=h264', extension: 'mp4' },
+    { mimeType: 'video/mp4;codecs=avc1.42E01E', extension: 'mp4' },
+    { mimeType: 'video/mp4', extension: 'mp4' },
+    { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
+    { mimeType: 'video/webm;codecs=vp8', extension: 'webm' },
+    { mimeType: 'video/webm', extension: 'webm' }
   ]
-  return types.find((type) => MediaRecorder.isTypeSupported(type)) || ''
+  return formats.find((format) => MediaRecorder.isTypeSupported(format.mimeType)) || null
 }
 
 function waitForVideoReady(video) {
@@ -833,69 +836,116 @@ function drawReelOverlay(ctx, progress) {
   const safeBottom = REEL_HEIGHT - REEL_SAFE.bottom
   const safeWidth = safeRight - safeLeft
   const pulse = 0.94 + Math.sin(progress * Math.PI * 2) * 0.04
+  const cardX = safeLeft
+  const cardWidth = safeWidth
+  const innerX = cardX + 44
+  const innerWidth = cardWidth - 88
 
   ctx.save()
-  ctx.fillStyle = 'rgba(10, 18, 17, 0.28)'
+  ctx.fillStyle = 'rgba(8, 12, 18, 0.22)'
   ctx.fillRect(0, 0, REEL_WIDTH, REEL_HEIGHT)
 
   ctx.globalAlpha = 0.92
-  ctx.fillStyle = 'rgba(255, 251, 246, 0.88)'
-  drawRoundedRect(ctx, safeLeft, safeTop + 130, safeWidth, 1090, 38)
+  ctx.fillStyle = 'rgba(255, 251, 246, 0.82)'
+  drawRoundedRect(ctx, cardX, safeTop + 118, cardWidth, 610, 44)
   ctx.fill()
+
+  ctx.globalAlpha = 0.42
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.76)'
+  ctx.lineWidth = 2
+  drawRoundedRect(ctx, cardX + 12, safeTop + 130, cardWidth - 24, 586, 34)
+  ctx.stroke()
+
+  ctx.globalAlpha = 0.3
+  ctx.fillStyle = '#304d4d'
+  ctx.font = '700 210px "Cormorant Garamond", Georgia, serif'
+  ctx.textAlign = 'right'
+  ctx.fillText(shareCoreCards.value[0]?.planetSymbol || '☉', safeRight - 24, safeTop + 305)
 
   ctx.globalAlpha = 1
   ctx.fillStyle = '#172421'
-  ctx.font = '800 25px Manrope, Arial, sans-serif'
+  ctx.font = '800 22px Manrope, Arial, sans-serif'
   ctx.letterSpacing = '0px'
   ctx.textAlign = 'left'
   ctx.textBaseline = 'alphabetic'
-  ctx.fillText('NATAL CHART APP', safeLeft + 44, safeTop + 194)
+  ctx.fillText('NATAL CHART APP', innerX, safeTop + 184)
+
+  ctx.fillStyle = 'rgba(23, 36, 33, 0.55)'
+  ctx.font = '800 20px Manrope, Arial, sans-serif'
+  ctx.fillText('SIMPLE NATAL CHART', innerX, safeTop + 224)
 
   ctx.fillStyle = '#172421'
-  ctx.font = '700 88px "Cormorant Garamond", Georgia, serif'
-  drawReelText(ctx, simpleTitle.value, safeLeft + 44, safeTop + 305, safeWidth - 88, 82, 3)
+  ctx.font = '700 78px "Cormorant Garamond", Georgia, serif'
+  drawReelText(ctx, simpleTitle.value, innerX, safeTop + 332, innerWidth, 74, 3)
 
   ctx.fillStyle = 'rgba(23, 36, 33, 0.72)'
-  ctx.font = '700 29px Manrope, Arial, sans-serif'
-  drawReelText(ctx, primarySummary.value, safeLeft + 44, safeTop + 540, safeWidth - 88, 42, 3)
+  ctx.font = '700 27px Manrope, Arial, sans-serif'
+  drawReelText(ctx, primarySummary.value, innerX, safeTop + 548, innerWidth - 30, 40, 3)
 
-  const cardWidth = (safeWidth - 112) / 3
-  const cardY = safeTop + 706
+  const coreItemWidth = (cardWidth - 112) / 3
+  const cardY = safeTop + 770
   shareCoreCards.value.forEach((item, index) => {
-    const x = safeLeft + 44 + index * (cardWidth + 12)
-    ctx.fillStyle = 'rgba(48, 77, 77, 0.08)'
-    drawRoundedRect(ctx, x, cardY, cardWidth, 166, 26)
+    const x = innerX + index * (coreItemWidth + 12)
+    ctx.globalAlpha = 0.9
+    ctx.fillStyle = 'rgba(255, 251, 246, 0.78)'
+    drawRoundedRect(ctx, x, cardY, coreItemWidth, 178, 28)
     ctx.fill()
-    ctx.fillStyle = '#304d4d'
-    ctx.font = '700 44px "Cormorant Garamond", Georgia, serif'
+    ctx.globalAlpha = 1
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.54)'
+    ctx.lineWidth = 2
+    drawRoundedRect(ctx, x + 1, cardY + 1, coreItemWidth - 2, 176, 27)
+    ctx.stroke()
+    ctx.fillStyle = '#3f3154'
+    ctx.font = '700 46px "Cormorant Garamond", Georgia, serif'
     ctx.textAlign = 'center'
-    ctx.fillText(item.planetSymbol, x + cardWidth / 2, cardY + 60)
+    ctx.fillText(item.planetSymbol, x + coreItemWidth / 2, cardY + 62)
     ctx.fillStyle = 'rgba(23, 36, 33, 0.62)'
     ctx.font = '800 18px Manrope, Arial, sans-serif'
-    ctx.fillText(item.label.toUpperCase(), x + cardWidth / 2, cardY + 96)
+    ctx.fillText(item.label.toUpperCase(), x + coreItemWidth / 2, cardY + 100)
     ctx.fillStyle = '#172421'
     ctx.font = '700 34px "Cormorant Garamond", Georgia, serif'
-    ctx.fillText(item.signLabel, x + cardWidth / 2, cardY + 138)
+    ctx.fillText(item.signLabel, x + coreItemWidth / 2, cardY + 142)
   })
 
+  ctx.globalAlpha = 0.92
+  ctx.fillStyle = 'rgba(18, 29, 27, 0.78)'
+  drawRoundedRect(ctx, cardX, safeTop + 982, cardWidth, 318, 38)
+  ctx.fill()
+  ctx.globalAlpha = 0.2
+  ctx.fillStyle = '#fff8ef'
+  ctx.font = '700 180px "Cormorant Garamond", Georgia, serif'
+  ctx.textAlign = 'right'
+  ctx.fillText(shareCoreCards.value[1]?.planetSymbol || '☽', safeRight - 34, safeTop + 1160)
+
   ctx.textAlign = 'left'
-  ctx.fillStyle = '#172421'
-  ctx.font = '800 25px Manrope, Arial, sans-serif'
-  ctx.fillText('TODAY', safeLeft + 44, safeTop + 964)
-  ctx.font = '700 33px Manrope, Arial, sans-serif'
-  drawReelText(ctx, todayPrediction.value, safeLeft + 44, safeTop + 1024, safeWidth - 88, 48, 3)
+  ctx.globalAlpha = 1
+  ctx.fillStyle = 'rgba(255, 248, 239, 0.68)'
+  ctx.font = '800 22px Manrope, Arial, sans-serif'
+  ctx.fillText('TODAY', innerX, safeTop + 1060)
+  ctx.fillStyle = '#fff8ef'
+  ctx.font = '800 35px Manrope, Arial, sans-serif'
+  drawReelText(ctx, todayPrediction.value, innerX, safeTop + 1128, innerWidth - 18, 50, 3)
+
+  ctx.globalAlpha = 0.82
+  ctx.strokeStyle = 'rgba(255, 248, 239, 0.42)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(innerX, safeTop + 1274)
+  ctx.lineTo(safeRight - 40, safeTop + 1274)
+  ctx.stroke()
 
   ctx.globalAlpha = 0.88
-  ctx.fillStyle = 'rgba(255, 248, 239, 0.74)'
-  drawRoundedRect(ctx, safeLeft, safeBottom - 172, safeWidth, 122, 34)
+  ctx.fillStyle = 'rgba(255, 248, 239, 0.84)'
+  const footerTop = safeBottom - 126
+  drawRoundedRect(ctx, safeLeft, footerTop, safeWidth, 112, 34)
   ctx.fill()
   ctx.globalAlpha = 1
   ctx.fillStyle = '#172421'
   ctx.font = '800 24px Manrope, Arial, sans-serif'
-  ctx.fillText('Generated lovingly by Natal Chart App', safeLeft + 34, safeBottom - 104)
+  ctx.fillText('Generated lovingly by Natal Chart App', safeLeft + 34, footerTop + 48)
   ctx.fillStyle = 'rgba(23, 36, 33, 0.68)'
   ctx.font = '800 22px Manrope, Arial, sans-serif'
-  ctx.fillText(appUrl, safeLeft + 34, safeBottom - 66)
+  ctx.fillText(appUrl, safeLeft + 34, footerTop + 82)
 
   ctx.translate(safeRight - 78, safeTop + 92)
   ctx.scale(pulse, pulse)
@@ -930,9 +980,9 @@ function renderReelFrame(ctx, video, startTime, timestamp, durationMs) {
 async function shareReelVideo() {
   if (isRenderingReel.value) return
   const canvas = reelCanvasRef.value
-  const mimeType = getPreferredReelMimeType()
+  const reelFormat = getPreferredReelFormat()
 
-  if (!canvas || typeof canvas.captureStream !== 'function' || typeof MediaRecorder === 'undefined' || !mimeType) {
+  if (!canvas || typeof canvas.captureStream !== 'function' || typeof MediaRecorder === 'undefined' || !reelFormat) {
     console.error('This browser cannot create reel video exports.')
     return
   }
@@ -945,7 +995,7 @@ async function shareReelVideo() {
     const ctx = canvas.getContext('2d')
     const stream = canvas.captureStream(REEL_FPS)
     const recorder = new MediaRecorder(stream, {
-      mimeType,
+      mimeType: reelFormat.mimeType,
       videoBitsPerSecond: 6_000_000
     })
     const chunks = []
@@ -986,11 +1036,12 @@ async function shareReelVideo() {
     await stopped
     reelProgress.value = 1
 
-    const blob = new Blob(chunks, { type: mimeType })
+    const blob = new Blob(chunks, { type: recorder.mimeType || reelFormat.mimeType })
+    const extension = blob.type.includes('mp4') ? 'mp4' : reelFormat.extension
     const file = new File(
       [blob],
-      `natal-chart-${props.chart.meta?.date || 'share'}-reel.webm`,
-      { type: blob.type || 'video/webm' }
+      `natal-chart-${props.chart.meta?.date || 'share'}-reel.${extension}`,
+      { type: blob.type || reelFormat.mimeType }
     )
     const canNativeShare = navigator.maxTouchPoints > 0
       && navigator.share

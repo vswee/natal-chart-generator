@@ -6,9 +6,9 @@
           <span class="brand-dot"></span>
           Natal chart app by Flat 18
         </div>
-        <h1 class="hero-title">Simplified Natal Chart</h1>
+        <h1 class="hero-title">Natal Charts Generator</h1>
         <p class="hero-copy">
-          Sun, Moon, Rising, personality highlights and a practical look at today and the year ahead.
+          A fast, open-source natal chart app built with Swiss Ephemeris.
           <span v-if="!chart">Enter your birth details to generate the simple chart first.</span>
         </p>
       </div>

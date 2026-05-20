@@ -9,10 +9,43 @@
         </div>
 
         <div class="simple-hero-actions">
+          <div v-if="showShareThemeOptions" class="simple-share-theme" aria-label="Share card theme">
+            <button
+              class="simple-theme-button"
+              :class="{ 'is-active': shareTheme === 'light' }"
+              type="button"
+              :aria-pressed="shareTheme === 'light'"
+              @click="shareTheme = 'light'"
+            >
+              ☀️ Light
+            </button>
+            <button
+              class="simple-theme-button"
+              :class="{ 'is-active': shareTheme === 'dark' }"
+              type="button"
+              :aria-pressed="shareTheme === 'dark'"
+              @click="shareTheme = 'dark'"
+            >
+              🌙 Dark
+            </button>
+          </div>
           <button class="button simple-share-button" type="button" :disabled="isSharing" @click="shareStoryImage">
             <IconShare3 :size="18" stroke-width="2" />
             <span>{{ isSharing ? 'Creating image...' : 'Share chart' }}</span>
           </button>
+          <button class="button simple-share-button simple-reel-button" type="button" :disabled="isRenderingReel" @click="shareReelVideo">
+            <IconVideo :size="18" stroke-width="2" />
+            <span>{{ isRenderingReel ? 'Creating reel...' : 'Share reel' }}</span>
+          </button>
+          <div v-if="isRenderingReel" class="simple-reel-progress" role="status" aria-live="polite">
+            <div class="simple-reel-progress-top">
+              <span>{{ reelProgressLabel }}</span>
+              <strong>{{ reelProgressPercent }}%</strong>
+            </div>
+            <div class="simple-reel-progress-track" aria-hidden="true">
+              <span :style="{ width: `${reelProgressPercent}%` }"></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -138,7 +171,11 @@
     </section>
 
     <div class="share-stage" aria-hidden="true" inert>
-      <article ref="shareCardRef" class="share-card">
+      <article ref="shareCardRef" class="share-card" :class="shareCardClass">
+        <div class="share-card-symbol share-card-symbol--sun">{{ shareCoreCards[0]?.planetSymbol || '☉' }}</div>
+        <div class="share-card-symbol share-card-symbol--moon">{{ shareCoreCards[1]?.planetSymbol || '☽' }}</div>
+        <div class="share-card-symbol share-card-symbol--angle">AC</div>
+
         <div class="share-card-top">
           <p class="share-card-kicker">Natal Chart App</p>
           <p class="share-card-date">{{ todayLabel }}</p>
@@ -151,9 +188,15 @@
         </div>
 
         <div class="share-card-core">
-          <div v-for="item in coreCards" :key="`share-${item.key}`" class="share-card-core-item">
-            <span>{{ item.label }}</span>
-            <strong>{{ item.signLabel }}</strong>
+          <div v-for="item in shareCoreCards" :key="`share-${item.key}`" class="share-card-core-item">
+            <div class="share-card-core-top">
+              <span>{{ item.label }}</span>
+              <b>{{ item.planetSymbol }}</b>
+            </div>
+            <strong>
+              <span class="share-card-sign-symbol">{{ item.signSymbol }}</span>
+              {{ item.signLabel }}
+            </strong>
           </div>
         </div>
 
@@ -182,12 +225,25 @@
         </footer>
       </article>
     </div>
+
+    <canvas ref="reelCanvasRef" class="reel-canvas" width="1080" height="1920" aria-hidden="true"></canvas>
+    <video
+      ref="reelVideoRef"
+      class="reel-video-source"
+      :src="reelVideoSrc"
+      muted
+      playsinline
+      loop
+      preload="auto"
+      crossorigin="anonymous"
+      aria-hidden="true"
+    ></video>
   </section>
 </template>
 
 <script setup>
 import { computed, nextTick, ref } from 'vue'
-import { IconShare3, IconUsers } from '@tabler/icons-vue'
+import { IconShare3, IconUsers, IconVideo } from '@tabler/icons-vue'
 import html2canvas from 'html2canvas'
 import ZodiacIcon from './ZodiacIcon.vue'
 import { toTitleCase } from '../utils/zodiac'
@@ -216,7 +272,24 @@ const emit = defineEmits(['add-partner', 'select-partner', 'remove-partner'])
 
 const appUrl = 'natal-chart.flat18.app'
 const shareCardRef = ref(null)
+const reelCanvasRef = ref(null)
+const reelVideoRef = ref(null)
 const isSharing = ref(false)
+const isRenderingReel = ref(false)
+const reelProgress = ref(0)
+const shareTheme = ref('light')
+const showShareThemeOptions = false
+const reelVideoSrc = '/share-loops/instagram-reel-loop.mp4'
+const REEL_WIDTH = 1080
+const REEL_HEIGHT = 1920
+const DEFAULT_REEL_DURATION_MS = 8000
+const REEL_FPS = 30
+const REEL_SAFE = {
+  top: 120,
+  right: 190,
+  bottom: 360,
+  left: 72
+}
 
 const BODY_LABELS = {
   sun: 'Sun',
@@ -230,6 +303,36 @@ const BODY_LABELS = {
   neptune: 'Neptune',
   pluto: 'Pluto',
   asc: 'Ascendant'
+}
+
+const BODY_SYMBOLS = {
+  sun: '☀️',
+  moon: '🌙',
+  mercury: '☿',
+  venus: '♀',
+  mars: '♂',
+  jupiter: '♃',
+  saturn: '♄',
+  uranus: '♅',
+  neptune: '♆',
+  pluto: '♇',
+  asc: 'AC',
+  desc: 'DC'
+}
+
+const SIGN_SYMBOLS = {
+  aries: '♈︎',
+  taurus: '♉︎',
+  gemini: '♊︎',
+  cancer: '♋︎',
+  leo: '♌︎',
+  virgo: '♍︎',
+  libra: '♎︎',
+  scorpio: '♏︎',
+  sagittarius: '♐︎',
+  capricorn: '♑︎',
+  aquarius: '♒︎',
+  pisces: '♓︎'
 }
 
 const SIGN_PROFILES = {
@@ -368,6 +471,24 @@ const coreCards = computed(() => CORE_DEFS.map((def) => {
     summary
   }
 }))
+
+const shareCoreCards = computed(() => coreCards.value.map((item) => ({
+  ...item,
+  planetSymbol: BODY_SYMBOLS[item.key] || '✦',
+  signSymbol: SIGN_SYMBOLS[item.placement?.sign] || '✦'
+})))
+
+const shareCardClass = computed(() => ({
+  'share-card--dark': shareTheme.value === 'dark'
+}))
+
+const reelProgressPercent = computed(() => Math.min(100, Math.max(0, Math.round(reelProgress.value * 100))))
+
+const reelProgressLabel = computed(() => {
+  if (reelProgress.value < 0.08) return 'Preparing video'
+  if (reelProgress.value < 0.98) return 'Rendering reel'
+  return 'Finishing export'
+})
 
 const simpleTitle = computed(() => {
   const sun = coreCards.value.find((item) => item.key === 'sun')?.signLabel || 'Solar'
@@ -577,6 +698,324 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
+function getPreferredReelMimeType() {
+  if (typeof MediaRecorder === 'undefined') return ''
+  const types = [
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+  ]
+  return types.find((type) => MediaRecorder.isTypeSupported(type)) || ''
+}
+
+function waitForVideoReady(video) {
+  return new Promise((resolve) => {
+    if (!video) {
+      resolve(null)
+      return
+    }
+
+    if (video.readyState >= 2 && video.videoWidth && video.videoHeight) {
+      resolve(video)
+      return
+    }
+
+    let settled = false
+    const finish = (result) => {
+      if (settled) return
+      settled = true
+      video.removeEventListener('loadeddata', onLoaded)
+      video.removeEventListener('canplay', onLoaded)
+      video.removeEventListener('error', onError)
+      window.clearTimeout(timeout)
+      resolve(result)
+    }
+    const onLoaded = () => finish(video)
+    const onError = () => finish(null)
+    const timeout = window.setTimeout(() => finish(null), 1800)
+
+    video.addEventListener('loadeddata', onLoaded, { once: true })
+    video.addEventListener('canplay', onLoaded, { once: true })
+    video.addEventListener('error', onError, { once: true })
+    video.load()
+  })
+}
+
+function drawCoverVideo(ctx, video) {
+  const videoRatio = video.videoWidth / video.videoHeight
+  const canvasRatio = REEL_WIDTH / REEL_HEIGHT
+  let sourceWidth = video.videoWidth
+  let sourceHeight = video.videoHeight
+  let sourceX = 0
+  let sourceY = 0
+
+  if (videoRatio > canvasRatio) {
+    sourceWidth = video.videoHeight * canvasRatio
+    sourceX = (video.videoWidth - sourceWidth) / 2
+  } else {
+    sourceHeight = video.videoWidth / canvasRatio
+    sourceY = (video.videoHeight - sourceHeight) / 2
+  }
+
+  ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, REEL_WIDTH, REEL_HEIGHT)
+}
+
+function drawGeneratedReelBackground(ctx, progress) {
+  const gradient = ctx.createLinearGradient(0, 0, REEL_WIDTH, REEL_HEIGHT)
+  gradient.addColorStop(0, '#fff8ee')
+  gradient.addColorStop(0.48, '#e9f4ef')
+  gradient.addColorStop(1, '#f7e8e2')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, REEL_WIDTH, REEL_HEIGHT)
+
+  const glyphs = ['☀️', '🌙', 'AC', '♃', '♄']
+  glyphs.forEach((glyph, index) => {
+    const phase = progress + index * 0.18
+    const x = REEL_WIDTH * (0.12 + ((index * 0.23 + progress * 0.08) % 0.78))
+    const y = REEL_HEIGHT * (0.12 + ((index * 0.19 + progress * 0.12) % 0.72))
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(Math.sin(phase * Math.PI * 2) * 0.08)
+    ctx.globalAlpha = index === 0 ? 0.12 : 0.085
+    ctx.fillStyle = '#152421'
+    ctx.font = `${index === 2 ? 190 : 230}px "Cormorant Garamond", Georgia, serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(glyph, 0, 0)
+    ctx.restore()
+  })
+}
+
+function drawReelText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 4) {
+  const words = text.split(/\s+/)
+  const lines = []
+  let line = ''
+
+  words.forEach((word) => {
+    const testLine = line ? `${line} ${word}` : word
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      lines.push(line)
+      line = word
+    } else {
+      line = testLine
+    }
+  })
+
+  if (line) lines.push(line)
+  const visibleLines = lines.slice(0, maxLines)
+  visibleLines.forEach((item, index) => {
+    const suffix = index === maxLines - 1 && lines.length > maxLines ? '...' : ''
+    ctx.fillText(`${item}${suffix}`, x, y + index * lineHeight)
+  })
+  return visibleLines.length * lineHeight
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2)
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + width, y, x + width, y + height, r)
+  ctx.arcTo(x + width, y + height, x, y + height, r)
+  ctx.arcTo(x, y + height, x, y, r)
+  ctx.arcTo(x, y, x + width, y, r)
+  ctx.closePath()
+}
+
+function drawReelOverlay(ctx, progress) {
+  const safeLeft = REEL_SAFE.left
+  const safeRight = REEL_WIDTH - REEL_SAFE.right
+  const safeTop = REEL_SAFE.top
+  const safeBottom = REEL_HEIGHT - REEL_SAFE.bottom
+  const safeWidth = safeRight - safeLeft
+  const pulse = 0.94 + Math.sin(progress * Math.PI * 2) * 0.04
+
+  ctx.save()
+  ctx.fillStyle = 'rgba(10, 18, 17, 0.28)'
+  ctx.fillRect(0, 0, REEL_WIDTH, REEL_HEIGHT)
+
+  ctx.globalAlpha = 0.92
+  ctx.fillStyle = 'rgba(255, 251, 246, 0.88)'
+  drawRoundedRect(ctx, safeLeft, safeTop + 130, safeWidth, 1090, 38)
+  ctx.fill()
+
+  ctx.globalAlpha = 1
+  ctx.fillStyle = '#172421'
+  ctx.font = '800 25px Manrope, Arial, sans-serif'
+  ctx.letterSpacing = '0px'
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'alphabetic'
+  ctx.fillText('NATAL CHART APP', safeLeft + 44, safeTop + 194)
+
+  ctx.fillStyle = '#172421'
+  ctx.font = '700 88px "Cormorant Garamond", Georgia, serif'
+  drawReelText(ctx, simpleTitle.value, safeLeft + 44, safeTop + 305, safeWidth - 88, 82, 3)
+
+  ctx.fillStyle = 'rgba(23, 36, 33, 0.72)'
+  ctx.font = '700 29px Manrope, Arial, sans-serif'
+  drawReelText(ctx, primarySummary.value, safeLeft + 44, safeTop + 540, safeWidth - 88, 42, 3)
+
+  const cardWidth = (safeWidth - 112) / 3
+  const cardY = safeTop + 706
+  shareCoreCards.value.forEach((item, index) => {
+    const x = safeLeft + 44 + index * (cardWidth + 12)
+    ctx.fillStyle = 'rgba(48, 77, 77, 0.08)'
+    drawRoundedRect(ctx, x, cardY, cardWidth, 166, 26)
+    ctx.fill()
+    ctx.fillStyle = '#304d4d'
+    ctx.font = '700 44px "Cormorant Garamond", Georgia, serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(item.planetSymbol, x + cardWidth / 2, cardY + 60)
+    ctx.fillStyle = 'rgba(23, 36, 33, 0.62)'
+    ctx.font = '800 18px Manrope, Arial, sans-serif'
+    ctx.fillText(item.label.toUpperCase(), x + cardWidth / 2, cardY + 96)
+    ctx.fillStyle = '#172421'
+    ctx.font = '700 34px "Cormorant Garamond", Georgia, serif'
+    ctx.fillText(item.signLabel, x + cardWidth / 2, cardY + 138)
+  })
+
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#172421'
+  ctx.font = '800 25px Manrope, Arial, sans-serif'
+  ctx.fillText('TODAY', safeLeft + 44, safeTop + 964)
+  ctx.font = '700 33px Manrope, Arial, sans-serif'
+  drawReelText(ctx, todayPrediction.value, safeLeft + 44, safeTop + 1024, safeWidth - 88, 48, 3)
+
+  ctx.globalAlpha = 0.88
+  ctx.fillStyle = 'rgba(255, 248, 239, 0.74)'
+  drawRoundedRect(ctx, safeLeft, safeBottom - 172, safeWidth, 122, 34)
+  ctx.fill()
+  ctx.globalAlpha = 1
+  ctx.fillStyle = '#172421'
+  ctx.font = '800 24px Manrope, Arial, sans-serif'
+  ctx.fillText('Generated lovingly by Natal Chart App', safeLeft + 34, safeBottom - 104)
+  ctx.fillStyle = 'rgba(23, 36, 33, 0.68)'
+  ctx.font = '800 22px Manrope, Arial, sans-serif'
+  ctx.fillText(appUrl, safeLeft + 34, safeBottom - 66)
+
+  ctx.translate(safeRight - 78, safeTop + 92)
+  ctx.scale(pulse, pulse)
+  ctx.globalAlpha = 0.72
+  ctx.fillStyle = '#fff8ef'
+  ctx.font = '700 86px "Cormorant Garamond", Georgia, serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('☉', 0, 0)
+  ctx.restore()
+}
+
+function getReelDurationMs(video) {
+  if (!video || !Number.isFinite(video.duration) || video.duration <= 0) {
+    return DEFAULT_REEL_DURATION_MS
+  }
+  return Math.round(video.duration * 1000)
+}
+
+function renderReelFrame(ctx, video, startTime, timestamp, durationMs) {
+  const elapsed = timestamp - startTime
+  const progress = Math.min(elapsed / durationMs, 1)
+
+  if (video && video.readyState >= 2 && video.videoWidth && video.videoHeight) {
+    drawCoverVideo(ctx, video)
+  } else {
+    drawGeneratedReelBackground(ctx, progress)
+  }
+  drawReelOverlay(ctx, progress)
+  return progress
+}
+
+async function shareReelVideo() {
+  if (isRenderingReel.value) return
+  const canvas = reelCanvasRef.value
+  const mimeType = getPreferredReelMimeType()
+
+  if (!canvas || typeof canvas.captureStream !== 'function' || typeof MediaRecorder === 'undefined' || !mimeType) {
+    console.error('This browser cannot create reel video exports.')
+    return
+  }
+
+  isRenderingReel.value = true
+  reelProgress.value = 0
+
+  try {
+    await nextTick()
+    const ctx = canvas.getContext('2d')
+    const stream = canvas.captureStream(REEL_FPS)
+    const recorder = new MediaRecorder(stream, {
+      mimeType,
+      videoBitsPerSecond: 6_000_000
+    })
+    const chunks = []
+
+    recorder.addEventListener('dataavailable', (event) => {
+      if (event.data?.size) chunks.push(event.data)
+    })
+
+    const stopped = new Promise((resolve) => {
+      recorder.addEventListener('stop', resolve, { once: true })
+    })
+
+    const video = await waitForVideoReady(reelVideoRef.value)
+    const durationMs = getReelDurationMs(video)
+    reelProgress.value = 0.04
+    if (video) {
+      video.currentTime = 0
+      await video.play().catch(() => null)
+    }
+
+    recorder.start()
+    await new Promise((resolve) => {
+      const startTime = performance.now()
+      const draw = (timestamp) => {
+        const progress = renderReelFrame(ctx, video, startTime, timestamp, durationMs)
+        reelProgress.value = Math.min(0.98, progress)
+        if (progress >= 1) {
+          resolve()
+          return
+        }
+        requestAnimationFrame(draw)
+      }
+      requestAnimationFrame(draw)
+    })
+
+    recorder.stop()
+    if (video) video.pause()
+    await stopped
+    reelProgress.value = 1
+
+    const blob = new Blob(chunks, { type: mimeType })
+    const file = new File(
+      [blob],
+      `natal-chart-${props.chart.meta?.date || 'share'}-reel.webm`,
+      { type: blob.type || 'video/webm' }
+    )
+    const canNativeShare = navigator.maxTouchPoints > 0
+      && navigator.share
+      && navigator.canShare?.({ files: [file] })
+
+    if (canNativeShare) {
+      try {
+        await navigator.share({
+          title: 'My natal chart reel',
+          text: simpleTitle.value,
+          files: [file]
+        })
+        return
+      } catch (error) {
+        if (error?.name === 'AbortError') return
+        console.warn(error)
+      }
+    }
+
+    downloadBlob(blob, file.name)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isRenderingReel.value = false
+    window.setTimeout(() => {
+      if (!isRenderingReel.value) reelProgress.value = 0
+    }, 300)
+  }
+}
+
 async function shareStoryImage() {
   if (!shareCardRef.value || isSharing.value) return
   isSharing.value = true
@@ -595,7 +1034,11 @@ async function shareStoryImage() {
       scrollY: 0
     })
     const blob = await canvasToBlob(canvas)
-    const file = new File([blob], `natal-chart-${props.chart.meta?.date || 'share'}.png`, { type: 'image/png' })
+    const file = new File(
+      [blob],
+      `natal-chart-${props.chart.meta?.date || 'share'}-${shareTheme.value}.png`,
+      { type: 'image/png' }
+    )
     const canNativeShare = navigator.maxTouchPoints > 0
       && navigator.share
       && navigator.canShare?.({ files: [file] })

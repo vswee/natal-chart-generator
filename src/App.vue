@@ -1,6 +1,6 @@
 <template>
   <main class="app-shell">
-    <header class="app-header">
+    <header class="app-header" :class="{ 'is-compact': chart }">
       <div class="hero-content">
         <div class="brand-mark">
           <span class="brand-dot"></span>

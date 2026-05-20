@@ -1,6 +1,9 @@
 <template>
   <section class="simplified-chart">
     <div class="simple-hero panel">
+      <div class="simple-hero-symbol simple-hero-symbol--sun" aria-hidden="true">{{ shareCoreCards[0]?.planetSymbol || '☀️' }}</div>
+      <div class="simple-hero-symbol simple-hero-symbol--moon" aria-hidden="true">{{ shareCoreCards[1]?.planetSymbol || '🌙' }}</div>
+      <div class="simple-hero-symbol simple-hero-symbol--asc" aria-hidden="true">AC</div>
       <div class="panel-inner simple-hero-inner">
         <div class="simple-hero-copy">
           <p class="simple-kicker">Simple chart</p>
@@ -52,6 +55,7 @@
 
     <div class="simple-core-grid">
       <article v-for="item in coreCards" :key="item.key" class="simple-core-card panel">
+        <span class="simple-card-planet" aria-hidden="true">{{ item.planetSymbol }}</span>
         <div class="panel-inner simple-core-inner">
           <p class="simple-kicker">{{ item.role }}</p>
           <div class="simple-core-sign">
@@ -468,6 +472,7 @@ const coreCards = computed(() => CORE_DEFS.map((def) => {
     ...def,
     placement,
     signLabel,
+    planetSymbol: BODY_SYMBOLS[def.key] || '✦',
     summary
   }
 }))

@@ -706,14 +706,18 @@ function downloadBlob(blob, filename) {
 function getPreferredReelFormat() {
   if (typeof MediaRecorder === 'undefined') return null
   const formats = [
-    { mimeType: 'video/mp4;codecs=h264', extension: 'mp4' },
-    { mimeType: 'video/mp4;codecs=avc1.42E01E', extension: 'mp4' },
     { mimeType: 'video/mp4', extension: 'mp4' },
+    { mimeType: 'video/mp4;codecs=avc1.42E01E', extension: 'mp4' },
+    { mimeType: 'video/mp4;codecs=h264', extension: 'mp4' },
     { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
     { mimeType: 'video/webm;codecs=vp8', extension: 'webm' },
     { mimeType: 'video/webm', extension: 'webm' }
   ]
   return formats.find((format) => MediaRecorder.isTypeSupported(format.mimeType)) || null
+}
+
+function getShareableReelType(mimeType) {
+  return mimeType.includes('mp4') ? 'video/mp4' : 'video/webm'
 }
 
 function waitForVideoReady(video) {
@@ -1036,12 +1040,13 @@ async function shareReelVideo() {
     await stopped
     reelProgress.value = 1
 
-    const blob = new Blob(chunks, { type: recorder.mimeType || reelFormat.mimeType })
-    const extension = blob.type.includes('mp4') ? 'mp4' : reelFormat.extension
+    const shareableType = getShareableReelType(recorder.mimeType || reelFormat.mimeType)
+    const blob = new Blob(chunks, { type: shareableType })
+    const extension = shareableType.includes('mp4') ? 'mp4' : reelFormat.extension
     const file = new File(
       [blob],
       `natal-chart-${props.chart.meta?.date || 'share'}-reel.${extension}`,
-      { type: blob.type || reelFormat.mimeType }
+      { type: shareableType }
     )
     const canNativeShare = navigator.maxTouchPoints > 0
       && navigator.share

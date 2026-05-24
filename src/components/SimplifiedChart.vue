@@ -38,7 +38,7 @@
           </button>
           <button class="button simple-share-button simple-reel-button" type="button" :disabled="isRenderingReel" @click="shareReelVideo">
             <IconVideo :size="18" stroke-width="2" />
-            <span>{{ isRenderingReel ? 'Creating reel...' : 'Share reel' }}</span>
+            <span>{{ reelButtonLabel }}</span>
           </button>
           <div v-if="isRenderingReel" class="simple-reel-progress" role="status" aria-live="polite">
             <div class="simple-reel-progress-top">
@@ -246,7 +246,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { IconShare3, IconUsers, IconVideo } from '@tabler/icons-vue'
 import html2canvas from 'html2canvas'
 import ZodiacIcon from './ZodiacIcon.vue'
@@ -280,6 +280,7 @@ const reelCanvasRef = ref(null)
 const reelVideoRef = ref(null)
 const isSharing = ref(false)
 const isRenderingReel = ref(false)
+const generatedReelFile = ref(null)
 const reelProgress = ref(0)
 const shareTheme = ref('light')
 const showShareThemeOptions = false
@@ -495,6 +496,12 @@ const reelProgressLabel = computed(() => {
   return 'Finishing export'
 })
 
+const reelButtonLabel = computed(() => {
+  if (isRenderingReel.value) return 'Creating reel...'
+  if (generatedReelFile.value) return 'Save reel'
+  return 'Share reel'
+})
+
 const simpleTitle = computed(() => {
   const sun = coreCards.value.find((item) => item.key === 'sun')?.signLabel || 'Solar'
   const moon = coreCards.value.find((item) => item.key === 'moon')?.signLabel || 'Lunar'
@@ -668,6 +675,10 @@ const partnerSummaries = computed(() => props.partnerReports.map((partner) => {
   }
 }))
 
+watch([simpleTitle, primarySummary, todayPrediction, yearPrediction], () => {
+  clearGeneratedReel()
+})
+
 function getSignProfile(sign) {
   return SIGN_PROFILES[sign] || {
     identity: 'distinctive and personal',
@@ -703,12 +714,39 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
+function clearGeneratedReel() {
+  generatedReelFile.value = null
+}
+
+function isLikelyIOS() {
+  const platform = navigator.platform || ''
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+function shouldUseTapToShareReelFlow() {
+  return isLikelyIOS() || (navigator.maxTouchPoints > 0 && !!navigator.share)
+}
+
+function showReelShareUnavailableMessage() {
+  const message = window.isSecureContext
+    ? 'This browser could not open the share sheet for this reel.'
+    : 'iOS can save reels from the share sheet only on HTTPS. Use the live HTTPS site or an HTTPS dev URL, then tap Save reel again.'
+
+  if (typeof window.alert === 'function') {
+    window.alert(message)
+  } else {
+    console.error(message)
+  }
+}
+
 function getPreferredReelFormat() {
   if (typeof MediaRecorder === 'undefined') return null
   const formats = [
-    { mimeType: 'video/mp4', extension: 'mp4' },
     { mimeType: 'video/mp4;codecs=avc1.42E01E', extension: 'mp4' },
+    { mimeType: 'video/mp4;codecs="avc1.42E01E"', extension: 'mp4' },
     { mimeType: 'video/mp4;codecs=h264', extension: 'mp4' },
+    { mimeType: 'video/mp4', extension: 'mp4' },
     { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
     { mimeType: 'video/webm;codecs=vp8', extension: 'webm' },
     { mimeType: 'video/webm', extension: 'webm' }
@@ -716,8 +754,94 @@ function getPreferredReelFormat() {
   return formats.find((format) => MediaRecorder.isTypeSupported(format.mimeType)) || null
 }
 
-function getShareableReelType(mimeType) {
-  return mimeType.includes('mp4') ? 'video/mp4' : 'video/webm'
+function getBaseVideoType(mimeType) {
+  return (mimeType || '').split(';')[0].trim().toLowerCase()
+}
+
+function getReelExtension(mimeType, fallbackExtension) {
+  const baseType = getBaseVideoType(mimeType)
+  if (baseType === 'video/mp4') return 'mp4'
+  if (baseType === 'video/webm') return 'webm'
+  return fallbackExtension || 'mp4'
+}
+
+function getRecordedVideoType(chunks, recorderMimeType, fallbackMimeType) {
+  const chunkType = chunks.find((chunk) => chunk?.type)?.type
+  return getBaseVideoType(chunkType || recorderMimeType || fallbackMimeType) || 'video/mp4'
+}
+
+function validateVideoBlob(blob) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    const url = URL.createObjectURL(blob)
+    let settled = false
+
+    const finish = (error) => {
+      if (settled) return
+      settled = true
+      video.removeEventListener('loadedmetadata', onLoaded)
+      video.removeEventListener('canplay', onLoaded)
+      video.removeEventListener('error', onError)
+      window.clearTimeout(timeout)
+      URL.revokeObjectURL(url)
+
+      if (error) reject(error)
+      else resolve()
+    }
+
+    const onLoaded = () => {
+      if (video.videoWidth && video.videoHeight) finish()
+      else finish(new Error('The exported video could not be read.'))
+    }
+    const onError = () => finish(new Error('The exported video could not be read.'))
+    const timeout = window.setTimeout(() => finish(new Error('The exported video timed out while loading.')), 4000)
+
+    video.preload = 'metadata'
+    video.muted = true
+    video.playsInline = true
+    video.addEventListener('loadedmetadata', onLoaded, { once: true })
+    video.addEventListener('canplay', onLoaded, { once: true })
+    video.addEventListener('error', onError, { once: true })
+    video.src = url
+    video.load()
+  })
+}
+
+async function shareFile(file, title, text) {
+  if (!navigator.share) return false
+
+  const shareData = {
+    title,
+    text,
+    files: [file]
+  }
+
+  try {
+    await navigator.share(shareData)
+    return true
+  } catch (error) {
+    if (error?.name === 'AbortError') return true
+    console.warn(error)
+    return false
+  }
+}
+
+async function sharePreparedReel() {
+  const file = generatedReelFile.value
+  if (!file) return false
+
+  if (await shareFile(file, 'My natal chart reel', simpleTitle.value)) {
+    return true
+  }
+
+  if (isLikelyIOS()) {
+    showReelShareUnavailableMessage()
+    return true
+  }
+
+  downloadBlob(file, file.name)
+  clearGeneratedReel()
+  return true
 }
 
 function waitForVideoReady(video) {
@@ -983,6 +1107,12 @@ function renderReelFrame(ctx, video, startTime, timestamp, durationMs) {
 
 async function shareReelVideo() {
   if (isRenderingReel.value) return
+
+  if (generatedReelFile.value) {
+    await sharePreparedReel()
+    return
+  }
+
   const canvas = reelCanvasRef.value
   const reelFormat = getPreferredReelFormat()
 
@@ -1020,7 +1150,7 @@ async function shareReelVideo() {
       await video.play().catch(() => null)
     }
 
-    recorder.start()
+    recorder.start(250)
     await new Promise((resolve) => {
       const startTime = performance.now()
       const draw = (timestamp) => {
@@ -1035,38 +1165,36 @@ async function shareReelVideo() {
       requestAnimationFrame(draw)
     })
 
+    if (recorder.state === 'recording' && typeof recorder.requestData === 'function') {
+      recorder.requestData()
+    }
     recorder.stop()
     if (video) video.pause()
     await stopped
     reelProgress.value = 1
 
-    const shareableType = getShareableReelType(recorder.mimeType || reelFormat.mimeType)
-    const blob = new Blob(chunks, { type: shareableType })
-    const extension = shareableType.includes('mp4') ? 'mp4' : reelFormat.extension
+    if (!chunks.length) {
+      throw new Error('No video data was recorded.')
+    }
+
+    const recordedType = getRecordedVideoType(chunks, recorder.mimeType, reelFormat.mimeType)
+    const blob = new Blob(chunks, { type: recordedType })
+    await validateVideoBlob(blob)
+
+    const extension = getReelExtension(recordedType, reelFormat.extension)
     const file = new File(
       [blob],
       `natal-chart-${props.chart.meta?.date || 'share'}-reel.${extension}`,
-      { type: shareableType }
+      { type: recordedType }
     )
-    const canNativeShare = navigator.maxTouchPoints > 0
-      && navigator.share
-      && navigator.canShare?.({ files: [file] })
+    generatedReelFile.value = file
 
-    if (canNativeShare) {
-      try {
-        await navigator.share({
-          title: 'My natal chart reel',
-          text: simpleTitle.value,
-          files: [file]
-        })
-        return
-      } catch (error) {
-        if (error?.name === 'AbortError') return
-        console.warn(error)
-      }
-    }
+    if (shouldUseTapToShareReelFlow()) return
+
+    if (await shareFile(file, 'My natal chart reel', simpleTitle.value)) return
 
     downloadBlob(blob, file.name)
+    clearGeneratedReel()
   } catch (error) {
     console.error(error)
   } finally {

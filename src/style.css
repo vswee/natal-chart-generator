@@ -663,6 +663,7 @@ a {
 
 .birth-form-panel.is-compact.is-editing .birth-form-overlay.modal-overlay {
   /* display: none; */
+  /* display:block; */
   background: transparent;
   backdrop-filter: unset;
 }
@@ -2219,7 +2220,7 @@ a {
 }
 
 .modal-overlay {
-  /* position: fixed; */
+  position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
   display: grid;

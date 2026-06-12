@@ -30,7 +30,7 @@
       </div>
     </header>
 
-    <div :class="`layout ${chart ? '' : 'flex'}`">
+    <div :class="['layout', { 'has-chart': chart, flex: !chart }]">
       <div class="stack">
         <BirthForm
           :loading="loading"

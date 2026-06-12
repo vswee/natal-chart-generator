@@ -36,7 +36,13 @@
             <IconShare3 :size="18" stroke-width="2" />
             <span>{{ isSharing ? 'Creating image...' : 'Share chart' }}</span>
           </button>
-          <button class="button simple-share-button simple-reel-button" type="button" :disabled="isRenderingReel" @click="shareReelVideo">
+          <button
+            class="button simple-share-button simple-reel-button"
+            :class="{ 'is-ready-to-save': generatedReelFile }"
+            type="button"
+            :disabled="isRenderingReel"
+            @click="shareReelVideo"
+          >
             <IconVideo :size="18" stroke-width="2" />
             <span>{{ reelButtonLabel }}</span>
           </button>

@@ -6,7 +6,7 @@
         <div>
           <h2 class="section-title">Birth data</h2>
           <p class="section-copy">
-            Enter your date, time and birthplace. We’ll look up the coordinates and build the chart.
+            Enter your birth date, time and birthplace. We’ll look up the coordinates and build the chart.
           </p>
         </div>
       </div>
@@ -49,7 +49,7 @@
             <div>
               <h2 id="birth-form-title" class="section-title">Birth data</h2>
               <p class="section-copy">
-                Enter your date, time and birthplace. We’ll look up the coordinates and build the chart.
+                Enter your birth date, time and birthplace. We’ll look up the coordinates and build the chart.
               </p>
             </div>
             <button class="subtle-button birth-summary-close" type="button" @click="isEditingBirthInfo = false">
@@ -104,9 +104,10 @@
             <div class="advanced-toggle-row">
               <button class="text-button advanced-toggle" :class="{ 'is-open': advancedOpen }" type="button"
                 :aria-expanded="advancedOpen" aria-controls="birth-advanced" @click="toggleAdvanced">
-                <span>More options</span>
+                <span>Advanced options</span>
                 <span class="chevron-icon" aria-hidden="true">expand_more</span>
               </button>
+              <p class="advanced-toggle-copy">House system, manual coordinates, and timezone override.</p>
             </div>
 
             <div v-if="advancedOpen" id="birth-advanced" class="advanced-section">
@@ -166,7 +167,7 @@
                 {{ loading ? 'Calculating…' : 'Generate chart' }}
               </button>
               <button class="subtle-button" type="button" @click="fillExample" :disabled="loading">
-                Use sample data
+                Load example
               </button>
             </div>
           </form>
@@ -234,9 +235,10 @@
         <div class="advanced-toggle-row">
           <button class="text-button advanced-toggle" :class="{ 'is-open': advancedOpen }" type="button"
             :aria-expanded="advancedOpen" aria-controls="birth-advanced" @click="toggleAdvanced">
-            <span>More options</span>
+            <span>Advanced options</span>
             <span class="chevron-icon" aria-hidden="true">expand_more</span>
           </button>
+          <p class="advanced-toggle-copy">House system, manual coordinates, and timezone override.</p>
         </div>
 
         <div v-if="advancedOpen" id="birth-advanced" class="advanced-section">
@@ -295,7 +297,7 @@
             {{ loading ? 'Calculating…' : 'Generate chart' }}
           </button>
           <button class="subtle-button" type="button" @click="fillExample" :disabled="loading">
-            Use sample data
+            Load example
           </button>
         </div>
 

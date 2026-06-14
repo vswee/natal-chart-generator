@@ -75,8 +75,15 @@
           <div v-if="isAdvancedView" ref="pdfTarget" class="advanced-results">
             <section class="panel">
               <div class="panel-inner">
-                <h2 class="section-title">Chart details</h2>
-                <p class="section-copy">The birth details and coordinates used for this chart.</p>
+                <div class="advanced-panel-header">
+                  <div>
+                    <h2 class="section-title">Chart details</h2>
+                    <p class="section-copy">The birth details and coordinates used for this chart.</p>
+                  </div>
+                  <button class="button advanced-download-button" type="button" :disabled="isDownloading" @click="downloadPdf">
+                    {{ isDownloading ? 'Preparing PDF...' : 'Download chart PDF' }}
+                  </button>
+                </div>
 
                 <div class="meta-grid">
                   <article class="meta-card">
@@ -108,119 +115,141 @@
                     <div class="meta-value">{{ formatHouseSystem(chart.meta.houseSystem) }}</div>
                   </article>
                 </div>
+              </div>
+            </section>
 
-                <p class="footer-note">
-                  This chart is calculated with Swiss Ephemeris. Birth time is converted to UTC using the location time
-                  zone, and your chosen house system is used in the calculation.
-                </p>
-                <div class="meta-actions">
-                  <button class="button" type="button" :disabled="isDownloading" @click="downloadPdf">
-                    {{ isDownloading ? 'Preparing PDF...' : 'Download chart PDF' }}
-                  </button>
+            <section class="panel advanced-spotlight">
+              <div class="panel-inner">
+                <div class="map-row">
+                  <section class="panel map-card">
+                    <div class="panel-inner">
+                      <div class="map-visual">
+                        <div class="map-circle" :style="mapStyle">
+                          <span class="map-crosshair map-crosshair--h"></span>
+                          <span class="map-crosshair map-crosshair--v"></span>
+                          <span class="map-marker"></span>
+                        </div>
+                      </div>
+                      <div class="map-meta">
+                        <div class="map-meta-title">Birth data</div>
+                        <div class="map-meta-copy">
+                          {{ chart.meta.date }} · {{ chart.meta.time }}
+                        </div>
+                        <div class="map-meta-copy">
+                          {{ resolvedLocation.label }}.
+                          {{ resolvedLocation.lat }},
+                          {{ resolvedLocation.lon }}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="panel core-card">
+                    <div class="panel-inner">
+                      <h2 class="section-title">Core triad</h2>
+                      <p class="section-copy">The three main placements for identity, feelings and first impressions.</p>
+
+                      <div class="core-list">
+                        <article class="core-item">
+                          <div class="core-title">Sun</div>
+                          <div class="core-value">
+                            <span v-if="corePlacements.sun" class="core-icon">
+                              <ZodiacIcon :sign="corePlacements.sun.sign" :size="18" />
+                            </span>
+                            {{ formatPlacement(corePlacements.sun) }}
+                          </div>
+                          <div class="core-copy">Your basic drive, sense of self and direction.</div>
+                        </article>
+
+                        <article class="core-item">
+                          <div class="core-title">Moon</div>
+                          <div class="core-value">
+                            <span v-if="corePlacements.moon" class="core-icon">
+                              <ZodiacIcon :sign="corePlacements.moon.sign" :size="18" />
+                            </span>
+                            {{ formatPlacement(corePlacements.moon) }}
+                          </div>
+                          <div class="core-copy">Your feelings, instincts and emotional needs.</div>
+                        </article>
+
+                        <article class="core-item">
+                          <div class="core-title">Ascendant</div>
+                          <div class="core-value">
+                            <span v-if="corePlacements.asc" class="core-icon">
+                              <ZodiacIcon :sign="corePlacements.asc.sign" :size="18" />
+                            </span>
+                            {{ formatPlacement(corePlacements.asc) }}
+                          </div>
+                          <div class="core-copy">How you come across and how you meet the world.</div>
+                        </article>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="summary-row">
+                  <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
+                  <SummaryGauges :metrics="chart.metrics" />
                 </div>
               </div>
             </section>
 
-            <div class="map-row">
-              <section class="panel map-card">
-                <div class="panel-inner">
-                  <div class="map-visual">
-                    <div class="map-circle" :style="mapStyle">
-                      <span class="map-crosshair map-crosshair--h"></span>
-                      <span class="map-crosshair map-crosshair--v"></span>
-                      <span class="map-marker"></span>
-                    </div>
-                  </div>
-                  <div class="map-meta">
-                    <div class="map-meta-title">Birth data</div>
-                    <div class="map-meta-copy">
-                      {{ chart.meta.date }} · {{ chart.meta.time }}
-                    </div>
-                    <div class="map-meta-copy">
-                      {{ resolvedLocation.label }}.
-                      {{ resolvedLocation.lat }},
-                      {{ resolvedLocation.lon }}
-                    </div>
-                  </div>
+            <details class="panel advanced-accordion" open>
+              <summary class="advanced-accordion-summary">
+                <div>
+                  <span class="advanced-accordion-kicker">Open first</span>
+                  <h3>Daily context</h3>
                 </div>
-              </section>
+                <span class="advanced-accordion-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="advanced-accordion-body">
+                <ElementModePanel :placements="chart.placements" />
+                <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
+                <FocusAreas :areas="chart.focusAreas" />
+              </div>
+            </details>
 
-              <section class="panel core-card">
-                <div class="panel-inner">
-                  <h2 class="section-title">Core triad</h2>
-                  <p class="section-copy">The three main placements for identity, feelings and first impressions.</p>
-
-                  <div class="core-list">
-                    <article class="core-item">
-                      <div class="core-title">Sun</div>
-                      <div class="core-value">
-                        <span v-if="corePlacements.sun" class="core-icon">
-                          <ZodiacIcon :sign="corePlacements.sun.sign" :size="18" />
-                        </span>
-                        {{ formatPlacement(corePlacements.sun) }}
-                      </div>
-                      <div class="core-copy">Your basic drive, sense of self and direction.</div>
-                    </article>
-
-                    <article class="core-item">
-                      <div class="core-title">Moon</div>
-                      <div class="core-value">
-                        <span v-if="corePlacements.moon" class="core-icon">
-                          <ZodiacIcon :sign="corePlacements.moon.sign" :size="18" />
-                        </span>
-                        {{ formatPlacement(corePlacements.moon) }}
-                      </div>
-                      <div class="core-copy">Your feelings, instincts and emotional needs.</div>
-                    </article>
-
-                    <article class="core-item">
-                      <div class="core-title">Ascendant</div>
-                      <div class="core-value">
-                        <span v-if="corePlacements.asc" class="core-icon">
-                          <ZodiacIcon :sign="corePlacements.asc.sign" :size="18" />
-                        </span>
-                        {{ formatPlacement(corePlacements.asc) }}
-                      </div>
-                      <div class="core-copy">How you come across and how you meet the world.</div>
-                    </article>
-                  </div>
+            <details class="panel advanced-accordion">
+              <summary class="advanced-accordion-summary">
+                <div>
+                  <span class="advanced-accordion-kicker">Optional</span>
+                  <h3>Compatibility</h3>
                 </div>
-              </section>
-            </div>
+                <span class="advanced-accordion-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="advanced-accordion-body">
+                <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''" @add="openPartnerModal"
+                  @select="selectPartnerChart" @remove="removePartnerChart" />
 
-            <div class="summary-row">
-              <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
-              <SummaryGauges :metrics="chart.metrics" />
-            </div>
-            <ElementModePanel :placements="chart.placements" />
-            <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
-            <!-- <AstroDepthPanel
-              :extra-points="chart.extraPoints"
-              :dignities="chart.dignities"
-              :dispositors="chart.dispositors"
-              :chart-ruler="chart.chartRuler"
-              :aspect-patterns="chart.aspectPatterns"
-            /> -->
-            <FocusAreas :areas="chart.focusAreas" />
-            <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''" @add="openPartnerModal"
-              @select="selectPartnerChart" @remove="removePartnerChart" />
+                <div ref="comparisonDetailRef" class="compare-detail">
+                  <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" primary-action-label="Add partner"
+                    secondary-action-label="Remove partner" @edit="openPartnerModal" @clear="removeActivePartner" />
 
-            <div ref="comparisonDetailRef" class="compare-detail">
-              <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" primary-action-label="Add partner"
-                secondary-action-label="Remove partner" @edit="openPartnerModal" @clear="removeActivePartner" />
+                  <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
+                    :label-b="activePartner?.label || 'Partner'" />
 
-              <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
-                :label-b="activePartner?.label || 'Partner'" />
+                  <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
+                </div>
+              </div>
+            </details>
 
-              <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
-            </div>
+            <details class="panel advanced-accordion">
+              <summary class="advanced-accordion-summary">
+                <div>
+                  <span class="advanced-accordion-kicker">Reference</span>
+                  <h3>Placements, aspects, and readings</h3>
+                </div>
+                <span class="advanced-accordion-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="advanced-accordion-body">
+                <div class="card-grid vertical">
+                  <PlacementTable :placements="chart.placements" />
+                  <AspectList :aspects="chart.aspects" />
+                </div>
 
-            <div class="card-grid vertical">
-              <PlacementTable :placements="chart.placements" />
-              <AspectList :aspects="chart.aspects" />
-            </div>
-
-            <InterpretationPanel :items="chart.interpretations" />
+                <InterpretationPanel :items="chart.interpretations" />
+              </div>
+            </details>
           </div>
         </template>
 

@@ -32,15 +32,34 @@
               🌙 Dark
             </button>
           </div>
-          <button class="button simple-share-button" type="button" :disabled="isSharing" @click="shareStoryImage">
+          <button class="button simple-share-button" type="button" :disabled="isExporting" @click="shareStoryImage">
             <IconShare3 :size="18" stroke-width="2" />
             <span>{{ isSharing ? 'Creating image...' : 'Share chart' }}</span>
           </button>
           <button
+            class="button simple-share-button simple-gif-button"
+            :class="{ 'is-ready-to-save': generatedChartGifFile }"
+            type="button"
+            :disabled="isExporting"
+            @click="shareChartGif"
+          >
+            <IconSparkles :size="18" stroke-width="2" />
+            <span>{{ chartGifButtonLabel }}</span>
+          </button>
+          <div v-if="isRenderingChartGif" class="simple-reel-progress" role="status" aria-live="polite">
+            <div class="simple-reel-progress-top">
+              <span>{{ chartGifProgressLabel }}</span>
+              <strong>{{ chartGifProgressPercent }}%</strong>
+            </div>
+            <div class="simple-reel-progress-track" aria-hidden="true">
+              <span :style="{ width: `${chartGifProgressPercent}%` }"></span>
+            </div>
+          </div>
+          <button
             class="button simple-share-button simple-reel-button"
             :class="{ 'is-ready-to-save': generatedReelFile }"
             type="button"
-            :disabled="isRenderingReel"
+            :disabled="isExporting"
             @click="shareReelVideo"
           >
             <IconVideo :size="18" stroke-width="2" />
@@ -237,6 +256,7 @@
     </div>
 
     <canvas ref="reelCanvasRef" class="reel-canvas" width="1080" height="1920" aria-hidden="true"></canvas>
+    <canvas ref="chartGifCanvasRef" class="chart-gif-canvas" :width="chartGifSize" :height="chartGifSize" aria-hidden="true"></canvas>
     <video
       ref="reelVideoRef"
       class="reel-video-source"
@@ -253,11 +273,20 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import { IconShare3, IconUsers, IconVideo } from '@tabler/icons-vue'
+import { IconShare3, IconSparkles, IconUsers, IconVideo } from '@tabler/icons-vue'
+import { GIFEncoder, applyPalette, quantize } from 'gifenc'
 import html2canvas from 'html2canvas'
 import ZodiacIcon from './ZodiacIcon.vue'
 import { toTitleCase } from '../utils/zodiac'
 import { getHouseMeaning } from '../utils/houses'
+import {
+  CHART_GIF_DURATION_MS,
+  CHART_GIF_FPS,
+  CHART_GIF_RENDER_SCALE,
+  CHART_GIF_SIZE,
+  createChartGifScene,
+  drawChartGifFrame
+} from '../utils/chart-gif'
 
 const props = defineProps({
   chart: {
@@ -283,16 +312,21 @@ const emit = defineEmits(['add-partner', 'select-partner', 'remove-partner'])
 const appUrl = 'natal-chart.flat18.app'
 const shareCardRef = ref(null)
 const reelCanvasRef = ref(null)
+const chartGifCanvasRef = ref(null)
 const reelVideoRef = ref(null)
 const isSharing = ref(false)
 const isRenderingReel = ref(false)
+const isRenderingChartGif = ref(false)
 const generatedReelFile = ref(null)
+const generatedChartGifFile = ref(null)
 const reelProgress = ref(0)
+const chartGifProgress = ref(0)
 const shareTheme = ref('light')
 const showShareThemeOptions = false
 const reelVideoSrc = '/share-loops/instagram-reel-loop.mp4'
 const REEL_WIDTH = 1080
 const REEL_HEIGHT = 1920
+const chartGifSize = CHART_GIF_SIZE
 const DEFAULT_REEL_DURATION_MS = 8000
 const REEL_FPS = 30
 const REEL_SAFE = {
@@ -508,6 +542,23 @@ const reelButtonLabel = computed(() => {
   return 'Share reel'
 })
 
+const isExporting = computed(() => isSharing.value || isRenderingReel.value || isRenderingChartGif.value)
+
+const chartGifProgressPercent = computed(() => Math.min(100, Math.max(0, Math.round(chartGifProgress.value * 100))))
+
+const chartGifProgressLabel = computed(() => {
+  if (chartGifProgress.value < 0.14) return 'Spinning up the wheel'
+  if (chartGifProgress.value < 0.48) return 'Settling into alignment'
+  if (chartGifProgress.value < 0.95) return 'Rendering chart GIF'
+  return 'Finishing GIF'
+})
+
+const chartGifButtonLabel = computed(() => {
+  if (isRenderingChartGif.value) return 'Creating GIF...'
+  if (generatedChartGifFile.value) return 'Save GIF'
+  return 'Share chart GIF'
+})
+
 const simpleTitle = computed(() => {
   const sun = coreCards.value.find((item) => item.key === 'sun')?.signLabel || 'Solar'
   const moon = coreCards.value.find((item) => item.key === 'moon')?.signLabel || 'Lunar'
@@ -683,6 +734,7 @@ const partnerSummaries = computed(() => props.partnerReports.map((partner) => {
 
 watch([simpleTitle, primarySummary, todayPrediction, yearPrediction], () => {
   clearGeneratedReel()
+  clearGeneratedChartGif()
 })
 
 function getSignProfile(sign) {
@@ -724,6 +776,10 @@ function clearGeneratedReel() {
   generatedReelFile.value = null
 }
 
+function clearGeneratedChartGif() {
+  generatedChartGifFile.value = null
+}
+
 function isLikelyIOS() {
   const platform = navigator.platform || ''
   return /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -734,10 +790,14 @@ function shouldUseTapToShareReelFlow() {
   return isLikelyIOS() || (navigator.maxTouchPoints > 0 && !!navigator.share)
 }
 
-function showReelShareUnavailableMessage() {
+function shouldUseTapToShareGifFlow() {
+  return shouldUseTapToShareReelFlow()
+}
+
+function showShareUnavailableMessage(kind, saveLabel) {
   const message = window.isSecureContext
-    ? 'This browser could not open the share sheet for this reel.'
-    : 'iOS can save reels from the share sheet only on HTTPS. Use the live HTTPS site or an HTTPS dev URL, then tap Save reel again.'
+    ? `This browser could not open the share sheet for this ${kind}.`
+    : `iOS can save ${kind}s from the share sheet only on HTTPS. Use the live HTTPS site or an HTTPS dev URL, then tap ${saveLabel} again.`
 
   if (typeof window.alert === 'function') {
     window.alert(message)
@@ -841,13 +901,37 @@ async function sharePreparedReel() {
   }
 
   if (isLikelyIOS()) {
-    showReelShareUnavailableMessage()
+    showShareUnavailableMessage('reel', 'Save reel')
     return true
   }
 
   downloadBlob(file, file.name)
   clearGeneratedReel()
   return true
+}
+
+async function sharePreparedChartGif() {
+  const file = generatedChartGifFile.value
+  if (!file) return false
+
+  if (await shareFile(file, 'My natal chart GIF', simpleTitle.value)) {
+    return true
+  }
+
+  if (isLikelyIOS()) {
+    showShareUnavailableMessage('GIF', 'Save GIF')
+    return true
+  }
+
+  downloadBlob(file, file.name)
+  clearGeneratedChartGif()
+  return true
+}
+
+function waitForAnimationFrame() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => resolve())
+  })
 }
 
 function waitForVideoReady(video) {
@@ -1211,8 +1295,107 @@ async function shareReelVideo() {
   }
 }
 
+function getChartGifFrameDelay() {
+  return Math.round(1000 / CHART_GIF_FPS)
+}
+
+function createChartGifFileName() {
+  return `natal-chart-${props.chart.meta?.date || 'share'}-chart.gif`
+}
+
+async function shareChartGif() {
+  if (isRenderingChartGif.value) return
+
+  if (generatedChartGifFile.value) {
+    await sharePreparedChartGif()
+    return
+  }
+
+  const canvas = chartGifCanvasRef.value
+  if (!canvas || typeof canvas.getContext !== 'function') {
+    console.error('This browser cannot create GIF exports.')
+    return
+  }
+
+  isRenderingChartGif.value = true
+  chartGifProgress.value = 0
+
+  try {
+    await nextTick()
+    if (document.fonts?.ready) {
+      await document.fonts.ready.catch(() => null)
+    }
+
+    const outputCtx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!outputCtx) {
+      throw new Error('Unable to prepare the GIF canvas.')
+    }
+
+    const renderSize = Math.round(CHART_GIF_SIZE * CHART_GIF_RENDER_SCALE)
+    const renderCanvas = document.createElement('canvas')
+    renderCanvas.width = renderSize
+    renderCanvas.height = renderSize
+    const renderCtx = renderCanvas.getContext('2d')
+    if (!renderCtx) {
+      throw new Error('Unable to prepare the high-resolution GIF canvas.')
+    }
+    outputCtx.imageSmoothingEnabled = true
+    if ('imageSmoothingQuality' in outputCtx) {
+      outputCtx.imageSmoothingQuality = 'high'
+    }
+
+    const scene = createChartGifScene(props.chart, renderSize)
+    const frameCount = Math.max(2, Math.round((CHART_GIF_DURATION_MS / 1000) * CHART_GIF_FPS))
+    const frameDelay = getChartGifFrameDelay()
+    const gif = GIFEncoder({
+      auto: true,
+      initialCapacity: CHART_GIF_SIZE * CHART_GIF_SIZE
+    })
+
+    for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
+      const progress = frameIndex / (frameCount - 1)
+      renderCtx.clearRect(0, 0, renderSize, renderSize)
+      drawChartGifFrame(renderCtx, scene, progress)
+      outputCtx.clearRect(0, 0, CHART_GIF_SIZE, CHART_GIF_SIZE)
+      outputCtx.drawImage(renderCanvas, 0, 0, renderSize, renderSize, 0, 0, CHART_GIF_SIZE, CHART_GIF_SIZE)
+      const imageData = outputCtx.getImageData(0, 0, CHART_GIF_SIZE, CHART_GIF_SIZE)
+      const palette = quantize(imageData.data, 256, { format: 'rgb565' })
+      const indexed = applyPalette(imageData.data, palette)
+
+      gif.writeFrame(indexed, CHART_GIF_SIZE, CHART_GIF_SIZE, {
+        palette,
+        delay: frameDelay
+      })
+
+      chartGifProgress.value = Math.min(0.98, progress)
+      if (frameIndex % 2 === 0) {
+        await waitForAnimationFrame()
+      }
+    }
+
+    gif.finish()
+    chartGifProgress.value = 1
+
+    const blob = new Blob([gif.bytes()], { type: 'image/gif' })
+    const file = new File([blob], createChartGifFileName(), { type: 'image/gif' })
+    generatedChartGifFile.value = file
+
+    if (shouldUseTapToShareGifFlow()) return
+
+    downloadBlob(blob, file.name)
+    clearGeneratedChartGif()
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isRenderingChartGif.value = false
+    window.setTimeout(() => {
+      if (!isRenderingChartGif.value) chartGifProgress.value = 0
+    }, 300)
+  }
+}
+
 async function shareStoryImage() {
-  if (!shareCardRef.value || isSharing.value) return
+  if (!shareCardRef.value || isExporting.value) return
   isSharing.value = true
 
   try {

@@ -1771,8 +1771,11 @@ a {
 }
 
 .compare-card.is-active {
-  border-color: rgba(15, 23, 42, 0.25);
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.28);
+  background: linear-gradient(180deg, rgba(247, 249, 252, 0.98), rgba(255, 255, 255, 1));
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.08),
+    0 16px 30px rgba(15, 23, 42, 0.08);
 }
 
 .compare-card-head {
@@ -3666,7 +3669,17 @@ a {
   overflow: hidden;
 }
 
+.simple-gif-button {
+  position: relative;
+  overflow: hidden;
+}
+
 .simple-reel-button>* {
+  position: relative;
+  z-index: 1;
+}
+
+.simple-gif-button>* {
   position: relative;
   z-index: 1;
 }
@@ -3677,6 +3690,15 @@ a {
     0 0 0 4px rgba(176, 105, 96, 0.18),
     0 18px 34px rgba(97, 68, 113, 0.24),
     0 0 28px rgba(176, 105, 96, 0.32);
+  animation: reelSaveReadyPop 560ms cubic-bezier(0.18, 0.9, 0.24, 1.18);
+}
+
+.simple-gif-button.is-ready-to-save {
+  background: linear-gradient(135deg, #183348 0%, #305c7a 52%, #57a1ab 100%);
+  box-shadow:
+    0 0 0 4px rgba(87, 161, 171, 0.16),
+    0 18px 34px rgba(48, 92, 122, 0.24),
+    0 0 28px rgba(87, 161, 171, 0.28);
   animation: reelSaveReadyPop 560ms cubic-bezier(0.18, 0.9, 0.24, 1.18);
 }
 
@@ -3706,6 +3728,36 @@ a {
     -18px -14px 0 -2px rgba(255, 245, 209, 0.72),
     -32px 10px 0 -3px rgba(255, 245, 209, 0.62),
     18px -8px 0 -3px rgba(255, 245, 209, 0.58);
+  transform: translateY(-50%) scale(0);
+  animation: reelSaveReadySpark 700ms ease 260ms forwards;
+}
+
+.simple-gif-button.is-ready-to-save::before,
+.simple-gif-button.is-ready-to-save::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.simple-gif-button.is-ready-to-save::before {
+  inset: -48% auto -48% -30%;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent);
+  transform: rotate(18deg) translateX(-130%);
+  animation: reelSaveReadyShine 1.25s ease 180ms forwards;
+}
+
+.simple-gif-button.is-ready-to-save::after {
+  top: 50%;
+  right: 24px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(236, 253, 255, 0.96);
+  box-shadow:
+    -18px -14px 0 -2px rgba(236, 253, 255, 0.72),
+    -32px 10px 0 -3px rgba(236, 253, 255, 0.62),
+    18px -8px 0 -3px rgba(236, 253, 255, 0.58);
   transform: translateY(-50%) scale(0);
   animation: reelSaveReadySpark 700ms ease 260ms forwards;
 }
@@ -4035,7 +4087,8 @@ a {
 }
 
 .reel-canvas,
-.reel-video-source {
+.reel-video-source,
+.chart-gif-canvas {
   position: fixed;
   left: -12000px;
   top: 0;
@@ -4043,6 +4096,11 @@ a {
   height: 1920px;
   pointer-events: none;
   z-index: -1;
+}
+
+.chart-gif-canvas {
+  width: 640px;
+  height: 640px;
 }
 
 .share-card {

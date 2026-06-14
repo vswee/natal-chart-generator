@@ -209,7 +209,7 @@
               </div>
             </details>
 
-            <details class="panel advanced-accordion">
+            <details ref="compatibilityAccordionRef" class="panel advanced-accordion">
               <summary class="advanced-accordion-summary">
                 <div>
                   <span class="advanced-accordion-kicker">Optional</span>
@@ -672,6 +672,7 @@ const isPrivacyModalOpen = ref(false)
 const currentTransits = ref(null)
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
+const compatibilityAccordionRef = ref(null)
 const isAdvancedView = ref(false)
 const corePlacements = computed(() => {
   if (!chart.value) return { sun: null, moon: null, asc: null }
@@ -1008,12 +1009,17 @@ function removePartnerChart(id) {
   }
 }
 
-function selectPartnerChart(id) {
+async function selectPartnerChart(id) {
   activePartnerId.value = id
-  nextTick(() => {
-    if (!comparisonDetailRef.value) return
-    comparisonDetailRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
+  isAdvancedView.value = true
+
+  await nextTick()
+
+  if (!compatibilityAccordionRef.value) return
+
+  compatibilityAccordionRef.value.open = true
+  await nextTick()
+  compatibilityAccordionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function removeActivePartner() {

@@ -538,6 +538,7 @@ function toggleAdvanced() {
 }
 
 function selectLocation(result) {
+  suppressSearch.value = true
   localForm.address = result.label
   localForm.lat = String(result.lat)
   localForm.lon = String(result.lon)

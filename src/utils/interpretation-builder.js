@@ -58,7 +58,7 @@ const BODY_PROFILES = {
   },
   mc: {
     label: 'Midheaven',
-    themes: 'career direction and public role',
+    themes: 'work and direction',
     focus: 'reputation, ambition, and long-term path'
   }
 }
@@ -70,38 +70,38 @@ const SIGN_PROFILES = {
   cancer: { adjectives: 'protective, intuitive, nurturing', focus: 'emotional security and belonging' },
   leo: { adjectives: 'expressive, warm, confident', focus: 'creativity, visibility, and pride' },
   virgo: { adjectives: 'precise, practical, discerning', focus: 'craft, improvement, and service' },
-  libra: { adjectives: 'harmonising, fair, relational', focus: 'balance, beauty, and cooperation' },
+  libra: { adjectives: 'balanced, fair, relational', focus: 'balance, beauty, and cooperation' },
   scorpio: { adjectives: 'intense, private, transformative', focus: 'depth, loyalty, and emotional truth' },
   sagittarius: { adjectives: 'expansive, candid, adventurous', focus: 'growth, travel, and meaning' },
   capricorn: { adjectives: 'disciplined, strategic, grounded', focus: 'structure, goals, and responsibility' },
-  aquarius: { adjectives: 'innovative, independent, future-minded', focus: 'originality, community, and ideas' },
+  aquarius: { adjectives: 'original, independent, future-minded', focus: 'originality, community, and ideas' },
   pisces: { adjectives: 'sensitive, imaginative, receptive', focus: 'compassion, intuition, and flow' }
 }
 
 const ASPECT_PROFILES = {
   conjunction: {
     label: 'conjunct',
-    tone: 'merges and intensifies',
+    summary: 'blends the two together',
     detail: 'blending two drives into one focal point'
   },
   sextile: {
     label: 'sextile',
-    tone: 'supports and cooperates',
+    summary: 'creates helpful openings',
     detail: 'creating openings that reward initiative'
   },
   square: {
     label: 'square',
-    tone: 'pressures and challenges',
+    summary: 'creates pressure and friction',
     detail: 'pushing growth through friction and effort'
   },
   trine: {
     label: 'trine',
-    tone: 'flows and reinforces',
+    summary: 'feels easy and natural',
     detail: 'making strengths feel natural and accessible'
   },
   opposition: {
-    label: 'oppose',
-    tone: 'polarises and balances',
+    label: 'opposite',
+    summary: 'pulls in different directions and asks for balance',
     detail: 'asking for perspective and integration'
   }
 }
@@ -135,8 +135,8 @@ export function buildGenericPlacementInterpretation(placement) {
   const sign = signProfile(placement.sign)
   const signLabel = toTitleCase(placement.sign)
   const title = `${body.label} in ${signLabel}`
-  const summary = `${body.label} in ${signLabel} brings a ${sign.adjectives} style to ${body.themes}.`
-  const text = `${summary} It often shows up through ${sign.focus}, shaping ${body.focus}.`
+  const summary = `${body.label} in ${signLabel} often makes ${body.themes} feel ${sign.adjectives}.`
+  const text = `It tends to show up through ${sign.focus}, shaping ${body.focus}.`
   return { title, summary, text }
 }
 
@@ -145,11 +145,11 @@ export function buildGenericAspectInterpretation(aspect) {
   const bodyB = bodyProfile(aspect.bodyB)
   const aspectProfile = ASPECT_PROFILES[aspect.type] || {
     label: aspect.type,
-    tone: 'connects',
+    summary: 'connects two parts of the chart',
     detail: 'linking two parts of the chart together'
   }
   const title = `${bodyA.label} ${aspectProfile.label} ${bodyB.label}`
-  const summary = `${title} links ${bodyA.themes} with ${bodyB.themes} in a way that ${aspectProfile.tone}.`
+  const summary = `${title} often ${aspectProfile.summary}, linking ${bodyA.themes} with ${bodyB.themes}.`
   const text = `${summary} It can show ${aspectProfile.detail} between ${bodyA.focus} and ${bodyB.focus}.`
   return { title, summary, text }
 }

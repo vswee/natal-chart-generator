@@ -287,12 +287,20 @@ function houseFromCusps(longitude, cusps) {
   return 1
 }
 
-function normalizeInterpretation(payload) {
+function normalizeInterpretation(payload, fallbackTitle = '') {
   if (!payload) return null
-  const summary = payload.summary || summarizeInterpretation(payload.text)
+  if (typeof payload === 'string') {
+    return {
+      title: fallbackTitle,
+      summary: summarizeInterpretation(payload),
+      text: payload
+    }
+  }
+
   const text = payload.text || payload.summary || ''
+  const summary = payload.summary || summarizeInterpretation(text)
   return {
-    title: payload.title,
+    title: payload.title || fallbackTitle,
     summary,
     text
   }
@@ -360,33 +368,39 @@ function buildInterpretationBlocks(placements, aspects, metrics) {
   blocks.push(...aspectBlocks)
 
   if (metrics.emotionalIntensity >= 65) {
-    const text = summaryInterpretations.highEmotionalIntensity
-    blocks.push({
-      id: 'summary-emotional-intensity',
-      title: 'Emotional intensity',
-      summary: summarizeInterpretation(text),
-      text
-    })
+    const base = normalizeInterpretation(summaryInterpretations.highEmotionalIntensity, 'Emotional intensity')
+    if (base) {
+      blocks.push({
+        id: 'summary-emotional-intensity',
+        title: base.title,
+        summary: base.summary,
+        text: base.text
+      })
+    }
   }
 
   if (metrics.harmony >= 60) {
-    const text = summaryInterpretations.highHarmony
-    blocks.push({
-      id: 'summary-harmony',
-      title: 'Internal flow',
-      summary: summarizeInterpretation(text),
-      text
-    })
+    const base = normalizeInterpretation(summaryInterpretations.highHarmony, 'Internal flow')
+    if (base) {
+      blocks.push({
+        id: 'summary-harmony',
+        title: base.title,
+        summary: base.summary,
+        text: base.text
+      })
+    }
   }
 
   if (metrics.relationshipFocus >= 55) {
-    const text = summaryInterpretations.highRelationshipFocus
-    blocks.push({
-      id: 'summary-relationship',
-      title: 'Relationship focus',
-      summary: summarizeInterpretation(text),
-      text
-    })
+    const base = normalizeInterpretation(summaryInterpretations.highRelationshipFocus, 'Relationship focus')
+    if (base) {
+      blocks.push({
+        id: 'summary-relationship',
+        title: base.title,
+        summary: base.summary,
+        text: base.text
+      })
+    }
   }
 
   return blocks.slice(0, 14)

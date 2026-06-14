@@ -18,7 +18,7 @@
           v-for="partner in partners"
           :key="partner.id"
           class="compare-card"
-          :class="{ 'is-active': partner.id === activeId }"
+          :class="{ 'is-active': partners.length > 1 && partner.id === activeId }"
         >
           <div class="compare-card-head">
             <div>

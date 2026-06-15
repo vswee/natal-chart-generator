@@ -2,12 +2,12 @@ import { normaliseDegrees, toTitleCase, SIGNS, SIGN_INFO } from './zodiac'
 
 export const CHART_GIF_SIZE = 640
 export const CHART_GIF_RENDER_SCALE = 2.75
-export const CHART_GIF_FPS = 12
+export const CHART_GIF_FPS = 20
 export const CHART_GIF_DURATION_MS = 3000
 
 const TAU = Math.PI * 2
 const CHART_GIF_LAYOUT_SCALE = 0.66
-const CHART_GIF_INTRO_SCALE = 1.75
+const CHART_GIF_INTRO_SCALE = 2
 
 const BODY_SYMBOLS = {
   sun: '☉',
@@ -266,11 +266,11 @@ function drawTitleBlock(ctx, scene, progress, flatten) {
   ctx.textBaseline = 'top'
   ctx.fillStyle = accentColor
   ctx.font = `${Math.round(12 * scale)}px Manrope, Arial, sans-serif`
-  ctx.fillText('NATAL CHART', titleX, titleTop)
+  // ctx.fillText('NATAL CHART', titleX, titleTop)
 
   ctx.fillStyle = textColor
   ctx.font = `700 ${Math.round(28 * scale)}px "Cormorant Garamond", Georgia, serif`
-  drawWrappedText(ctx, scene.titleCopy, titleX, titleTop + Math.round(18 * scale), titleWidth, Math.round(28 * scale), 2)
+  drawWrappedText(ctx, scene.titleCopy, titleX, titleTop, titleWidth, Math.round(28 * scale), 2)
 
   ctx.fillStyle = mixHexColor('#d0c8bb', '#5d6b7c', titleBlend)
   ctx.font = `${Math.round(12.5 * scale)}px Manrope, Arial, sans-serif`
@@ -394,9 +394,10 @@ function drawWheel(ctx, scene, progress, flatten) {
   const wheelAlpha = easeInOutCubic(clamp((progress - 0.22) / 0.6))
   const labelAlpha = clamp((progress - 0.35) / 0.45)
   const zoom = getChartGifZoom(progress)
+  const finalChartPanY = 90 * easeInOutCubic(clamp((progress - 0.58) / 0.28))
 
   ctx.save()
-  ctx.translate(center.x, center.y)
+  ctx.translate(center.x, center.y + finalChartPanY)
   ctx.scale(zoom, zoom)
   ctx.globalAlpha = wheelAlpha
 

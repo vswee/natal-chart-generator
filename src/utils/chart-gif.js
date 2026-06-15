@@ -1,13 +1,13 @@
 import { normaliseDegrees, toTitleCase, SIGNS, SIGN_INFO } from './zodiac'
 
 export const CHART_GIF_SIZE = 640
-export const CHART_GIF_RENDER_SCALE = 2
+export const CHART_GIF_RENDER_SCALE = 2.25
 export const CHART_GIF_FPS = 12
 export const CHART_GIF_DURATION_MS = 3000
 
 const TAU = Math.PI * 2
-const CHART_GIF_LAYOUT_SCALE = 0.82
-const CHART_GIF_INTRO_SCALE = 1.12
+const CHART_GIF_LAYOUT_SCALE = 0.66
+const CHART_GIF_INTRO_SCALE = 1.75
 
 const BODY_SYMBOLS = {
   sun: '☉',

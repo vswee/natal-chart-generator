@@ -1,7 +1,7 @@
 import { normaliseDegrees, toTitleCase, SIGNS, SIGN_INFO } from './zodiac'
 
 export const CHART_GIF_SIZE = 640
-export const CHART_GIF_RENDER_SCALE = 2.25
+export const CHART_GIF_RENDER_SCALE = 2.75
 export const CHART_GIF_FPS = 12
 export const CHART_GIF_DURATION_MS = 3000
 
@@ -261,8 +261,6 @@ function drawTitleBlock(ctx, scene, progress, flatten) {
   const titleBlend = easeInOutCubic(clamp((progress - 0.08) / 0.45))
   const textColor = mixHexColor('#f8f3ea', '#132033', titleBlend)
   const accentColor = mixHexColor('#efe7da', '#4f5f76', titleBlend)
-  const lineColor = mixHexColor('#d7cfbf', '#b2bdca', titleBlend)
-
   ctx.save()
   ctx.textAlign = 'left'
   ctx.textBaseline = 'top'
@@ -277,13 +275,6 @@ function drawTitleBlock(ctx, scene, progress, flatten) {
   ctx.fillStyle = mixHexColor('#d0c8bb', '#5d6b7c', titleBlend)
   ctx.font = `${Math.round(12.5 * scale)}px Manrope, Arial, sans-serif`
   drawWrappedText(ctx, scene.subtitleCopy, titleX, titleTop + Math.round(86 * scale), titleWidth * 0.85, Math.round(16 * scale), 2)
-
-  ctx.strokeStyle = rgbaFromHex(lineColor, 0.65)
-  ctx.lineWidth = Math.max(1, 1.5 * scale)
-  ctx.beginPath()
-  ctx.moveTo(titleX, titleTop + Math.round(128 * scale))
-  ctx.lineTo(titleX + Math.round(114 * scale), titleTop + Math.round(128 * scale))
-  ctx.stroke()
   ctx.restore()
 }
 

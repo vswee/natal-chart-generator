@@ -235,13 +235,6 @@ export function buildProfileAvatar(chart) {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${escapeAttribute(avatarLabel)}">
       <defs>
-        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(${rotation} 80 80)">
-          <stop offset="0%" stop-color="${palette[0]}" />
-          <stop offset="34%" stop-color="${palette[1]}" />
-          <stop offset="68%" stop-color="${palette[2]}" />
-          <stop offset="100%" stop-color="${palette[3]}" />
-        </linearGradient>
-
         <radialGradient id="aura" cx="32%" cy="18%" r="84%">
           <stop offset="0%" stop-color="${palette[4]}" stop-opacity="0.96" />
           <stop offset="26%" stop-color="${palette[4]}" stop-opacity="0.32" />
@@ -276,7 +269,7 @@ export function buildProfileAvatar(chart) {
         </filter>
       </defs>
 
-      <rect width="160" height="160" rx="40" fill="url(#bg)" />
+      <rect width="160" height="160" rx="40" fill="${palette[1]}" />
       <rect width="160" height="160" rx="40" fill="url(#aura)" />
       <rect x="13" y="13" width="134" height="134" rx="30" fill="none" stroke="#fff3cf" stroke-opacity="0.16" />
 

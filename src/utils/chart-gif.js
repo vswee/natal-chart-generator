@@ -323,14 +323,14 @@ function drawShell(ctx, scene, progress, flatten) {
 
   shellRings.forEach((radius, index) => {
     ctx.beginPath()
-    ctx.ellipse(0, 0, radius, radius * (0.78 - index * 0.09), 0, 0, TAU)
+    ctx.arc(0, 0, radius, 0, TAU)
     ctx.strokeStyle = rgbaFromHex('#e9eff8', 0.22 - index * 0.04 + (1 - flatten) * 0.06)
     ctx.lineWidth = Math.max(1, 2 * scale - index * 0.2 * scale)
     ctx.stroke()
   })
 
   ctx.beginPath()
-  ctx.ellipse(0, 0, shellBaseRadius * 0.9, shellBaseRadius * 0.56, 0, 0, TAU)
+  ctx.arc(0, 0, shellBaseRadius * 0.9, 0, TAU)
   ctx.fillStyle = rgbaFromHex('#ffffff', 0.06 + (1 - flatten) * 0.06)
   ctx.fill()
 

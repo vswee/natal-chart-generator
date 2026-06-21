@@ -1,9 +1,24 @@
 <template>
   <section class="simplified-chart">
     <div class="simple-hero panel">
-      <div class="simple-hero-symbol simple-hero-symbol--sun" aria-hidden="true">{{ shareCoreCards[0]?.planetSymbol || '☀️' }}</div>
-      <div class="simple-hero-symbol simple-hero-symbol--moon" aria-hidden="true">{{ shareCoreCards[1]?.planetSymbol || '🌙' }}</div>
-      <div class="simple-hero-symbol simple-hero-symbol--asc" aria-hidden="true">AC</div>
+      <ChartWheel
+        class="simple-hero-wheel"
+        :embedded="true"
+        :show-chrome="false"
+        :decorative="true"
+        :placements="chart.placements"
+        :aspects="chart.aspects"
+        :cusps="chart.houseCusps"
+      />
+      <div class="simple-hero-symbol simple-hero-symbol--sun" aria-hidden="true">
+        <AstroGlyph body="sun" :size="124" />
+      </div>
+      <div class="simple-hero-symbol simple-hero-symbol--moon" aria-hidden="true">
+        <AstroGlyph body="moon" :size="104" />
+      </div>
+      <div class="simple-hero-symbol simple-hero-symbol--asc" aria-hidden="true">
+        <AstroGlyph body="asc" :size="112" />
+      </div>
       <div class="panel-inner simple-hero-inner">
         <div class="simple-hero-copy">
           <p class="simple-kicker">Simple chart</p>
@@ -20,7 +35,8 @@
               :aria-pressed="shareTheme === 'light'"
               @click="shareTheme = 'light'"
             >
-              ☀️ Light
+              <AstroGlyph body="sun" :size="18" />
+              <span>Light</span>
             </button>
             <button
               class="simple-theme-button"
@@ -29,7 +45,8 @@
               :aria-pressed="shareTheme === 'dark'"
               @click="shareTheme = 'dark'"
             >
-              🌙 Dark
+              <AstroGlyph body="moon" :size="18" />
+              <span>Dark</span>
             </button>
           </div>
           <button class="button simple-share-button" type="button" :disabled="isExporting" @click="shareStoryImage">
@@ -80,7 +97,9 @@
 
     <div class="simple-core-grid">
       <article v-for="item in coreCards" :key="item.key" class="simple-core-card panel">
-        <span class="simple-card-planet" aria-hidden="true">{{ item.planetSymbol }}</span>
+        <span class="simple-card-planet" aria-hidden="true">
+          <AstroGlyph :body="item.key" :size="62" />
+        </span>
         <div class="panel-inner simple-core-inner">
           <p class="simple-kicker">{{ item.role }}</p>
           <div class="simple-core-sign">
@@ -201,9 +220,15 @@
 
     <div class="share-stage" aria-hidden="true" inert>
       <article ref="shareCardRef" class="share-card" :class="shareCardClass">
-        <div class="share-card-symbol share-card-symbol--sun">{{ shareCoreCards[0]?.planetSymbol || '☉' }}</div>
-        <div class="share-card-symbol share-card-symbol--moon">{{ shareCoreCards[1]?.planetSymbol || '☽' }}</div>
-        <div class="share-card-symbol share-card-symbol--angle">AC</div>
+        <div class="share-card-symbol share-card-symbol--sun">
+          <AstroGlyph body="sun" :size="320" />
+        </div>
+        <div class="share-card-symbol share-card-symbol--moon">
+          <AstroGlyph body="moon" :size="280" />
+        </div>
+        <div class="share-card-symbol share-card-symbol--angle">
+          <AstroGlyph body="asc" :size="200" />
+        </div>
 
         <div class="share-card-top">
           <p class="share-card-kicker">Natal Chart App</p>
@@ -220,10 +245,10 @@
           <div v-for="item in shareCoreCards" :key="`share-${item.key}`" class="share-card-core-item">
             <div class="share-card-core-top">
               <span>{{ item.label }}</span>
-              <b>{{ item.planetSymbol }}</b>
+              <b><AstroGlyph :body="item.key" :size="28" /></b>
             </div>
             <strong>
-              <span class="share-card-sign-symbol">{{ item.signSymbol }}</span>
+              <span v-if="item.placement" class="share-card-sign-symbol"><ZodiacIcon :sign="item.placement.sign" :size="28" /></span>
               {{ item.signLabel }}
             </strong>
           </div>
@@ -276,7 +301,10 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { IconShare3, IconSparkles, IconUsers, IconVideo } from '@tabler/icons-vue'
 import { GIFEncoder, applyPalette, quantize } from 'gifenc'
 import html2canvas from 'html2canvas'
+import AstroGlyph from './AstroGlyph.vue'
+import ChartWheel from './ChartWheel.vue'
 import ZodiacIcon from './ZodiacIcon.vue'
+import { loadGlyphImage } from '../utils/astro-glyphs'
 import { toTitleCase } from '../utils/zodiac'
 import { getHouseMeaning } from '../utils/houses'
 import {
@@ -307,7 +335,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['add-partner', 'select-partner', 'remove-partner'])
+const emit = defineEmits(['add-partner', 'select-partner', 'remove-partner', 'media-generated'])
 
 const appUrl = 'natal-chart.flat18.app'
 const shareCardRef = ref(null)
@@ -335,6 +363,42 @@ const REEL_SAFE = {
   bottom: 360,
   left: 72
 }
+const reelGlyphAssets = ref(null)
+
+function drawCenteredGlyph(ctx, image, centerX, centerY, size) {
+  if (!image) return
+  ctx.drawImage(image, centerX - size / 2, centerY - size / 2, size, size)
+}
+
+async function preloadReelGlyphAssets() {
+  if (reelGlyphAssets.value) return reelGlyphAssets.value
+
+  const assetEntries = await Promise.all([
+    ['sunDark', loadGlyphImage('body', 'sun', '#152421')],
+    ['moonDark', loadGlyphImage('body', 'moon', '#152421')],
+    ['ascDark', loadGlyphImage('body', 'asc', '#152421')],
+    ['jupiterDark', loadGlyphImage('body', 'jupiter', '#152421')],
+    ['saturnDark', loadGlyphImage('body', 'saturn', '#152421')],
+    ['sunLight', loadGlyphImage('body', 'sun', '#fff8ef')],
+    ['moonLight', loadGlyphImage('body', 'moon', '#fff8ef')],
+    ['ascLight', loadGlyphImage('body', 'asc', '#fff8ef')]
+  ])
+
+  reelGlyphAssets.value = Object.fromEntries(assetEntries)
+  return reelGlyphAssets.value
+}
+
+function emitMediaGenerated(kind, file) {
+  if (!file) return
+  emit('media-generated', {
+    kind,
+    file,
+    fileName: file.name,
+    mimeType: file.type,
+    size: file.size,
+    createdAt: new Date().toISOString()
+  })
+}
 
 const BODY_LABELS = {
   sun: 'Sun',
@@ -348,36 +412,6 @@ const BODY_LABELS = {
   neptune: 'Neptune',
   pluto: 'Pluto',
   asc: 'Ascendant'
-}
-
-const BODY_SYMBOLS = {
-  sun: '☀️',
-  moon: '🌙',
-  mercury: '☿',
-  venus: '♀',
-  mars: '♂',
-  jupiter: '♃',
-  saturn: '♄',
-  uranus: '♅',
-  neptune: '♆',
-  pluto: '♇',
-  asc: 'AC',
-  desc: 'DC'
-}
-
-const SIGN_SYMBOLS = {
-  aries: '♈︎',
-  taurus: '♉︎',
-  gemini: '♊︎',
-  cancer: '♋︎',
-  leo: '♌︎',
-  virgo: '♍︎',
-  libra: '♎︎',
-  scorpio: '♏︎',
-  sagittarius: '♐︎',
-  capricorn: '♑︎',
-  aquarius: '♒︎',
-  pisces: '♓︎'
 }
 
 const SIGN_PROFILES = {
@@ -513,16 +547,11 @@ const coreCards = computed(() => CORE_DEFS.map((def) => {
     ...def,
     placement,
     signLabel,
-    planetSymbol: BODY_SYMBOLS[def.key] || '✦',
     summary
   }
 }))
 
-const shareCoreCards = computed(() => coreCards.value.map((item) => ({
-  ...item,
-  planetSymbol: BODY_SYMBOLS[item.key] || '✦',
-  signSymbol: SIGN_SYMBOLS[item.placement?.sign] || '✦'
-})))
+const shareCoreCards = computed(() => coreCards.value.map((item) => ({ ...item })))
 
 const shareCardClass = computed(() => ({
   'share-card--dark': shareTheme.value === 'dark'
@@ -994,7 +1023,14 @@ function drawGeneratedReelBackground(ctx, progress) {
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, REEL_WIDTH, REEL_HEIGHT)
 
-  const glyphs = ['☀️', '🌙', 'AC', '♃', '♄']
+  const glyphs = [
+    { image: reelGlyphAssets.value?.sunDark, size: 230 },
+    { image: reelGlyphAssets.value?.moonDark, size: 230 },
+    { image: reelGlyphAssets.value?.ascDark, size: 190 },
+    { image: reelGlyphAssets.value?.jupiterDark, size: 220 },
+    { image: reelGlyphAssets.value?.saturnDark, size: 220 }
+  ]
+
   glyphs.forEach((glyph, index) => {
     const phase = progress + index * 0.18
     const x = REEL_WIDTH * (0.12 + ((index * 0.23 + progress * 0.08) % 0.78))
@@ -1003,11 +1039,7 @@ function drawGeneratedReelBackground(ctx, progress) {
     ctx.translate(x, y)
     ctx.rotate(Math.sin(phase * Math.PI * 2) * 0.08)
     ctx.globalAlpha = index === 0 ? 0.12 : 0.085
-    ctx.fillStyle = '#152421'
-    ctx.font = `${index === 2 ? 190 : 230}px "Cormorant Garamond", Georgia, serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(glyph, 0, 0)
+    drawCenteredGlyph(ctx, glyph.image, 0, 0, glyph.size)
     ctx.restore()
   })
 }
@@ -1075,10 +1107,7 @@ function drawReelOverlay(ctx, progress) {
   ctx.stroke()
 
   ctx.globalAlpha = 0.3
-  ctx.fillStyle = '#304d4d'
-  ctx.font = '700 210px "Cormorant Garamond", Georgia, serif'
-  ctx.textAlign = 'right'
-  ctx.fillText(shareCoreCards.value[0]?.planetSymbol || '☉', safeRight - 24, safeTop + 305)
+  drawCenteredGlyph(ctx, reelGlyphAssets.value?.sunDark, safeRight - 24, safeTop + 305, 210)
 
   ctx.globalAlpha = 1
   ctx.fillStyle = '#172421'
@@ -1113,10 +1142,8 @@ function drawReelOverlay(ctx, progress) {
     ctx.lineWidth = 2
     drawRoundedRect(ctx, x + 1, cardY + 1, coreItemWidth - 2, 176, 27)
     ctx.stroke()
-    ctx.fillStyle = '#3f3154'
-    ctx.font = '700 46px "Cormorant Garamond", Georgia, serif'
-    ctx.textAlign = 'center'
-    ctx.fillText(item.planetSymbol, x + coreItemWidth / 2, cardY + 62)
+    const assetKey = `${item.key}Dark`
+    drawCenteredGlyph(ctx, reelGlyphAssets.value?.[assetKey], x + coreItemWidth / 2, cardY + 62, 58)
     ctx.fillStyle = 'rgba(23, 36, 33, 0.62)'
     ctx.font = '800 18px Manrope, Arial, sans-serif'
     ctx.fillText(item.label.toUpperCase(), x + coreItemWidth / 2, cardY + 100)
@@ -1130,10 +1157,7 @@ function drawReelOverlay(ctx, progress) {
   drawRoundedRect(ctx, cardX, safeTop + 982, cardWidth, 318, 38)
   ctx.fill()
   ctx.globalAlpha = 0.2
-  ctx.fillStyle = '#fff8ef'
-  ctx.font = '700 180px "Cormorant Garamond", Georgia, serif'
-  ctx.textAlign = 'right'
-  ctx.fillText(shareCoreCards.value[1]?.planetSymbol || '☽', safeRight - 34, safeTop + 1160)
+  drawCenteredGlyph(ctx, reelGlyphAssets.value?.moonLight, safeRight - 34, safeTop + 1160, 180)
 
   ctx.textAlign = 'left'
   ctx.globalAlpha = 1
@@ -1168,10 +1192,7 @@ function drawReelOverlay(ctx, progress) {
   ctx.translate(safeRight - 78, safeTop + 92)
   ctx.scale(pulse, pulse)
   ctx.globalAlpha = 0.72
-  ctx.fillStyle = '#fff8ef'
-  ctx.font = '700 86px "Cormorant Garamond", Georgia, serif'
-  ctx.textAlign = 'center'
-  ctx.fillText('☉', 0, 0)
+  drawCenteredGlyph(ctx, reelGlyphAssets.value?.sunLight, 0, 0, 86)
   ctx.restore()
 }
 
@@ -1216,6 +1237,7 @@ async function shareReelVideo() {
 
   try {
     await nextTick()
+    await preloadReelGlyphAssets()
     const ctx = canvas.getContext('2d')
     const stream = canvas.captureStream(REEL_FPS)
     const recorder = new MediaRecorder(stream, {
@@ -1278,6 +1300,7 @@ async function shareReelVideo() {
       { type: recordedType }
     )
     generatedReelFile.value = file
+    emitMediaGenerated('reel', file)
 
     if (shouldUseTapToShareReelFlow()) return
 
@@ -1344,7 +1367,7 @@ async function shareChartGif() {
       outputCtx.imageSmoothingQuality = 'high'
     }
 
-    const scene = createChartGifScene(props.chart, renderSize)
+    const scene = await createChartGifScene(props.chart, renderSize)
     const frameCount = Math.max(2, Math.round((CHART_GIF_DURATION_MS / 1000) * CHART_GIF_FPS))
     const frameDelay = getChartGifFrameDelay()
     const gif = GIFEncoder({
@@ -1379,6 +1402,7 @@ async function shareChartGif() {
     const blob = new Blob([gif.bytes()], { type: 'image/gif' })
     const file = new File([blob], createChartGifFileName(), { type: 'image/gif' })
     generatedChartGifFile.value = file
+    emitMediaGenerated('chart-gif', file)
 
     if (shouldUseTapToShareGifFlow()) return
 
@@ -1417,6 +1441,7 @@ async function shareStoryImage() {
       `natal-chart-${props.chart.meta?.date || 'share'}-${shareTheme.value}.png`,
       { type: 'image/png' }
     )
+    emitMediaGenerated('story-image', file)
     const canNativeShare = navigator.maxTouchPoints > 0
       && navigator.share
       && navigator.canShare?.({ files: [file] })

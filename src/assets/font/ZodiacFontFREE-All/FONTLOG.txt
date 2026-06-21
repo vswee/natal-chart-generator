@@ -1,0 +1,57 @@
+FONTLOG for Zodiac Fonts Free
+=============================
+
+This file provides detailed information on the Zodiac Fonts Free glyph collection.
+
+Project
+-------
+Zodiac Fonts Free
+A curated collection of 55 astrology glyphs for modern design.
+
+
+Description
+-----------
+Zodiac Fonts Free includes 55 high-quality astrology glyphs (Signs, Planets, Aspects, Elements and more) in Regular weight of the sans-serif family.
+
+This is the free tier of the Zodiac Fonts collection.
+The complete Pro version with all 101 glyphs across 6 font variants
+(Light/Regular/Bold × Sans/Slab) is available for purchase at https://zodiacfonts.com
+
+
+Copyright and Author
+--------------------
+Copyright (c) 2025-2026, Zodiac Fonts (https://zodiacfonts.com, https://x.com/zodiacfonts)
+with Reserved Font Name "Zodiac".
+
+
+Version History
+---------------
+1.0 (May 2026) - Initial public release
+    • 55 glyphs released in Regular sans-serif style
+    • 1 OpenType font file (.otf) + WOFF2 web font (.woff2)
+    • Cleaned and optimized SVGs + PNG previews
+    • First public distribution under SIL Open Font License
+
+
+Change Log
+----------
+2026-05   Version 1.0
+    - Initial release of the free tier (55 glyphs)
+    - OpenType font (.otf) + WOFF2 web font (.woff2) generated via FontSelf Maker
+    - SVGs processed from Adobe Illustrator source
+    - PNG previews generated for web display
+
+
+License
+-------
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+See the file OFL.txt for the full license text.
+
+You can find more information about the SIL Open Font License at:
+https://openfontlicense.org
+
+
+Website & Contact
+-----------------
+Official website : https://zodiacfonts.com
+X / Twitter      : https://x.com/zodiacfonts

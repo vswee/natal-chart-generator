@@ -7,10 +7,61 @@
           Natal chart app by Flat 18
         </div>
         <h1 class="hero-title">Natal Charts Generator</h1>
-        <p class="hero-copy">
-          A fast, open-source natal chart app built with Swiss Ephemeris.
-          <span v-if="!chart">Enter your birth details to generate the simple chart first.</span>
-        </p>
+          <p class="hero-copy">
+            A fast, open-source natal chart app built with Swiss Ephemeris.
+            <span v-if="!chart">Enter your birth details to generate the simple chart first.</span>
+          </p>
+        </div>
+
+      <div class="profile-dock">
+        <button class="profile-button" type="button" :aria-expanded="isProfileMenuOpen" @click="toggleProfileMenu">
+          <span class="profile-avatar">
+            <img v-if="profileIdentity" :src="profileIdentity.avatarSrc" :alt="profileIdentity.avatarLabel" />
+            <span v-else aria-hidden="true">✦</span>
+          </span>
+          <span class="profile-copy">
+            <span class="profile-kicker">{{ profileIdentity?.nickname ? 'Welcome back' : 'Welcome'}}</span>
+            <strong class="profile-name">{{ profileIdentity?.nickname || 'Create your chart below' }}</strong>
+            <!-- <span class="profile-subcopy">{{ profileStatusCopy }}</span> -->
+          </span>
+          <IconChevronDown :size="16" stroke-width="2" class="profile-chevron" />
+        </button>
+
+        <div v-if="isProfileMenuOpen" class="profile-menu" role="menu" aria-label="Profile actions">
+          <p class="profile-menu-note">
+            Your chart and all your data stay on this device.
+          </p>
+
+          <div v-if="profileIdentity" class="profile-card">
+            <img class="profile-card-avatar" :src="profileIdentity.avatarSrc" :alt="profileIdentity.avatarLabel" />
+            <div>
+              <div class="profile-card-name">{{ profileIdentity.nickname }}</div>
+              <div class="profile-card-copy">{{ profileIdentity.avatarLabel }}</div>
+            </div>
+          </div>
+
+          <div v-if="storedShareMedia" class="profile-cache">
+            <div class="profile-cache-header">
+              <div>
+                <div class="profile-cache-label">Last share</div>
+                <div class="profile-cache-copy">
+                  {{ formatMediaKind(storedShareMedia.kind) }} · {{ formatStoredAt(storedShareMedia.createdAt) }}
+                </div>
+              </div>
+              <button class="subtle-button profile-cache-button" type="button" :disabled="!storedShareMedia.dataUrl"
+                @click="openStoredShareMedia">
+                Open
+              </button>
+            </div>
+            <div class="profile-cache-file">{{ storedShareMedia.fileName }}</div>
+          </div>
+
+          <div class="profile-menu-actions">
+            <button class="button profile-reset-button" type="button" @click="deleteProfileData">
+              Delete data and reset
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="hero-atmosphere" aria-hidden="true">
@@ -30,24 +81,26 @@
       </div>
     </header>
 
-    <div :class="['layout', { 'has-chart': chart, flex: !chart }]">
+    <div :class="['layout', { 'has-chart': chart, 'is-empty': !chart }]">
       <div class="stack">
         <BirthForm
           :loading="loading"
           :error="error"
           :resolved-location="resolvedLocation"
+          :saved-birth-data="savedBirthData"
           :compact-summary="Boolean(chart)"
           @submit="handleSubmit"
         />
       </div>
 
-      <section :class="`results-grid ${chart ? '' : 'empty'}`">
+      <section v-if="chart" class="results-grid">
         <template v-if="chart">
           <SimplifiedChart
             :chart="chart"
             :current-transits="currentTransits"
             :partner-reports="partnerReports"
             :resolved-location="resolvedLocation"
+            @media-generated="handleMediaGenerated"
             @add-partner="openPartnerModal"
             @select-partner="selectPartnerChart"
             @remove-partner="removePartnerChart"
@@ -252,22 +305,6 @@
             </details>
           </div>
         </template>
-
-        <section v-else class="panel empty-state">
-          <div class="empty-state-inner">
-            <div class="empty-state-orbit" aria-hidden="true">
-              <span class="empty-state-ring empty-state-ring--outer"></span>
-              <span class="empty-state-ring empty-state-ring--inner"></span>
-              <span class="empty-state-core"></span>
-            </div>
-            <p class="empty-state-kicker">Birth chart preview</p>
-            <h3>No chart loaded</h3>
-            <p>
-              Enter a birth date, exact time and birthplace to generate a natal chart with accurate placements and clear
-              readings.
-            </p>
-          </div>
-        </section>
       </section>
     </div>
 
@@ -476,14 +513,14 @@
         <section class="about-hero">
           <div class="about-hero-copy">
             <p class="modal-copy about-intro-copy">
-              This app does not store your birth data or chart results. Most of the work happens locally in your
-              browser.
+              This app keeps your profile on your device if you choose to use it. Most of the work happens locally in
+              your browser.
             </p>
 
             <div class="about-pill-row">
               <span class="about-pill">
                 <IconShieldCheck :size="16" stroke-width="1.8" />
-                Nothing stored
+                Stored on device
               </span>
               <span class="about-pill">
                 <IconChartDots3 :size="16" stroke-width="1.8" />
@@ -523,7 +560,7 @@
             </span>
             <div>
               <div class="about-stat-label">Storage</div>
-              <div class="about-stat-value">Birth details are not stored by the app</div>
+              <div class="about-stat-value">Birth details can be saved only on your device</div>
             </div>
           </article>
 
@@ -556,16 +593,14 @@
               </span>
               <p class="about-kicker">What we keep</p>
             </div>
-            <h3 class="about-title">We do not store your chart information</h3>
+            <h3 class="about-title">Your chart stays local unless you delete it</h3>
             <p class="about-copy">
-              Birth date, birth time, birthplace, chart data and written readings are not stored by this app. Once the
-              chart is generated, the information stays in your browser session unless you choose to save or export it
-              yourself.
+              Birth date, birth time, birthplace, chart data, nickname, avatar and cached share media can be saved to
+              localStorage on this device. Nothing is sent to our servers.
             </p>
             <div class="about-divider" aria-hidden="true"></div>
             <p class="about-copy">
-              We do not keep a copy of your chart details on a server, and we do not use them to build a profile about
-              you.
+              Delete data and reset clears the local profile, chart and cached media from this browser.
             </p>
           </article>
 
@@ -603,7 +638,7 @@
             <div class="about-divider" aria-hidden="true"></div>
             <div class="about-note">
               <IconMoonStars :size="18" stroke-width="1.8" />
-              <span>The address helps find coordinates. Everything else stays local and is not stored.</span>
+              <span>The address helps find coordinates. Your saved profile stays local on this device.</span>
             </div>
           </article>
         </div>
@@ -616,11 +651,12 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import {
   IconAdjustmentsHorizontal,
   IconAtom2,
   IconChartDots3,
+  IconChevronDown,
   IconClock,
   IconMapPin,
   IconMoonStars,
@@ -654,6 +690,8 @@ import worldMap from './assets/img/3-Equirectangular_projection_world_map_withou
 import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
 import { buildCrossAspects } from './utils/aspects'
+import { buildProfileIdentity } from './utils/profile'
+import { clearStoredProfile, readStoredProfile, writeStoredProfile } from './utils/storage'
 
 const loading = ref(false)
 const error = ref('')
@@ -669,11 +707,24 @@ const partnerResolvedLocation = ref(null)
 const isPartnerModalOpen = ref(false)
 const isAboutModalOpen = ref(false)
 const isPrivacyModalOpen = ref(false)
+const isProfileMenuOpen = ref(false)
 const currentTransits = ref(null)
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
 const compatibilityAccordionRef = ref(null)
 const isAdvancedView = ref(false)
+const savedBirthData = ref(null)
+const storedShareMedia = ref(null)
+const storedProfileRecord = ref(null)
+const profileIdentity = computed(() => {
+  if (chart.value) return buildProfileIdentity(chart.value)
+  return storedProfileRecord.value?.profile || null
+})
+const profileStatusCopy = computed(() => {
+  if (chart.value) return 'Your chart is loaded and ready.'
+  if (savedBirthData.value) return 'Your chart is stored locally on this device.'
+  return 'Create a chart to generate your local profile.'
+})
 const corePlacements = computed(() => {
   if (!chart.value) return { sun: null, moon: null, asc: null }
 
@@ -767,6 +818,171 @@ function formatPlacement(placement) {
   return `${toTitleCase(placement.sign)} ${placement.degreeInSign.toFixed(2)}°`
 }
 
+function cloneStoredBirthData(formData) {
+  if (!formData || typeof formData !== 'object') return null
+
+  return {
+    date: formData.date || '',
+    time: formData.time || '',
+    address: formData.address || '',
+    houseSystem: formData.houseSystem || 'placidus',
+    lat: formData.lat ?? '',
+    lon: formData.lon ?? '',
+    timeZoneOverride: formData.timeZoneOverride || '',
+    useManualCoordinates: Boolean(formData.useManualCoordinates)
+  }
+}
+
+function cloneResolvedLocation(location) {
+  if (!location || typeof location !== 'object') return null
+  return {
+    label: location.label || '',
+    lat: Number(location.lat),
+    lon: Number(location.lon)
+  }
+}
+
+function buildProfileRecord({ chartData, birthData, location, shareMedia = null }) {
+  if (!chartData) return null
+
+  const profile = buildProfileIdentity(chartData)
+  return {
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    profile,
+    birthData: cloneStoredBirthData(birthData),
+    resolvedLocation: cloneResolvedLocation(location),
+    chart: chartData,
+    shareMedia
+  }
+}
+
+function persistProfileRecord(nextRecord) {
+  storedProfileRecord.value = nextRecord
+  storedShareMedia.value = nextRecord?.shareMedia || null
+  savedBirthData.value = nextRecord?.birthData || null
+  if (nextRecord?.resolvedLocation) {
+    resolvedLocation.value = nextRecord.resolvedLocation
+  }
+  if (!nextRecord) {
+    clearStoredProfile()
+    return
+  }
+  writeStoredProfile(nextRecord)
+}
+
+async function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => resolve(String(reader.result || '')))
+    reader.addEventListener('error', () => reject(new Error('Unable to cache the generated media.')))
+    reader.readAsDataURL(file)
+  })
+}
+
+async function cacheShareMedia(payload) {
+  if (!payload?.file) return
+
+  const dataUrl = payload.file.size <= 1_500_000
+    ? await readFileAsDataUrl(payload.file).catch(() => '')
+    : ''
+
+  const shareMedia = {
+    kind: payload.kind,
+    fileName: payload.fileName,
+    mimeType: payload.mimeType,
+    size: payload.size,
+    createdAt: payload.createdAt,
+    dataUrl
+  }
+
+  const nextRecord = buildProfileRecord({
+    chartData: chart.value,
+    birthData: savedBirthData.value,
+    location: resolvedLocation.value,
+    shareMedia
+  })
+
+  if (nextRecord) {
+    persistProfileRecord(nextRecord)
+  } else {
+    storedShareMedia.value = shareMedia
+  }
+}
+
+function restoreStoredState() {
+  const stored = readStoredProfile()
+  if (!stored) return
+
+  storedProfileRecord.value = stored
+  storedShareMedia.value = stored.shareMedia || null
+  savedBirthData.value = stored.birthData || null
+  resolvedLocation.value = stored.resolvedLocation || null
+  chart.value = stored.chart || null
+
+  if (stored.chart) {
+    calculateCurrentTransits(stored.chart)
+      .then((transits) => {
+        currentTransits.value = transits
+      })
+      .catch((transitError) => {
+        console.warn(transitError)
+        currentTransits.value = null
+      })
+  }
+}
+
+function toggleProfileMenu() {
+  isProfileMenuOpen.value = !isProfileMenuOpen.value
+}
+
+function formatStoredAt(value) {
+  if (!value) return 'Just now'
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(new Date(value))
+  } catch (error) {
+    return value
+  }
+}
+
+function formatMediaKind(kind) {
+  const labels = {
+    'story-image': 'Story image',
+    'chart-gif': 'Chart GIF',
+    reel: 'Reel video'
+  }
+  return labels[kind] || 'Share media'
+}
+
+function openStoredShareMedia() {
+  if (!storedShareMedia.value?.dataUrl) return
+  window.open(storedShareMedia.value.dataUrl, '_blank', 'noopener,noreferrer')
+}
+
+function deleteProfileData() {
+  const confirmed = window.confirm('Delete the stored local profile and reset the app?')
+  if (!confirmed) return
+
+  clearStoredProfile()
+  storedProfileRecord.value = null
+  storedShareMedia.value = null
+  savedBirthData.value = null
+  chart.value = null
+  resolvedLocation.value = null
+  currentTransits.value = null
+  partnerCharts.value = []
+  activePartnerId.value = ''
+  partnerResolvedLocation.value = null
+  compositeChart.value = null
+  error.value = ''
+  partnerError.value = ''
+  isAdvancedView.value = false
+  isProfileMenuOpen.value = false
+}
+
 async function handleSubmit(formData) {
   loading.value = true
   error.value = ''
@@ -802,6 +1018,12 @@ async function handleSubmit(formData) {
       console.warn(transitError)
       currentTransits.value = null
     }
+
+    persistProfileRecord(buildProfileRecord({
+      chartData: chartData,
+      birthData: formData,
+      location
+    }))
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Something went wrong.'
   } finally {
@@ -992,6 +1214,12 @@ async function handlePartnerSubmit(formData) {
   }
 }
 
+function handleMediaGenerated(payload) {
+  cacheShareMedia(payload).catch((error) => {
+    console.warn(error)
+  })
+}
+
 function openPartnerModal() {
   partnerError.value = ''
   partnerResolvedLocation.value = null
@@ -1043,4 +1271,8 @@ function formatHouseSystem(value) {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
 }
+
+onMounted(() => {
+  restoreStoredState()
+})
 </script>

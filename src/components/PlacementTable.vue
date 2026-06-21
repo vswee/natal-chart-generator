@@ -14,9 +14,7 @@
         <tr v-for="placement in placementRows" :key="placement.body">
           <td data-label="Body">
             <span class="body-label">
-              <span v-if="symbolForBody(placement.body)" class="body-symbol">
-                {{ symbolForBody(placement.body) }}
-              </span>
+              <AstroGlyph v-if="hasGlyph(placement.body)" class="body-symbol" :body="placement.body" :size="16" />
               {{ labelForBody(placement.body) }}
             </span>
           </td>
@@ -78,6 +76,8 @@
 import { computed, ref } from 'vue'
 import { toTitleCase } from '../utils/zodiac'
 import { getHouseMeaning, getHouseOrdinal } from '../utils/houses'
+import { hasGlyph } from '../utils/astro-glyphs'
+import AstroGlyph from './AstroGlyph.vue'
 import ZodiacIcon from './ZodiacIcon.vue'
 
 const props = defineProps({
@@ -132,23 +132,6 @@ function labelForBody(body) {
   }
 
   return labels[body] || body
-}
-
-function symbolForBody(body) {
-  const symbols = {
-    sun: '☉',
-    moon: '☽',
-    mercury: '☿',
-    venus: '♀',
-    mars: '♂',
-    jupiter: '♃',
-    saturn: '♄',
-    uranus: '♅',
-    neptune: '♆',
-    pluto: '♇'
-  }
-
-  return symbols[body] || ''
 }
 
 function titleCase(value) {

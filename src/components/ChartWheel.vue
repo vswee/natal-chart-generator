@@ -1,7 +1,7 @@
 <template>
   <component :is="embedded ? 'div' : 'section'" :class="embedded ? 'chart-panel embedded' : 'panel chart-panel'">
     <div class="panel-inner">
-      <div class="chart-header">
+      <div v-if="showChrome" class="chart-header">
         <div>
           <h2 class="section-title">Chart wheel</h2>
           <p class="section-copy">Houses, placements and major aspects on one wheel.</p>
@@ -36,8 +36,9 @@
           :width="size"
           :height="size"
           :viewBox="`0 0 ${size} ${size}`"
-          role="img"
-          aria-label="Natal chart wheel"
+          :role="decorative ? undefined : 'img'"
+          :aria-label="decorative ? undefined : 'Natal chart wheel'"
+          :aria-hidden="decorative ? 'true' : undefined"
           @mouseleave="clearHover"
         >
           <g class="wheel-sign-segments">
@@ -144,13 +145,9 @@
                 @mouseenter="setHover(placement.title)"
                 @mouseleave="clearHover"
               />
-              <text
-                class="placement-glyph"
-                :x="placement.point.x"
-                :y="placement.point.y"
-              >
-                {{ placement.symbol }}
-              </text>
+              <g :transform="`translate(${placement.point.x - placement.glyphSize / 2}, ${placement.point.y - placement.glyphSize / 2})`">
+                <AstroGlyph :body="placement.body" :size="placement.glyphSize" class="placement-glyph" />
+              </g>
               <text
                 class="placement-degree"
                 :x="placement.degreePoint.x"
@@ -161,7 +158,7 @@
             </g>
           </g>
         </svg>
-        <p class="chart-note">{{ hoverText || defaultHoverText }}</p>
+        <p v-if="showChrome" class="chart-note">{{ hoverText || defaultHoverText }}</p>
       </div>
     </div>
   </component>
@@ -171,10 +168,19 @@
 import { computed, ref } from 'vue'
 import { getHouseMeaning } from '../utils/houses'
 import { normaliseDegrees, toTitleCase, SIGNS, SIGN_INFO } from '../utils/zodiac'
+import AstroGlyph from './AstroGlyph.vue'
 import ZodiacIcon from './ZodiacIcon.vue'
 
 const props = defineProps({
   embedded: {
+    type: Boolean,
+    default: false
+  },
+  showChrome: {
+    type: Boolean,
+    default: true
+  },
+  decorative: {
     type: Boolean,
     default: false
   },
@@ -206,21 +212,6 @@ const placementDegreeRadius = 102
 const aspectRadius = 92
 const defaultHoverText = 'Hover over a point or line for details.'
 const hoverText = ref('')
-
-const placementSymbols = {
-  sun: '☉',
-  moon: '☽',
-  mercury: '☿',
-  venus: '♀',
-  mars: '♂',
-  jupiter: '♃',
-  saturn: '♄',
-  uranus: '♅',
-  neptune: '♆',
-  pluto: '♇',
-  asc: 'ASC',
-  mc: 'MC'
-}
 
 const placementLabels = {
   sun: 'Sun',
@@ -379,7 +370,7 @@ const placementPoints = computed(() =>
     const angle = angleForLongitude(placement.longitude)
     return {
       body: placement.body,
-      symbol: placementSymbols[placement.body] || toTitleCase(placement.body).slice(0, 2),
+      glyphSize: placement.body === 'sun' || placement.body === 'moon' || placement.body === 'asc' ? 16 : 13,
       point: polarToPoint(angle, placementRadius),
       degreePoint: polarToPoint(angle, placementDegreeRadius),
       degreeLabel: formatDegreeLabel(placement),

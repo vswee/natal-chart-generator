@@ -61,13 +61,7 @@ a {
   padding: 24px 0 64px;
 }
 
-.app-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 12px 0 28px;
-}
+
 
 .brand-mark {
   display: inline-flex;
@@ -102,10 +96,190 @@ a {
   line-height: 1.7;
 }
 
+.profile-dock {
+  position: absolute;
+  top: 28px;
+  right: clamp(20px, 3vw, 34px);
+  z-index: 2;
+  width: min(360px, calc(100vw - 60px));
+}
+
+.profile-button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  width: 100%;
+  align-items: center;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+  color: var(--text);
+  text-align: left;
+  backdrop-filter: blur(18px);
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #dce5f7, #f6d8c6);
+  color: #223;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-avatar img,
+.profile-card-avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-kicker,
+.profile-subcopy,
+.profile-cache-label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.profile-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.profile-subcopy {
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+
+.profile-chevron {
+  color: var(--muted);
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  display: grid;
+  gap: 14px;
+  width: min(340px, calc(100vw - 60px));
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(18px);
+  z-index: 10;
+}
+
+.profile-menu-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.profile-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(238, 243, 250, 0.92), rgba(255, 255, 255, 0.92));
+}
+
+.profile-card-avatar {
+  border-radius: 16px;
+}
+
+.profile-card-name {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.profile-card-copy,
+.profile-cache-copy,
+.profile-cache-file {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.profile-cache {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(245, 247, 251, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+}
+
+.profile-cache-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-cache-button {
+  flex: 0 0 auto;
+  padding-inline: 12px;
+}
+
+.profile-cache-file {
+  margin-top: 0;
+  font-size: 0.78rem;
+}
+
+.profile-menu-actions {
+  display: flex;
+  justify-content: stretch;
+}
+
+.profile-reset-button {
+  width: 100%;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 380px minmax(0, 1fr);
   /* gap: 22px; */
+}
+
+.layout.is-empty {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.layout.is-empty .stack {
+  width: min(100%, 980px);
+}
+
+.layout.is-empty .birth-form-panel {
+  width: 100%;
 }
 
 /* .layout.flex {
@@ -702,6 +876,105 @@ a {
   overflow: auto;
 }
 
+.birth-form-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+  align-items: start;
+  width: 100%;
+}
+
+.birth-form-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  width: 100%;
+  align-content: start;
+}
+
+.birth-form-panel-head {
+  display: grid;
+  gap: 6px;
+  max-width: 52ch;
+}
+
+.birth-form-kicker {
+  margin: 0;
+  color: rgba(101, 88, 124, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.birth-form-fields {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(105, 92, 124, 0.08);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 245, 239, 0.96)),
+    var(--panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 10px 24px rgba(69, 54, 91, 0.04);
+}
+
+.birth-form-rail {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+  width: 100%;
+  padding: 18px 0 0 24px;
+  border-left: 1px solid rgba(105, 92, 124, 0.12);
+  background: transparent;
+  box-shadow: none;
+  height: 100%;
+}
+
+.birth-form-rail-graphic {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+.birth-form-orbit {
+  justify-self: center;
+  align-self: start;
+  width: 162px;
+  margin: 0;
+}
+
+.birth-form-orbit .empty-state-ring {
+  border-color: rgba(105, 92, 124, 0.12);
+}
+
+.birth-form-orbit .empty-state-core {
+  inset: 38%;
+}
+
+.birth-form-rail-caption {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  text-align: center;
+  max-width: 26ch;
+}
+
+
+.birth-advanced-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(105, 92, 124, 0.06);
+}
+
 .birth-summary-close {
   flex: 0 0 auto;
 }
@@ -758,7 +1031,7 @@ a {
 
 .row-flex-2 {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: 1fr auto;
   gap: 12px;
 }
 
@@ -2289,8 +2562,8 @@ a {
 }
 
 .placement-glyph {
-  font-size: 12px;
-  fill: #111827;
+  display: block;
+  color: #111827;
   text-anchor: middle;
   dominant-baseline: middle;
   font-weight: 600;
@@ -2459,8 +2732,11 @@ a {
   gap: 6px;
 }
 
-.zodiac-icon {
+.zodiac-icon,
+.astro-glyph {
   display: inline-block;
+  line-height: 0;
+  flex: 0 0 auto;
 }
 
 .body-label {
@@ -2533,28 +2809,6 @@ a {
   background: rgba(185, 28, 28, 0.08);
   color: var(--danger);
   font-size: 0.92rem;
-}
-
-.empty-state {
-  min-height: 520px;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 32px;
-  display: none;
-}
-
-.empty-state h3 {
-  margin: 0 0 10px;
-  font-size: 1.5rem;
-  letter-spacing: -0.03em;
-}
-
-.empty-state p {
-  margin: 0;
-  max-width: 480px;
-  color: var(--muted);
-  line-height: 1.7;
 }
 
 .footer-note {
@@ -2719,16 +2973,20 @@ a {
   margin-bottom: 14px;
   padding: 22px clamp(22px, 3vw, 34px) 26px;
   border-radius: 30px;
+  overflow: visible;
 }
 
-.app-header::after {
+
+
+/* .app-header::after {
   content: '';
   position: absolute;
   inset: auto 0 0;
   height: 120px;
   background: linear-gradient(180deg, rgba(244, 239, 233, 0), rgba(244, 239, 233, 0.76) 60%, var(--bg));
   pointer-events: none;
-}
+  border-radius: 0 0 30px 30px;
+} */
 
 .hero-content {
   position: relative;
@@ -2809,6 +3067,7 @@ a {
 .hero-atmosphere {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   background:
     radial-gradient(circle at 18% 18%, rgba(255, 252, 247, 0.98) 0%, rgba(255, 248, 239, 0.9) 20%, rgba(249, 234, 216, 0.56) 36%, rgba(236, 222, 244, 0.2) 60%, rgba(228, 220, 243, 0.08) 78%, transparent 100%),
     radial-gradient(circle at 84% 24%, rgba(189, 179, 239, 0.36), rgba(177, 167, 232, 0.16) 26%, rgba(171, 178, 229, 0.1) 44%, transparent 72%),
@@ -2821,6 +3080,7 @@ a {
   transition:
     opacity 0.75s ease,
     transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    width: min(var(--max-width), calc(100% - 40px));
 }
 
 .app-header.is-compact .hero-atmosphere {
@@ -3189,8 +3449,7 @@ a {
 .composite-subtitle,
 .depth-title,
 .map-meta-title,
-.footer-title,
-.empty-state-kicker {
+.footer-title {
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -3391,20 +3650,6 @@ a {
   padding: 28px;
 }
 
-.empty-state {
-  display: grid;
-  min-height: 100%;
-  place-items: center;
-  padding: 24px;
-}
-
-.empty-state-inner {
-  display: grid;
-  justify-items: center;
-  gap: 16px;
-  max-width: 440px;
-}
-
 .empty-state-orbit {
   position: relative;
   width: 140px;
@@ -3430,21 +3675,6 @@ a {
   inset: 37%;
   background: radial-gradient(circle at 35% 35%, #fff 0, #f1dcc0 30%, #8d7ea7 72%, #352c47 100%);
   box-shadow: 0 16px 34px rgba(82, 68, 106, 0.16);
-}
-
-.empty-state-kicker {
-  margin: 0;
-}
-
-.empty-state h3 {
-  margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2.2rem;
-  line-height: 0.96;
-}
-
-.empty-state p {
-  max-width: 38ch;
 }
 
 .app-footer {
@@ -3517,25 +3747,26 @@ a {
   pointer-events: none;
 }
 
-.simple-hero::after {
-  content: '';
+.simple-hero-wheel {
   position: absolute;
-  right: -84px;
-  top: -118px;
+  right: clamp(-124px, -5vw, -92px);
+  top: clamp(-148px, -8vw, -124px);
   z-index: 0;
-  width: 360px;
-  aspect-ratio: 1;
-  border: 1px solid rgba(48, 77, 77, 0.06);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 28px rgba(255, 255, 255, 0.1),
-    0 0 0 64px rgba(173, 104, 95, 0.03);
+  width: min(48vw, 620px);
+  opacity: 0.18;
+  filter: drop-shadow(0 24px 38px rgba(15, 23, 42, 0.12));
   pointer-events: none;
+  user-select: none;
+}
+
+.simple-hero-wheel .chart-wheel {
+  width: 100%;
+  max-width: none;
 }
 
 .simple-hero-symbol {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   color: rgba(48, 77, 77, 0.05);
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 700;
@@ -3603,6 +3834,9 @@ a {
 }
 
 .simple-theme-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   min-height: 38px;
   border: 0;
   border-radius: 999px;
@@ -3882,10 +4116,6 @@ a {
   top: 14px;
   z-index: 0;
   color: rgba(48, 77, 77, 0.08);
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 3.4rem;
-  font-weight: 700;
-  line-height: 1;
   pointer-events: none;
 }
 
@@ -4282,8 +4512,10 @@ a {
 }
 
 .share-card-sign-symbol {
-  font-size: 0.72em;
   opacity: 0.68;
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
 }
 
 .share-card--dark .share-card-core-item {
@@ -4442,17 +4674,6 @@ a {
     grid-template-columns: 1fr;
   }
 
-  .birth-date-time-row.row-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .birth-date-time-row.row-2 input {
-    width: calc(100% - 32px);
-    height: 3rem;
-    ;
-  }
-
   .birth-date-time-row .field,
   .birth-date-time-row .label-row {
     min-width: 0;
@@ -4477,6 +4698,12 @@ a {
   .app-header {
     min-height: 290px;
     padding: 28px 24px 44px;
+  }
+
+  .profile-dock {
+    top: 22px;
+    right: 22px;
+    width: min(320px, calc(100vw - 52px));
   }
 
   .app-header.is-compact {
@@ -4509,6 +4736,23 @@ a {
   .compare-detail {
     gap: 20px;
   }
+
+  .birth-form-form {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 100%;
+  }
+
+  .birth-form-main {
+    max-width: none;
+  }
+
+  .birth-form-rail {
+    padding: 16px 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(105, 92, 124, 0.12);
+  }
+
 }
 
 @media (max-width: 720px) {
@@ -4518,7 +4762,7 @@ a {
   }
 
   .birth-form-panel.is-compact:not(.is-editing) .birth-form-header .section-copy,
-  .birth-form-panel.is-compact:not(.is-editing) .birth-form-body,
+  .birth-form-panel.is-compact:not(.is-editing) .birth-form-form,
   .birth-form-panel.is-compact:not(.is-editing) .birth-form-note {
     display: none;
   }
@@ -4748,6 +4992,29 @@ a {
     line-height: 1.5;
   }
 
+  .profile-dock {
+    position: static;
+    width: min(100%, 320px);
+    justify-self: end;
+    margin: 0 0 16px;
+  }
+
+  .profile-button {
+    padding: 10px 12px;
+    border-radius: 18px;
+  }
+
+  .profile-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .profile-menu {
+    width: min(300px, calc(100vw - 24px));
+    padding: 14px;
+  }
+
   .hero-chart {
     right: -18%;
     top: 58%;
@@ -4793,9 +5060,10 @@ a {
     border-radius: 22px;
   }
 
-  .simple-hero::after {
-    right: -148px;
-    top: -118px;
+  .simple-hero-wheel {
+    right: -108px;
+    top: -102px;
+    width: min(60vw, 360px);
   }
 
   .simple-hero-symbol--moon {

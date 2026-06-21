@@ -1,30 +1,21 @@
 <template>
-  <component
-    :is="iconComponent"
-    v-if="iconComponent"
-    :size="size"
-    stroke="1.5"
+  <svg
+    v-if="glyphMarkup"
     class="zodiac-icon"
+    :width="size"
+    :height="size"
+    :viewBox="viewBox"
+    :style="svgStyle"
+    xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
+    focusable="false"
+    v-html="glyphMarkup"
   />
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import {
-  IconZodiacAquarius,
-  IconZodiacAries,
-  IconZodiacCancer,
-  IconZodiacCapricorn,
-  IconZodiacGemini,
-  IconZodiacLeo,
-  IconZodiacLibra,
-  IconZodiacPisces,
-  IconZodiacSagittarius,
-  IconZodiacScorpio,
-  IconZodiacTaurus,
-  IconZodiacVirgo
-} from '@tabler/icons-vue'
+import { GLYPH_VIEWBOX, getGlyphInnerSvg } from '../utils/astro-glyphs'
 
 const props = defineProps({
   sign: {
@@ -34,23 +25,14 @@ const props = defineProps({
   size: {
     type: Number,
     default: 18
+  },
+  color: {
+    type: String,
+    default: 'currentColor'
   }
 })
 
-const iconMap = {
-  aries: IconZodiacAries,
-  taurus: IconZodiacTaurus,
-  gemini: IconZodiacGemini,
-  cancer: IconZodiacCancer,
-  leo: IconZodiacLeo,
-  virgo: IconZodiacVirgo,
-  libra: IconZodiacLibra,
-  scorpio: IconZodiacScorpio,
-  sagittarius: IconZodiacSagittarius,
-  capricorn: IconZodiacCapricorn,
-  aquarius: IconZodiacAquarius,
-  pisces: IconZodiacPisces
-}
-
-const iconComponent = computed(() => iconMap[props.sign] || null)
+const viewBox = GLYPH_VIEWBOX
+const glyphMarkup = computed(() => getGlyphInnerSvg('sign', props.sign))
+const svgStyle = computed(() => (props.color && props.color !== 'currentColor' ? { color: props.color } : undefined))
 </script>

@@ -1,4 +1,5 @@
 import { normaliseDegrees, toTitleCase, SIGNS, SIGN_INFO } from './zodiac'
+import { loadGlyphImage } from './astro-glyphs'
 
 export const CHART_GIF_SIZE = 640
 export const CHART_GIF_RENDER_SCALE = 2.75
@@ -8,36 +9,6 @@ export const CHART_GIF_DURATION_MS = 3000
 const TAU = Math.PI * 2
 const CHART_GIF_LAYOUT_SCALE = 0.66
 const CHART_GIF_INTRO_SCALE = 2
-
-const BODY_SYMBOLS = {
-  sun: '☉',
-  moon: '☽',
-  mercury: '☿',
-  venus: '♀',
-  mars: '♂',
-  jupiter: '♃',
-  saturn: '♄',
-  uranus: '♅',
-  neptune: '♆',
-  pluto: '♇',
-  asc: 'ASC',
-  mc: 'MC'
-}
-
-const SIGN_GLYPHS = {
-  aries: '♈',
-  taurus: '♉',
-  gemini: '♊',
-  cancer: '♋',
-  leo: '♌',
-  virgo: '♍',
-  libra: '♎',
-  scorpio: '♏',
-  sagittarius: '♐',
-  capricorn: '♑',
-  aquarius: '♒',
-  pisces: '♓'
-}
 
 const ELEMENT_COLORS = {
   fire: '#d37a69',
@@ -141,6 +112,16 @@ function mixHexColor(from, to, t) {
 function rgbaFromHex(hex, alpha = 1) {
   const { r, g, b } = parseHexColor(hex)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function drawGlyphImage(ctx, image, x, y, size) {
+  if (!image) return
+  ctx.drawImage(image, x - size / 2, y - size / 2, size, size)
+}
+
+async function loadGlyphImageMap(entries) {
+  const loaded = await Promise.all(entries.map(async ([key, kind, name, color]) => [key, await loadGlyphImage(kind, name, color)]))
+  return Object.fromEntries(loaded)
 }
 
 function normaliseCusps(cusps) {
@@ -278,7 +259,7 @@ function drawTitleBlock(ctx, scene, progress, flatten) {
   ctx.restore()
 }
 
-function drawPlanetMarker(ctx, point, radius, symbol, color, alpha, scale) {
+function drawPlanetMarker(ctx, point, radius, glyphImage, fallbackLabel, color, alpha, scale) {
   ctx.save()
   ctx.globalAlpha = alpha
   ctx.shadowBlur = 18 * scale
@@ -304,12 +285,15 @@ function drawPlanetMarker(ctx, point, radius, symbol, color, alpha, scale) {
   ctx.lineWidth = Math.max(1, 1.15 * scale)
   ctx.stroke()
 
-  ctx.fillStyle = '#ffffff'
-  const symbolScale = symbol.length > 2 ? 0.72 : 1
-  ctx.font = `700 ${Math.max(10, Math.round(radius * 1.05 * symbolScale))}px Manrope, Arial, sans-serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(symbol, point.x, point.y + 0.5)
+  if (glyphImage) {
+    drawGlyphImage(ctx, glyphImage, point.x, point.y + 0.5, Math.max(18, Math.round(radius * 1.9)))
+  } else {
+    ctx.fillStyle = '#ffffff'
+    ctx.font = `700 ${Math.max(10, Math.round(radius * 1.05))}px Manrope, Arial, sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(fallbackLabel, point.x, point.y + 0.5)
+  }
   ctx.restore()
 }
 
@@ -377,7 +361,8 @@ function drawShell(ctx, scene, progress, flatten) {
       ctx,
       orbitPoint,
       radius * depth,
-      placement.symbol,
+      scene.glyphImages.bodies[placement.body] || null,
+      PLACEMENT_LABELS[placement.body] || toTitleCase(placement.body).slice(0, 2),
       placement.color,
       shellAlpha * (0.9 - index * 0.02),
       scale
@@ -469,10 +454,13 @@ function drawWheel(ctx, scene, progress, flatten) {
 
   scene.signGlyphs.forEach((sign) => {
     ctx.fillStyle = rgbaFromHex('#322941', 0.92 * labelAlpha + 0.08)
-    ctx.font = `700 ${Math.round(16 * scale)}px "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(SIGN_GLYPHS[sign.sign] || sign.sign.slice(0, 2), sign.point.x - center.x, sign.point.y - center.y)
+    drawGlyphImage(
+      ctx,
+      scene.glyphImages.signs[sign.sign],
+      sign.point.x - center.x,
+      sign.point.y - center.y,
+      Math.round(16 * scale)
+    )
   })
 
   scene.houseLabels.forEach((house) => {
@@ -496,11 +484,13 @@ function drawWheel(ctx, scene, progress, flatten) {
     ctx.restore()
 
     ctx.fillStyle = rgbaFromHex('#132033', 0.96 * labelAlpha + 0.04)
-    const placementSymbolScale = placement.symbol.length > 2 ? 0.78 : 1
-    ctx.font = `700 ${Math.round((placement.body === 'sun' || placement.body === 'moon' || placement.body === 'asc' ? 13 : 12) * scale * placementSymbolScale)}px "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", Manrope, Arial, sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(placement.symbol, point.x - center.x, point.y - center.y + 0.4)
+    drawGlyphImage(
+      ctx,
+      scene.glyphImages.bodies[placement.body] || scene.glyphImages.bodies.sun,
+      point.x - center.x,
+      point.y - center.y + 0.4,
+      Math.round((placement.body === 'sun' || placement.body === 'moon' || placement.body === 'asc' ? 13 : 12) * scale * 2.1)
+    )
 
     ctx.fillStyle = rgbaFromHex('#5c6475', 0.84 * labelAlpha + 0.08)
     ctx.font = `${Math.round(10 * scale)}px Manrope, Arial, sans-serif`
@@ -546,7 +536,7 @@ function drawFooter(ctx, scene, progress, flatten) {
   ctx.restore()
 }
 
-export function createChartGifScene(chart, size = CHART_GIF_SIZE) {
+export async function createChartGifScene(chart, size = CHART_GIF_SIZE) {
   const placements = Array.isArray(chart?.placements) ? chart.placements : []
   const aspects = Array.isArray(chart?.aspects) ? chart.aspects : []
   const houseCusps = normaliseCusps(chart?.houseCusps)
@@ -591,6 +581,25 @@ export function createChartGifScene(chart, size = CHART_GIF_SIZE) {
       color
     }
   })
+
+  const glyphImages = {
+    bodies: await loadGlyphImageMap([
+      ['sun', 'body', 'sun', '#152421'],
+      ['moon', 'body', 'moon', '#152421'],
+      ['asc', 'body', 'asc', '#152421'],
+      ['mc', 'body', 'mc', '#152421'],
+      ['jupiter', 'body', 'jupiter', '#152421'],
+      ['saturn', 'body', 'saturn', '#152421'],
+      ['northNode', 'body', 'northNode', '#152421'],
+      ['southNode', 'body', 'southNode', '#152421'],
+      ['chiron', 'body', 'chiron', '#152421'],
+      ['lilith', 'body', 'lilith', '#152421'],
+      ['sunLight', 'body', 'sun', '#fff8ef'],
+      ['moonLight', 'body', 'moon', '#fff8ef'],
+      ['ascLight', 'body', 'asc', '#fff8ef']
+    ]),
+    signs: await loadGlyphImageMap(SIGNS.map((sign) => [sign, 'sign', sign, '#322941']))
+  }
 
   const placementLookup = new Map(placements.map((placement) => [placement.body, placement]))
 
@@ -655,7 +664,6 @@ export function createChartGifScene(chart, size = CHART_GIF_SIZE) {
     const color = ELEMENT_COLORS[signInfo.element] || '#7d9ed9'
     return {
       body: placement.body,
-      symbol: BODY_SYMBOLS[placement.body] || toTitleCase(placement.body).slice(0, 2),
       label: PLACEMENT_LABELS[placement.body] || toTitleCase(placement.body),
       element: signInfo.element,
       color,
@@ -693,8 +701,8 @@ export function createChartGifScene(chart, size = CHART_GIF_SIZE) {
     const moon = placementLookup.get('moon')
     const asc = placementLookup.get('asc')
     const parts = []
-    if (sun) parts.push(`${toTitleCase(sun.sign)} ☀️`)
-    if (moon) parts.push(`${toTitleCase(moon.sign)} 🌙`)
+    if (sun) parts.push(`${toTitleCase(sun.sign)} Sun`)
+    if (moon) parts.push(`${toTitleCase(moon.sign)} Moon`)
     if (asc) parts.push(`${toTitleCase(asc.sign)} Rising`)
     return parts.length ? parts.join(' · ') : 'Natal chart'
   })()
@@ -724,6 +732,7 @@ export function createChartGifScene(chart, size = CHART_GIF_SIZE) {
     subtitleCopy,
     footerCopy: 'Made with ❤️ by Natal Chart App',
     stars,
+    glyphImages,
     signSegments,
     signBoundaries,
     signGlyphs,

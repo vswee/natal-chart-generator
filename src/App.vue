@@ -57,8 +57,13 @@
           </div>
 
           <div class="profile-menu-actions">
-            <button class="button profile-reset-button" type="button" @click="deleteProfileData">
-              Delete data and reset
+            <button
+              :class="['button', 'profile-reset-button', { 'is-armed': isProfileResetArmed }]"
+              type="button"
+              :aria-pressed="isProfileResetArmed"
+              @click="handleProfileResetClick"
+            >
+              {{ isProfileResetArmed ? 'Are you sure? Clear data' : 'Delete data and reset' }}
             </button>
           </div>
         </div>
@@ -708,6 +713,7 @@ const isPartnerModalOpen = ref(false)
 const isAboutModalOpen = ref(false)
 const isPrivacyModalOpen = ref(false)
 const isProfileMenuOpen = ref(false)
+const isProfileResetArmed = ref(false)
 const currentTransits = ref(null)
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
@@ -933,6 +939,12 @@ function restoreStoredState() {
 }
 
 function toggleProfileMenu() {
+  if (isProfileMenuOpen.value) {
+    isProfileResetArmed.value = false
+    isProfileMenuOpen.value = false
+    return
+  }
+
   isProfileMenuOpen.value = !isProfileMenuOpen.value
 }
 
@@ -963,10 +975,8 @@ function openStoredShareMedia() {
 }
 
 function deleteProfileData() {
-  const confirmed = window.confirm('Delete the stored local profile and reset the app?')
-  if (!confirmed) return
-
   clearStoredProfile()
+  isProfileResetArmed.value = false
   storedProfileRecord.value = null
   storedShareMedia.value = null
   savedBirthData.value = null
@@ -982,6 +992,21 @@ function deleteProfileData() {
   isAdvancedView.value = false
   isProfileMenuOpen.value = false
 }
+
+function handleProfileResetClick() {
+  if (!isProfileResetArmed.value) {
+    isProfileResetArmed.value = true
+    return
+  }
+
+  deleteProfileData()
+}
+
+watch(isProfileMenuOpen, (isOpen) => {
+  if (!isOpen) {
+    isProfileResetArmed.value = false
+  }
+})
 
 async function handleSubmit(formData) {
   loading.value = true

@@ -263,6 +263,13 @@ a {
   width: 100%;
 }
 
+.profile-reset-button.is-armed {
+  background: linear-gradient(135deg, #8f2730 0%, #c64f59 100%);
+  box-shadow:
+    0 10px 20px rgba(143, 39, 48, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 380px minmax(0, 1fr);

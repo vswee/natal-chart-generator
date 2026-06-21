@@ -1517,3 +1517,576 @@ a {
   font-size: 28px;
   letter-spacing: 0;
 }
+
+/* Co-Star inspired editorial refresh: white canvas, hairline structure, subtle moving line fields. */
+:root {
+  --bg: #ffffff;
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-strong: #ffffff;
+  --panel-strong-2: #f7f7f5;
+  --border: rgba(18, 18, 18, 0.12);
+  --border-strong: rgba(18, 18, 18, 0.28);
+  --text: #111111;
+  --muted: #696969;
+  --soft: #f2f2ef;
+  --accent: #111111;
+  --accent-soft: #ededeb;
+  --success: #217369;
+  --danger: #9f2d33;
+  --shadow: 0 1px 0 rgba(17, 17, 17, 0.08), 0 18px 52px rgba(17, 17, 17, 0.045);
+  --radius-xl: 12px;
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
+  --max-width: 1180px;
+  --motion-x: 0;
+  --motion-y: 0;
+}
+
+html {
+  background: #fff;
+}
+
+body {
+  min-height: 100%;
+  font-family: "Manrope", "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  background:
+    linear-gradient(rgba(17, 17, 17, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.02) 1px, transparent 1px),
+    #fff;
+  background-size: 96px 96px, 96px 96px, auto;
+  color: var(--text);
+}
+
+body::before,
+body::after {
+  display: none;
+}
+
+.app-shell {
+  width: min(var(--max-width), calc(100% - 48px));
+  padding: 28px 0 96px;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: -18vh -12vw auto auto;
+  width: min(820px, 76vw);
+  height: min(640px, 60vw);
+  border: 1px solid rgba(17, 17, 17, 0.045);
+  border-radius: 58% / 44%;
+  box-shadow:
+    0 0 0 64px rgba(17, 17, 17, 0.018),
+    0 0 0 128px rgba(17, 17, 17, 0.012);
+  pointer-events: none;
+  transform: translate3d(calc(var(--motion-x) * 24px), calc(var(--motion-y) * 18px), 0);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+
+.app-header {
+  min-height: 420px;
+  align-items: center;
+  margin-bottom: 28px;
+  padding: clamp(28px, 4vw, 54px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  background: #fff;
+  box-shadow: none;
+}
+
+.app-header::before {
+  inset: 0;
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at calc(74% + (var(--motion-x) * 24px)) calc(28% + (var(--motion-y) * 18px)), transparent 0 31%, rgba(17, 17, 17, 0.07) 31.1% 31.28%, transparent 31.4%),
+    linear-gradient(108deg, transparent calc(58% + (var(--motion-x) * 2%)), rgba(17, 17, 17, 0.06) calc(58.1% + (var(--motion-x) * 2%)), transparent calc(58.25% + (var(--motion-x) * 2%)));
+  transition: background-position 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-header::after {
+  inset: auto clamp(28px, 4vw, 54px) clamp(22px, 3vw, 36px);
+  height: 1px;
+  background: var(--border-strong);
+}
+
+.app-header.is-compact {
+  min-height: 188px;
+  padding: 26px clamp(24px, 3vw, 38px);
+  border-radius: var(--radius-xl);
+  background: #fff;
+}
+
+.hero-content {
+  gap: 18px;
+  max-width: 760px;
+}
+
+.brand-mark {
+  gap: 12px;
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.brand-dot {
+  width: 8px;
+  height: 6px;
+  background: var(--text);
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.hero-title,
+.section-title,
+.simple-title,
+.modal-title,
+.about-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.hero-title {
+  max-width: 9.5ch;
+  font-size: clamp(4.1rem, 11vw, 8.3rem);
+  line-height: 0.82;
+}
+
+.app-header.is-compact .hero-title {
+  max-width: 18ch;
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  line-height: 0.9;
+}
+
+.hero-copy {
+  max-width: 56ch;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.72;
+}
+
+.layout {
+  grid-template-columns: minmax(340px, 390px) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.layout.has-chart {
+  gap: 18px;
+}
+
+.stack,
+.results-grid,
+.map-row,
+.summary-row,
+.card-grid.vertical,
+.compare-detail,
+.simple-core-grid,
+.simple-forecast-grid {
+  gap: 18px;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.panel::before {
+  background:
+    radial-gradient(circle at calc(86% + (var(--motion-x) * 18px)) calc(18% + (var(--motion-y) * 12px)), transparent 0 84px, rgba(17, 17, 17, 0.055) 85px, transparent 86px),
+    linear-gradient(112deg, transparent calc(66% + (var(--motion-x) * 2%)), rgba(17, 17, 17, 0.04) calc(66.12% + (var(--motion-x) * 2%)), transparent calc(66.26% + (var(--motion-x) * 2%)));
+  opacity: 0.68;
+  transition: background 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.panel-inner {
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.section-title {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.45rem);
+  line-height: 0.95;
+}
+
+.section-copy {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.simple-kicker,
+.birth-form-kicker,
+.meta-kicker,
+.core-title,
+.focus-label,
+.relationship-label,
+.present-card-title,
+.distribution-title,
+.composite-subtitle,
+.depth-title,
+.map-meta-title,
+.footer-title,
+.daily-horoscope-day,
+.daily-horoscope-meta-label,
+.daily-horoscope-tab-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.profile-dock {
+  top: 28px;
+  right: 28px;
+}
+
+.profile-button,
+.profile-menu {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 44px rgba(17, 17, 17, 0.08);
+}
+
+.profile-avatar {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 60% / 46%;
+  background: #f4f4f1;
+  color: var(--text);
+}
+
+.profile-card,
+.profile-birth-summary,
+.profile-birth-summary-card,
+.profile-cache,
+.birth-summary-compact,
+.birth-form-fields,
+.birth-advanced-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: none;
+}
+
+.birth-form-form {
+  gap: 24px;
+}
+
+.birth-form-fields {
+  padding: 18px;
+}
+
+.birth-form-rail {
+  border-left-color: var(--border);
+}
+
+.input,
+.select {
+  min-height: 50px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: none;
+  color: var(--text);
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--text);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.label {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.button,
+.subtle-button,
+.text-button {
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.button {
+  border: 1px solid var(--text);
+  background: var(--text);
+  box-shadow: none;
+  color: #fff;
+}
+
+.subtle-button,
+.text-button {
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.button:hover,
+.subtle-button:hover,
+.text-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.08);
+}
+
+.meta-card,
+.core-item,
+.gauge-card,
+.focus-card,
+.relationship-card,
+.relationship-meta,
+.distribution-group,
+.present-meta,
+.present-card,
+.compare-card,
+.depth-card,
+.depth-highlight,
+.about-card,
+.aspect-item,
+.reading-item,
+.daily-horoscope-card,
+.simple-core-card,
+.simple-highlight,
+.simple-partner-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: none;
+}
+
+.meta-card,
+.core-item,
+.gauge-card,
+.focus-card,
+.relationship-card,
+.distribution-group,
+.present-card,
+.compare-card,
+.depth-card {
+  padding: 18px;
+}
+
+.gauge-track,
+.focus-track,
+.relationship-track,
+.distribution-track,
+.compare-score-track,
+.simple-reel-progress-track {
+  background: #ededeb;
+}
+
+.gauge-fill,
+.focus-fill,
+.relationship-fill,
+.distribution-fill,
+.compare-score-fill,
+.simple-reel-progress-track span {
+  background: #111;
+}
+
+.focus-tag,
+.present-tag,
+.depth-chip,
+.badge,
+.legend-item,
+.filter-chip,
+.house-button,
+.about-pill,
+.daily-horoscope-chip {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #f8f8f6;
+  color: var(--text);
+}
+
+.daily-horoscope-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 18px;
+}
+
+.daily-horoscope-meta {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.daily-horoscope-tabs {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  padding: 4px;
+}
+
+.daily-horoscope-tab {
+  border-radius: 16px / 12px;
+}
+
+.daily-horoscope-tab.is-active {
+  background: #111;
+  color: #fff;
+}
+
+.daily-horoscope-tab.is-active .daily-horoscope-tab-label,
+.daily-horoscope-tab.is-active .daily-horoscope-tab-date {
+  color: #fff;
+}
+
+.daily-horoscope-card {
+  border-color: var(--border-strong);
+}
+
+.daily-horoscope-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.65rem, 3vw, 2.3rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.simple-hero {
+  min-height: 460px;
+  border-color: var(--border-strong);
+  background: #fff;
+  overflow: clip;
+}
+
+.simple-hero::before {
+  background:
+    radial-gradient(ellipse at calc(78% + (var(--motion-x) * 22px)) calc(44% + (var(--motion-y) * 18px)), transparent 0 165px, rgba(17, 17, 17, 0.085) 166px, transparent 168px),
+    linear-gradient(90deg, transparent 0 58%, rgba(17, 17, 17, 0.055) 58.08% 58.2%, transparent 58.32%);
+  transition: background 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.simple-title {
+  max-width: 12ch;
+  font-size: clamp(3.2rem, 8vw, 6.8rem);
+  line-height: 0.84;
+}
+
+.simple-copy {
+  color: var(--muted);
+}
+
+.simple-hero-symbol {
+  color: rgba(17, 17, 17, 0.055);
+}
+
+.simple-card-planet {
+  color: rgba(17, 17, 17, 0.055);
+}
+
+.simple-core-sign,
+.meta-value,
+.core-value,
+.gauge-value,
+.focus-score,
+.relationship-score {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.simple-core-card {
+  overflow: clip;
+}
+
+.share-card {
+  overflow: clip;
+}
+
+.simple-highlight-list {
+  gap: 0;
+}
+
+.simple-highlight {
+  border-width: 1px 0 0;
+  border-radius: 0;
+  padding: 18px 0;
+}
+
+.simple-highlight:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.chart-wheel-wrap,
+.map-circle {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(ellipse at calc(50% + (var(--motion-x) * 8px)) calc(50% + (var(--motion-y) * 8px)), transparent 0 42%, rgba(17, 17, 17, 0.05) 42.3% 42.6%, transparent 43%),
+    #fff;
+  box-shadow: none;
+}
+
+.chart-wheel {
+  filter: grayscale(0.75) contrast(1.05);
+}
+
+.wheel-ring,
+.wheel-ring--outer,
+.wheel-ring--sign,
+.wheel-ring--inner,
+.wheel-house-line,
+.wheel-sign-boundary {
+  stroke: rgba(17, 17, 17, 0.22);
+}
+
+.wheel-house-line--axis {
+  stroke: rgba(17, 17, 17, 0.56);
+}
+
+.wheel-sign-segment--fire,
+.wheel-sign-segment--earth,
+.wheel-sign-segment--air,
+.wheel-sign-segment--water {
+  fill: rgba(17, 17, 17, 0.035);
+}
+
+.sign-glyph-icon,
+.placement-glyph,
+.map-marker {
+  color: #111;
+  fill: #111;
+}
+
+.map-marker {
+  background: #111;
+  box-shadow: 0 0 0 7px rgba(17, 17, 17, 0.12);
+  border-radius: 60% / 48%;
+}
+
+.table th,
+.table td {
+  border-bottom-color: var(--border);
+}
+
+.share-card {
+  background: #fff;
+  color: #111;
+}
+
+.share-card--dark {
+  background: #111;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell::before,
+  .app-header::before,
+  .panel::before,
+  .simple-hero::before {
+    transition: none;
+  }
+}

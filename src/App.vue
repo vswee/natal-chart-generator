@@ -8,8 +8,8 @@
         </div>
         <h1 class="hero-title">Natal Charts Generator</h1>
           <p class="hero-copy">
-            A fast, open-source natal chart app built with Swiss Ephemeris.
-            <span v-if="!chart">Enter your birth details to generate the simple chart first.</span>
+            A precise birth chart, simplified into the placements, patterns and timing that matter.
+            <span v-if="!chart">Enter your birth details to begin with a clean chart reading.</span>
           </p>
         </div>
 
@@ -753,6 +753,11 @@ const isAdvancedView = ref(false)
 const savedBirthData = ref(null)
 const storedShareMedia = ref(null)
 const storedProfileRecord = ref(null)
+let motionFrame = 0
+let scrollMotionInterval = 0
+let motionObserver = null
+let isMotionSurfaceVisible = false
+let isTouchMotion = false
 const profileIdentity = computed(() => {
   if (chart.value) return buildProfileIdentity(chart.value)
   return storedProfileRecord.value?.profile || null
@@ -1500,14 +1505,119 @@ function formatHouseSystem(value) {
     .join(' ')
 }
 
+function setMotionVariables(x, y) {
+  const clampedX = Math.max(-1, Math.min(1, x))
+  const clampedY = Math.max(-1, Math.min(1, y))
+  document.documentElement.style.setProperty('--motion-x', clampedX.toFixed(4))
+  document.documentElement.style.setProperty('--motion-y', clampedY.toFixed(4))
+}
+
+function applyScrollMotion() {
+  const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+  const progress = window.scrollY / maxScroll
+  setMotionVariables((progress - 0.5) * 2, Math.sin(progress * Math.PI * 2) * 0.65)
+}
+
+function updateScrollMotion() {
+  if (!isMotionSurfaceVisible) return
+
+  if (motionFrame) window.cancelAnimationFrame(motionFrame)
+  motionFrame = window.requestAnimationFrame(() => {
+    applyScrollMotion()
+    motionFrame = 0
+  })
+}
+
+function startScrollMotionLoop() {
+  if (scrollMotionInterval || !isTouchMotion || !isMotionSurfaceVisible) return
+  applyScrollMotion()
+  scrollMotionInterval = window.setInterval(applyScrollMotion, 100)
+}
+
+function stopScrollMotionLoop() {
+  if (!scrollMotionInterval) return
+  window.clearInterval(scrollMotionInterval)
+  scrollMotionInterval = 0
+}
+
+function handlePointerMotion(event) {
+  if (!isMotionSurfaceVisible || isTouchMotion) return
+
+  if (motionFrame) window.cancelAnimationFrame(motionFrame)
+  motionFrame = window.requestAnimationFrame(() => {
+    setMotionVariables(
+      (event.clientX / Math.max(1, window.innerWidth) - 0.5) * 2,
+      (event.clientY / Math.max(1, window.innerHeight) - 0.5) * 2
+    )
+    motionFrame = 0
+  })
+}
+
+function setupLineMotion() {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)')
+  isTouchMotion = coarsePointer.matches || window.innerWidth <= 720
+  isMotionSurfaceVisible = true
+  document.documentElement.dataset.motionMode = isTouchMotion ? 'scroll' : 'pointer'
+
+  if (reduceMotion.matches) return
+
+  motionObserver = new IntersectionObserver(
+    ([entry]) => {
+      isMotionSurfaceVisible = Boolean(entry?.isIntersecting)
+      if (isMotionSurfaceVisible && isTouchMotion) startScrollMotionLoop()
+      if (!isMotionSurfaceVisible) stopScrollMotionLoop()
+    },
+    { threshold: 0.08 }
+  )
+
+  const surface = document.querySelector('.app-shell')
+  if (surface) motionObserver.observe(surface)
+
+  window.addEventListener('pointermove', handlePointerMotion, { passive: true })
+  window.addEventListener('mousemove', handlePointerMotion, { passive: true })
+  window.addEventListener('scroll', updateScrollMotion, { passive: true })
+  document.addEventListener('scroll', updateScrollMotion, { passive: true, capture: true })
+  window.addEventListener('resize', handleMotionResize, { passive: true })
+  if (isTouchMotion) startScrollMotionLoop()
+}
+
+function handleMotionResize() {
+  isTouchMotion = window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 720
+  document.documentElement.dataset.motionMode = isTouchMotion ? 'scroll' : 'pointer'
+  if (isTouchMotion) {
+    updateScrollMotion()
+    startScrollMotionLoop()
+  } else {
+    stopScrollMotionLoop()
+  }
+}
+
+function teardownLineMotion() {
+  if (motionFrame) {
+    window.cancelAnimationFrame(motionFrame)
+    motionFrame = 0
+  }
+  stopScrollMotionLoop()
+  motionObserver?.disconnect()
+  motionObserver = null
+  window.removeEventListener('pointermove', handlePointerMotion)
+  window.removeEventListener('mousemove', handlePointerMotion)
+  window.removeEventListener('scroll', updateScrollMotion)
+  document.removeEventListener('scroll', updateScrollMotion, { capture: true })
+  window.removeEventListener('resize', handleMotionResize)
+}
+
 onMounted(() => {
   restoreStoredState()
+  setupLineMotion()
   window.addEventListener('focus', handleDailyContextRefresh)
   window.addEventListener('pageshow', handleDailyContextRefresh)
   document.addEventListener('visibilitychange', handleVisibilityDailyRefresh)
 })
 
 onBeforeUnmount(() => {
+  teardownLineMotion()
   window.removeEventListener('focus', handleDailyContextRefresh)
   window.removeEventListener('pageshow', handleDailyContextRefresh)
   document.removeEventListener('visibilitychange', handleVisibilityDailyRefresh)

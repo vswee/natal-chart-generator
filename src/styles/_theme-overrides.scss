@@ -12,9 +12,7 @@
   --success: #2d7c73;
   --danger: #ac4e55;
   --shadow:
-    0 1px 0 rgba(255, 255, 255, 0.94) inset,
-    0 18px 42px rgba(40, 28, 58, 0.08),
-    0 2px 8px rgba(40, 28, 58, 0.03);
+    0 1px 0 rgba(255, 255, 255, 0.94) inset, 0 18px 42px rgba(40, 28, 58, 0.08), 0 2px 8px rgba(40, 28, 58, 0.03);
   --radius-xl: 28px;
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -25,7 +23,7 @@
 body {
   position: relative;
   overflow-x: hidden;
-  font-family: 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
+  font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
   background:
     radial-gradient(circle at 14% 16%, rgba(244, 216, 186, 0.28), transparent 26%),
     radial-gradient(circle at 84% 10%, rgba(181, 173, 236, 0.18), transparent 24%),
@@ -36,7 +34,7 @@ body {
 
 body::before,
 body::after {
-  content: '';
+  content: "";
   position: fixed;
   inset: auto;
   border-radius: 50%;
@@ -75,18 +73,52 @@ a {
 
 .app-header {
   position: relative;
+  z-index: 2;
   min-height: 340px;
   display: grid;
   align-items: end;
   margin-bottom: 20px;
   padding: 34px clamp(24px, 4vw, 42px) 54px;
   border-radius: 40px;
-  overflow: hidden;
+  overflow: visible;
+  isolation: isolate;
+  background:
+    linear-gradient(135deg, rgba(255, 252, 247, 0.92) 0%, rgba(249, 245, 240, 0.95) 38%, rgba(241, 240, 247, 0.94) 100%);
+  border: 1px solid rgba(122, 108, 150, 0.1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.78) inset,
+    0 24px 50px rgba(50, 34, 72, 0.08);
   transition:
     min-height 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     padding 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     margin-bottom 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     border-radius 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-header::before,
+.app-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.app-header::before {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 12% 14%, rgba(249, 221, 188, 0.48), transparent 24%),
+    radial-gradient(circle at 86% 12%, rgba(194, 184, 239, 0.42), transparent 22%),
+    radial-gradient(circle at 70% 82%, rgba(172, 194, 224, 0.18), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent 42%);
+  opacity: 0.95;
+}
+
+.app-header::after {
+  z-index: 0;
+  inset: auto 10% 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(125, 107, 154, 0.24), transparent);
 }
 
 .app-header.is-compact {
@@ -95,20 +127,9 @@ a {
   margin-bottom: 14px;
   padding: 22px clamp(22px, 3vw, 34px) 26px;
   border-radius: 30px;
-  overflow: visible;
+  background:
+    linear-gradient(135deg, rgba(255, 252, 247, 0.95) 0%, rgba(247, 244, 239, 0.98) 42%, rgba(239, 239, 246, 0.96) 100%);
 }
-
-
-
-/* .app-header::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 120px;
-  background: linear-gradient(180deg, rgba(244, 239, 233, 0), rgba(244, 239, 233, 0.76) 60%, var(--bg));
-  pointer-events: none;
-  border-radius: 0 0 30px 30px;
-} */
 
 .hero-content {
   position: relative;
@@ -137,15 +158,14 @@ a {
 .brand-dot {
   width: 10px;
   height: 10px;
-  background:
-    radial-gradient(circle at 35% 35%, #fff 0, #fff 16%, #d8d2df 18%, #968ca5 62%, #322a40 100%);
+  background: radial-gradient(circle at 35% 35%, #fff 0, #fff 16%, #d8d2df 18%, #968ca5 62%, #322a40 100%);
   box-shadow: 0 0 0 6px rgba(125, 107, 154, 0.05);
 }
 
 .hero-title,
 .modal-title,
 .about-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
 }
 
 .hero-title {
@@ -186,193 +206,6 @@ a {
   opacity: 0.82;
 }
 
-.hero-atmosphere {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255, 252, 247, 0.98) 0%, rgba(255, 248, 239, 0.9) 20%, rgba(249, 234, 216, 0.56) 36%, rgba(236, 222, 244, 0.2) 60%, rgba(228, 220, 243, 0.08) 78%, transparent 100%),
-    radial-gradient(circle at 84% 24%, rgba(189, 179, 239, 0.36), rgba(177, 167, 232, 0.16) 26%, rgba(171, 178, 229, 0.1) 44%, transparent 72%),
-    radial-gradient(circle at 92% 78%, rgba(178, 164, 231, 0.2), transparent 26%),
-    linear-gradient(135deg, rgba(255, 251, 247, 0.98) 0%, rgba(249, 245, 240, 0.94) 36%, rgba(243, 242, 248, 0.94) 100%);
-  overflow: hidden;
-  pointer-events: none;
-  transform: scale(1);
-  transform-origin: center;
-  transition:
-    opacity 0.75s ease,
-    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
-    width: min(var(--max-width), calc(100% - 40px));
-}
-
-.app-header.is-compact .hero-atmosphere {
-  opacity: 0.72;
-  transform: scale(1.05);
-}
-
-.app-header.is-compact::after {
-  height: 88px;
-}
-
-.hero-atmosphere::before {
-  content: '';
-  position: absolute;
-  inset: auto -8% -8% -8%;
-  height: 58%;
-  background:
-    radial-gradient(120% 100% at 12% 12%, rgba(255, 255, 255, 0.32), transparent 48%),
-    linear-gradient(180deg, rgba(255, 247, 238, 0) 0%, rgba(255, 245, 233, 0.18) 34%, rgba(232, 225, 244, 0.34) 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 18%, #000 100%);
-}
-
-.hero-atmosphere::after {
-  content: '';
-  position: absolute;
-  inset: auto auto 14% -12%;
-  width: 64%;
-  height: 74%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 38%, rgba(255, 255, 255, 0.3), rgba(255, 244, 230, 0.14) 34%, rgba(255, 255, 255, 0) 64%),
-    linear-gradient(180deg, rgba(255, 251, 245, 0.2), rgba(255, 242, 225, 0.04));
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.28) inset,
-    0 0 0 28px rgba(255, 255, 255, 0.04) inset;
-  filter: blur(1px);
-}
-
-.hero-chart,
-.hero-orbit,
-.hero-aura,
-.hero-planet,
-.hero-star,
-.hero-moon,
-.hero-glyph {
-  position: absolute;
-}
-
-.hero-chart {
-  top: 50%;
-  right: 6%;
-  width: min(39vw, 480px);
-  aspect-ratio: 1;
-  transform: translateY(-44%);
-  border-radius: 50%;
-  opacity: 0.58;
-  background:
-    radial-gradient(circle, transparent 0 19%, rgba(255, 255, 255, 0.3) 19.4%, transparent 19.8%, transparent 30%, rgba(255, 255, 255, 0.28) 30.4%, transparent 30.8%, transparent 41%, rgba(255, 255, 255, 0.24) 41.4%, transparent 41.8%, transparent 50%, rgba(255, 255, 255, 0.18) 50.3%, transparent 50.7%),
-    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.16) 0deg 1deg, transparent 1deg 30deg);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
-}
-
-.hero-orbit {
-  border: 1px solid rgba(101, 90, 123, 0.08);
-  border-radius: 50%;
-}
-
-.hero-orbit--outer {
-  width: 88%;
-  height: 150%;
-  right: -12%;
-  top: -42%;
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.hero-orbit--inner {
-  width: 42%;
-  height: 62%;
-  right: 7%;
-  bottom: -28%;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.hero-aura {
-  border-radius: 50%;
-  filter: blur(18px);
-}
-
-.hero-aura--gold {
-  inset: 8% 48% 34% 8%;
-  background: rgba(255, 224, 191, 0.18);
-}
-
-.hero-aura--blue {
-  inset: 14% 4% 18% 54%;
-  background: rgba(170, 166, 235, 0.18);
-}
-
-.hero-planet {
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, rgba(255, 251, 247, 0.96), rgba(238, 214, 218, 0.72) 34%, rgba(164, 148, 214, 0.76) 100%);
-  box-shadow: 0 14px 28px rgba(124, 110, 174, 0.12);
-}
-
-.hero-planet--large {
-  top: 12%;
-  right: 4%;
-  width: clamp(94px, 11.5vw, 152px);
-  aspect-ratio: 1;
-}
-
-.hero-planet--mid {
-  top: 28%;
-  right: 34%;
-  width: 38px;
-  aspect-ratio: 1;
-  opacity: 0.6;
-}
-
-.hero-planet--small {
-  bottom: 16%;
-  right: 26%;
-  width: 62px;
-  aspect-ratio: 1;
-  opacity: 0.58;
-}
-
-.hero-star {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.06);
-}
-
-.hero-star--one {
-  top: 18%;
-  left: 76%;
-}
-
-.hero-star--two {
-  top: 58%;
-  right: 9%;
-}
-
-.hero-star--three {
-  bottom: 24%;
-  left: 58%;
-}
-
-.hero-moon {
-  top: 14%;
-  right: 19%;
-  width: 18px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow:
-    -6px 0 0 0 rgba(188, 172, 232, 0.3) inset,
-    0 0 14px rgba(255, 255, 255, 0.22);
-}
-
-.hero-glyph {
-  left: 74%;
-  top: 22%;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 1.8rem;
-  line-height: 1;
-}
-
 .layout {
   grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
   gap: 30px;
@@ -402,15 +235,13 @@ a {
   position: relative;
   border: 1px solid rgba(105, 92, 124, 0.06);
   border-radius: var(--radius-xl);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 248, 0.98)),
-    var(--panel);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 248, 0.98)), var(--panel);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
 
 .panel::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background:
@@ -427,7 +258,7 @@ a {
 .section-title,
 .modal-title,
 .about-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 600;
 }
 
@@ -493,7 +324,11 @@ a {
   border-radius: 999px;
   font-size: 0.92rem;
   font-weight: 700;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .button {
@@ -650,8 +485,12 @@ a {
 .chart-wheel-wrap {
   padding: 16px;
   border-radius: calc(var(--radius-lg) + 2px);
-  background:
-    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.78), rgba(248, 243, 238, 0.82) 48%, rgba(236, 232, 244, 0.7) 100%);
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(255, 255, 255, 0.78),
+    rgba(248, 243, 238, 0.82) 48%,
+    rgba(236, 232, 244, 0.7) 100%
+  );
   border: 1px solid rgba(105, 92, 124, 0.08);
 }
 
@@ -826,8 +665,7 @@ a {
   border-radius: 30px;
   background:
     radial-gradient(circle at top right, rgba(241, 216, 189, 0.28), transparent 26%),
-    radial-gradient(circle at bottom left, rgba(182, 192, 231, 0.22), transparent 26%),
-    rgba(255, 252, 248, 0.96);
+    radial-gradient(circle at bottom left, rgba(182, 192, 231, 0.22), transparent 26%), rgba(255, 252, 248, 0.96);
 }
 
 .modal-card {
@@ -860,7 +698,7 @@ a {
 }
 
 .simple-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 18px;
   z-index: 0;
@@ -890,7 +728,7 @@ a {
   position: absolute;
   z-index: 1;
   color: rgba(48, 77, 77, 0.05);
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 700;
   line-height: 1;
   pointer-events: none;
@@ -988,7 +826,7 @@ a {
 .simple-title {
   margin: 0;
   max-width: 12ch;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-size: clamp(2.6rem, 5vw, 5.2rem);
   font-weight: 700;
   letter-spacing: 0;
@@ -1030,12 +868,12 @@ a {
   overflow: hidden;
 }
 
-.simple-reel-button>* {
+.simple-reel-button > * {
   position: relative;
   z-index: 1;
 }
 
-.simple-gif-button>* {
+.simple-gif-button > * {
   position: relative;
   z-index: 1;
 }
@@ -1215,13 +1053,11 @@ a {
   isolation: isolate;
   min-width: 0;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 246, 242, 0.96)),
-    var(--panel);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 246, 242, 0.96)), var(--panel);
 }
 
 .simple-core-card::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: auto -28px -54px auto;
   z-index: 0;
@@ -1255,7 +1091,7 @@ a {
   gap: 10px;
   min-width: 0;
   color: #211a2c;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-size: clamp(1.9rem, 2.7vw, 2.85rem);
   font-weight: 700;
   letter-spacing: 0;
@@ -1315,7 +1151,7 @@ a {
 }
 
 .simple-highlight::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 16px;
@@ -1332,14 +1168,12 @@ a {
   padding: 22px 22px 22px 24px;
   border: 1px solid rgba(173, 104, 95, 0.08);
   border-radius: 22px;
-  background:
-    radial-gradient(circle at 100% 0, rgba(217, 196, 163, 0.14), transparent 34%),
-    rgba(255, 251, 247, 0.92);
+  background: radial-gradient(circle at 100% 0, rgba(217, 196, 163, 0.14), transparent 34%), rgba(255, 251, 247, 0.92);
   overflow: hidden;
 }
 
 .simple-prediction::after {
-  content: '✦';
+  content: "✦";
   position: absolute;
   right: 18px;
   top: 8px;
@@ -1419,9 +1253,7 @@ a {
 }
 
 .advanced-entry {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(241, 244, 238, 0.78)),
-    var(--panel);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(241, 244, 238, 0.78)), var(--panel);
 }
 
 .advanced-entry .section-copy {
@@ -1465,13 +1297,12 @@ a {
   height: 1920px;
   padding: 60px;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #fff8ef 0%, #eef7f1 48%, #f7ebe7 100%);
+  background: linear-gradient(180deg, #fff8ef 0%, #eef7f1 48%, #f7ebe7 100%);
   color: #152421;
   font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
 }
 
-.share-card>*:not(.share-card-symbol) {
+.share-card > *:not(.share-card-symbol) {
   position: relative;
   z-index: 1;
 }
@@ -1488,7 +1319,7 @@ a {
   position: absolute;
   z-index: 0;
   color: rgba(21, 36, 33, 0.055);
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 700;
   line-height: 1;
   pointer-events: none;
@@ -1558,7 +1389,7 @@ a {
 .share-card-title-block h2 {
   margin: 0;
   max-width: 12ch;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 96px;
   font-weight: 700;
   letter-spacing: 0;
@@ -1615,7 +1446,7 @@ a {
 
 .share-card-core-top b {
   color: rgba(21, 36, 33, 0.58);
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 34px;
   line-height: 1;
 }
@@ -1625,7 +1456,7 @@ a {
   align-items: baseline;
   gap: 12px;
   align-self: end;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 44px;
   letter-spacing: 0;
   line-height: 0.9;
@@ -1686,4 +1517,3 @@ a {
   font-size: 28px;
   letter-spacing: 0;
 }
-

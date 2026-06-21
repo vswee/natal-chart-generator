@@ -516,13 +516,13 @@ function lunarPhaseName(angle) {
   return 'Waning Crescent'
 }
 
-export async function calculateCurrentTransits(natalChart) {
+export async function calculateCurrentTransits(natalChart, atDate = new Date()) {
   if (!natalChart) {
     throw new Error('Natal chart data is required to calculate current transits.')
   }
 
   const swe = await getSwissEph()
-  const now = new Date()
+  const now = atDate instanceof Date ? atDate : new Date(atDate)
   const jd = swe.julday(
     now.getUTCFullYear(),
     now.getUTCMonth() + 1,

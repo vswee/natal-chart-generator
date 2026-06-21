@@ -40,6 +40,44 @@
             </div>
           </div>
 
+          <div v-if="profileBirthSummary" class="profile-birth-summary">
+            <div class="profile-birth-summary-header">
+              <div>
+                <div class="profile-birth-summary-kicker">Birth data</div>
+                <div class="profile-birth-summary-title">Current chart details</div>
+              </div>
+              <button class="subtle-button profile-birth-summary-button" type="button" @click="openBirthEditor">
+                Edit
+              </button>
+            </div>
+
+            <div class="profile-birth-summary-grid">
+              <article class="profile-birth-summary-card profile-birth-summary-card--primary">
+                <div class="profile-birth-summary-label">Current birth info</div>
+                <div class="profile-birth-summary-value">
+                  {{ profileBirthSummary.date }} · {{ profileBirthSummary.time }}
+                </div>
+                <div class="profile-birth-summary-copy">
+                  {{ profileBirthSummary.location }}
+                </div>
+              </article>
+
+              <article class="profile-birth-summary-card">
+                <div class="profile-birth-summary-label">House</div>
+                <div class="profile-birth-summary-value">
+                  {{ profileBirthSummary.houseSystem }}
+                </div>
+              </article>
+
+              <article class="profile-birth-summary-card">
+                <div class="profile-birth-summary-label">Coordinates</div>
+                <div class="profile-birth-summary-value">
+                  {{ profileBirthSummary.coordinates }}
+                </div>
+              </article>
+            </div>
+          </div>
+
           <div v-if="storedShareMedia" class="profile-cache">
             <div class="profile-cache-header">
               <div>
@@ -69,21 +107,6 @@
         </div>
       </div>
 
-      <div class="hero-atmosphere" aria-hidden="true">
-        <div class="hero-chart"></div>
-        <div class="hero-orbit hero-orbit--outer"></div>
-        <div class="hero-orbit hero-orbit--inner"></div>
-        <div class="hero-aura hero-aura--gold"></div>
-        <div class="hero-aura hero-aura--blue"></div>
-        <div class="hero-planet hero-planet--large"></div>
-        <div class="hero-planet hero-planet--mid"></div>
-        <div class="hero-planet hero-planet--small"></div>
-        <div class="hero-star hero-star--one"></div>
-        <div class="hero-star hero-star--two"></div>
-        <div class="hero-star hero-star--three"></div>
-        <div class="hero-moon"></div>
-        <div class="hero-glyph">✦</div>
-      </div>
     </header>
 
     <div :class="['layout', { 'has-chart': chart, 'is-empty': !chart }]">
@@ -94,12 +117,16 @@
           :resolved-location="resolvedLocation"
           :saved-birth-data="savedBirthData"
           :compact-summary="Boolean(chart)"
+          :editor-request="birthEditorRequest"
           @submit="handleSubmit"
+          @open-editor="openBirthEditor"
         />
       </div>
 
       <section v-if="chart" class="results-grid">
         <template v-if="chart">
+          <DailyHoroscopeRail :cards="dailyHoroscopeCards" :refreshed-at="dailyHoroscopeRefreshedAt" />
+
           <SimplifiedChart
             :chart="chart"
             :current-transits="currentTransits"
@@ -656,7 +683,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch, onMounted } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
 import {
   IconAdjustmentsHorizontal,
   IconAtom2,
@@ -689,6 +716,7 @@ import PartnerComparePanel from './components/PartnerComparePanel.vue'
 import SynastryAspectList from './components/SynastryAspectList.vue'
 import CompositeChartPanel from './components/CompositeChartPanel.vue'
 import SimplifiedChart from './components/SimplifiedChart.vue'
+import DailyHoroscopeRail from './components/DailyHoroscopeRail.vue'
 import { geocodeAddress } from './services/geocoding'
 import { calculateNatalChart, calculateCurrentTransits, calculateCompositeChart } from './services/astrology'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
@@ -714,7 +742,10 @@ const isAboutModalOpen = ref(false)
 const isPrivacyModalOpen = ref(false)
 const isProfileMenuOpen = ref(false)
 const isProfileResetArmed = ref(false)
+const birthEditorRequest = ref(0)
 const currentTransits = ref(null)
+const dailyHoroscopeCards = ref([])
+const dailyHoroscopeRefreshedAt = ref('')
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
 const compatibilityAccordionRef = ref(null)
@@ -730,6 +761,21 @@ const profileStatusCopy = computed(() => {
   if (chart.value) return 'Your chart is loaded and ready.'
   if (savedBirthData.value) return 'Your chart is stored locally on this device.'
   return 'Create a chart to generate your local profile.'
+})
+const profileBirthSummary = computed(() => {
+  const chartMeta = chart.value?.meta || null
+  const birthData = savedBirthData.value || {}
+  const location = resolvedLocation.value || null
+
+  if (!chartMeta && !birthData.date && !birthData.time && !birthData.address) return null
+
+  return {
+    date: formatBirthDate(chartMeta?.date || birthData.date || ''),
+    time: chartMeta?.time || birthData.time || 'Time not set',
+    location: location?.label || birthData.address || 'Location not set',
+    houseSystem: formatHouseSystem(chartMeta?.houseSystem || birthData.houseSystem || 'placidus'),
+    coordinates: formatCoordinates(chartMeta?.lat ?? location?.lat ?? birthData.lat, chartMeta?.lon ?? location?.lon ?? birthData.lon)
+  }
 })
 const corePlacements = computed(() => {
   if (!chart.value) return { sun: null, moon: null, asc: null }
@@ -801,6 +847,149 @@ const mapStyle = computed(() => {
     backgroundImage: `url(${worldMap})`
   }
 })
+
+function createLocalDate(baseDate, offsetDays) {
+  const next = new Date(baseDate)
+  next.setDate(next.getDate() + offsetDays)
+  return next
+}
+
+function formatShortDay(date) {
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    }).format(date)
+  } catch (error) {
+    return date.toLocaleDateString()
+  }
+}
+
+function getPlacementSign(chartData, body) {
+  const placements = Array.isArray(chartData?.placements) ? chartData.placements : []
+  const placement = placements.find((item) => item.body === body)
+  return placement?.sign ? toTitleCase(placement.sign) : ''
+}
+
+function formatRetrogradeLabels(transits) {
+  const retrogrades = Array.isArray(transits?.retrogrades) ? transits.retrogrades : []
+  if (!retrogrades.length) return 'Most planets are direct'
+
+  const labels = retrogrades.map((placement) => toTitleCase(placement.body))
+  if (labels.length === 1) return `${labels[0]} is retrograde`
+  if (labels.length === 2) return `${labels[0]} and ${labels[1]} are retrograde`
+  return `${labels.slice(0, -1).join(', ')}, and ${labels.at(-1)} are retrograde`
+}
+
+function buildHoroscopeCopy(dayKey, chartData, transits) {
+  const natalSun = getPlacementSign(chartData, 'sun')
+  const natalMoon = getPlacementSign(chartData, 'moon')
+  const natalAsc = getPlacementSign(chartData, 'asc')
+  const natalMoonText = natalMoon ? `Moon in ${natalMoon}` : 'your Moon'
+  const natalAscText = natalAsc ? `Ascendant in ${natalAsc}` : 'your Ascendant'
+  const natalSunText = natalSun ? `Sun in ${natalSun}` : 'your Sun'
+  const moonSign = transits?.moon?.sign ? toTitleCase(transits.moon.sign) : 'the current Moon'
+  const moonPhase = transits?.moon?.phaseName ? transits.moon.phaseName.toLowerCase() : 'current'
+  const retrogradeText = formatRetrogradeLabels(transits)
+
+  const copyMap = {
+    yesterday: `Yesterday wanted less noise. ${natalMoonText} does better when you finish one open loop before adding another. ${retrogradeText}.`,
+    today: `Today lands with the Moon in ${moonSign} and a ${moonPhase} feel. ${natalAscText} prefers a clean move, a short list, and one obvious yes.`,
+    tomorrow: `Tomorrow opens more space. ${natalSunText} gets traction from a direct choice, and the ${moonSign} Moon keeps the pace flexible. ${retrogradeText}.`
+  }
+
+  return copyMap[dayKey]
+}
+
+function buildHoroscopeHeadline(dayKey, chartData, transits) {
+  const natalSun = getPlacementSign(chartData, 'sun')
+  const moonSign = transits?.moon?.sign ? toTitleCase(transits.moon.sign) : ''
+  const retrogrades = Array.isArray(transits?.retrogrades) ? transits.retrogrades.length : 0
+
+  const pools = {
+    yesterday: ['Close the loop', 'Trim the drag', 'Leave less open'],
+    today: ['Move with intent', 'Keep it simple', 'Choose the clean path'],
+    tomorrow: ['Make room to shift', 'Trust the turn', 'Let the pace change']
+  }
+
+  const seed = `${dayKey}-${natalSun}-${moonSign}-${retrogrades}`
+  const pool = pools[dayKey] || pools.today
+  const index = Array.from(seed).reduce((value, char) => value + char.charCodeAt(0), 0) % pool.length
+  return pool[index]
+}
+
+function buildHoroscopeCards(chartData, transitsList, baseDate) {
+  const labels = [
+    { key: 'yesterday', offset: -1 },
+    { key: 'today', offset: 0 },
+    { key: 'tomorrow', offset: 1 }
+  ]
+
+  return labels.map(({ key, offset }) => {
+    const transit = transitsList[offset + 1]
+    const dayDate = createLocalDate(baseDate, offset)
+    const moonSign = transit?.moon?.sign ? toTitleCase(transit.moon.sign) : 'Moon unknown'
+    const retrogrades = Array.isArray(transit?.retrogrades) ? transit.retrogrades : []
+    const retrogradeLabel = retrogrades.length
+      ? `${retrogrades.map((placement) => toTitleCase(placement.body)).join(', ')} retrograde`
+      : ''
+
+    return {
+      key,
+      dayLabel: toTitleCase(key),
+      dateLabel: formatShortDay(dayDate),
+      headline: buildHoroscopeHeadline(key, chartData, transit),
+      copy: buildHoroscopeCopy(key, chartData, transit),
+      moonLabel: transit?.moon
+        ? `Moon in ${moonSign} · ${transit.moon.phaseName}`
+        : 'Moon data unavailable',
+      retrogradeLabel,
+      generatedAt: transit?.generatedAt || baseDate.toISOString()
+    }
+  })
+}
+
+let dailyRefreshToken = 0
+function handleDailyContextRefresh() {
+  if (chart.value) {
+    refreshDailyContext()
+  }
+}
+
+function handleVisibilityDailyRefresh() {
+  if (document.visibilityState === 'visible' && chart.value) {
+    refreshDailyContext()
+  }
+}
+
+async function refreshDailyContext() {
+  if (!chart.value) {
+    currentTransits.value = null
+    dailyHoroscopeCards.value = []
+    dailyHoroscopeRefreshedAt.value = ''
+    return
+  }
+
+  const token = ++dailyRefreshToken
+  const now = new Date()
+
+  try {
+    const dates = [-1, 0, 1].map((offset) => createLocalDate(now, offset))
+    const transits = await Promise.all(dates.map((date) => calculateCurrentTransits(chart.value, date)))
+    if (token !== dailyRefreshToken) return
+
+    currentTransits.value = transits[1] || null
+    dailyHoroscopeCards.value = buildHoroscopeCards(chart.value, transits, now)
+    dailyHoroscopeRefreshedAt.value = transits[1]?.generatedAt || now.toISOString()
+  } catch (transitError) {
+    console.warn(transitError)
+    if (token !== dailyRefreshToken) return
+    currentTransits.value = null
+    dailyHoroscopeCards.value = []
+    dailyHoroscopeRefreshedAt.value = ''
+  }
+}
 
 watch(
   () => [chart.value, activePartner.value],
@@ -927,14 +1116,7 @@ function restoreStoredState() {
   chart.value = stored.chart || null
 
   if (stored.chart) {
-    calculateCurrentTransits(stored.chart)
-      .then((transits) => {
-        currentTransits.value = transits
-      })
-      .catch((transitError) => {
-        console.warn(transitError)
-        currentTransits.value = null
-      })
+    refreshDailyContext()
   }
 }
 
@@ -960,6 +1142,25 @@ function formatStoredAt(value) {
   }
 }
 
+function formatBirthDate(value) {
+  if (!value) return 'Date not set'
+  if (value.includes('-')) {
+    const parts = value.split('-')
+    if (parts.length === 3) {
+      const [year, month, day] = parts
+      return `${day}/${month}/${year}`
+    }
+  }
+  return value
+}
+
+function formatCoordinates(lat, lon) {
+  const parsedLat = Number(lat)
+  const parsedLon = Number(lon)
+  if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLon)) return 'Pending'
+  return `${parsedLat.toFixed(2)}, ${parsedLon.toFixed(2)}`
+}
+
 function formatMediaKind(kind) {
   const labels = {
     'story-image': 'Story image',
@@ -967,6 +1168,11 @@ function formatMediaKind(kind) {
     reel: 'Reel video'
   }
   return labels[kind] || 'Share media'
+}
+
+function openBirthEditor() {
+  birthEditorRequest.value += 1
+  isProfileMenuOpen.value = false
 }
 
 function openStoredShareMedia() {
@@ -983,6 +1189,8 @@ function deleteProfileData() {
   chart.value = null
   resolvedLocation.value = null
   currentTransits.value = null
+  dailyHoroscopeCards.value = []
+  dailyHoroscopeRefreshedAt.value = ''
   partnerCharts.value = []
   activePartnerId.value = ''
   partnerResolvedLocation.value = null
@@ -1037,18 +1245,13 @@ async function handleSubmit(formData) {
       timeZoneOverride: formData.timeZoneOverride
     })
     chart.value = chartData
-    try {
-      currentTransits.value = await calculateCurrentTransits(chartData)
-    } catch (transitError) {
-      console.warn(transitError)
-      currentTransits.value = null
-    }
 
     persistProfileRecord(buildProfileRecord({
       chartData: chartData,
       birthData: formData,
       location
     }))
+    await refreshDailyContext()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Something went wrong.'
   } finally {
@@ -1299,5 +1502,14 @@ function formatHouseSystem(value) {
 
 onMounted(() => {
   restoreStoredState()
+  window.addEventListener('focus', handleDailyContextRefresh)
+  window.addEventListener('pageshow', handleDailyContextRefresh)
+  document.addEventListener('visibilitychange', handleVisibilityDailyRefresh)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', handleDailyContextRefresh)
+  window.removeEventListener('pageshow', handleDailyContextRefresh)
+  document.removeEventListener('visibilitychange', handleVisibilityDailyRefresh)
 })
 </script>

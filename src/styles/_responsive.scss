@@ -3,8 +3,7 @@
   .app-header,
   .hero-content,
   .hero-title,
-  .hero-copy,
-  .hero-atmosphere {
+  .hero-copy {
     transition: none;
   }
 
@@ -144,19 +143,6 @@
     padding: 20px 22px 24px;
   }
 
-  .hero-atmosphere {
-    inset: 0;
-  }
-
-  .hero-chart {
-    width: min(44vw, 420px);
-    right: -2%;
-  }
-
-  .hero-planet--large {
-    right: 2%;
-  }
-
   .layout {
     gap: 24px;
   }
@@ -208,109 +194,21 @@
     margin-bottom: 0;
   }
 
-  .birth-form-panel.is-compact:not(.is-editing) .birth-summary-card {
-    display: grid;
-  }
-
-  .birth-summary-card {
-    gap: 14px;
+  .birth-summary-compact {
     margin-top: 14px;
-    padding: 14px;
-    border: 1px solid rgba(105, 92, 124, 0.1);
-    border-radius: 18px;
-    background:
-      radial-gradient(circle at 100% 0, rgba(217, 196, 163, 0.18), transparent 34%),
-      rgba(255, 255, 255, 0.62);
-  }
-
-  .birth-summary-main {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 12px;
-    align-items: start;
-  }
-
-  .birth-summary-icon {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: #4d3d63;
-    color: #fff8ef;
-    font-size: 1rem;
-    line-height: 1;
-  }
-
-  .birth-summary-kicker,
-  .birth-summary-title,
-  .birth-summary-location,
-  .birth-summary-meta,
-  .birth-summary-meta dd {
-    margin: 0;
-  }
-
-  .birth-summary-kicker {
-    color: var(--muted);
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    line-height: 1.25;
-    text-transform: uppercase;
-  }
-
-  .birth-summary-title {
-    margin-top: 4px;
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 800;
-    line-height: 1.25;
-  }
-
-  .birth-summary-location {
-    margin-top: 4px;
-    color: var(--muted);
-    font-size: 0.86rem;
-    line-height: 1.45;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .birth-summary-meta {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .birth-summary-meta div {
-    min-width: 0;
-    padding: 10px;
-    border: 1px solid rgba(105, 92, 124, 0.08);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.55);
-  }
-
-  .birth-summary-meta dt {
-    color: var(--muted);
-    font-size: 0.66rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .birth-summary-meta dd {
-    margin-top: 4px;
-    color: var(--text);
-    font-size: 0.86rem;
-    font-weight: 700;
-    line-height: 1.3;
-    overflow-wrap: anywhere;
   }
 
   .birth-summary-change {
     width: 100%;
     justify-content: center;
+  }
+
+  .profile-birth-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-birth-summary-card--primary {
+    grid-column: auto;
   }
 
   .table-wrap {
@@ -428,8 +326,8 @@
   .profile-dock {
     position: static;
     width: min(100%, 320px);
-    justify-self: end;
-    margin: 0 0 16px;
+    justify-self: start;
+    margin: 26px 0 16px;
   }
 
   .profile-button {
@@ -446,38 +344,8 @@
   .profile-menu {
     width: min(300px, calc(100vw - 24px));
     padding: 14px;
-  }
-
-  .hero-chart {
-    right: -18%;
-    top: 58%;
-    width: 300px;
-  }
-
-  .hero-planet--large {
-    width: 82px;
-    top: 16%;
-    right: -4%;
-  }
-
-  .hero-planet--mid,
-  .hero-planet--small,
-  .hero-orbit--inner,
-  .hero-glyph {
-    display: none;
-  }
-
-  .hero-star--one {
-    left: 68%;
-  }
-
-  .hero-star--two {
-    top: 50%;
-    right: 12%;
-  }
-
-  .hero-star--three {
-    left: 46%;
+    top:unset;
+    right:unset;
   }
 
   .simple-hero-inner,

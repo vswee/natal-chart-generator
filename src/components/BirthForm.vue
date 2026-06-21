@@ -3,32 +3,15 @@
     :class="{ 'is-compact': props.compactSummary, 'is-editing': isEditingBirthInfo }">
     <div class="panel-inner">
       <template v-if="props.compactSummary">
-        <button v-if="!isEditingBirthInfo" class="birth-summary-card" type="button"
-          aria-label="Change birth data" @click="isEditingBirthInfo = true">
-          <div class="birth-summary-main">
-            <span class="birth-summary-icon" aria-hidden="true">✦</span>
-            <div>
-              <p class="birth-summary-kicker">Tap to change birth info</p>
-              <dl class="birth-summary-meta">
-                <div>
-                  <dt>Current birth info</dt>
-                  <dd>
-                    <p class="birth-summary-title">{{ summaryDate }} · {{ summaryTime }}</p>
-                    <p class="birth-summary-location">{{ summaryLocation }}</p>
-                  </dd>
-                </div>
-                <div>
-                  <dt>House</dt>
-                  <dd>{{ summaryHouseSystem }}</dd>
-                </div>
-                <div>
-                  <dt>Coordinates</dt>
-                  <dd>{{ summaryCoordinates }}</dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        </button>
+        <div v-if="!isEditingBirthInfo" class="birth-summary-compact">
+          <p class="birth-summary-kicker">Birth details now live in the profile menu.</p>
+          <p class="birth-summary-compact-copy">
+            Open the profile menu to review the current chart details, house system and coordinates.
+          </p>
+          <button class="subtle-button birth-summary-change" type="button" @click="emit('open-editor')">
+            Edit birth data
+          </button>
+        </div>
 
         <div v-else class="birth-form-overlay modal-overlay" @click.self="closeEditor">
           <div class="modal-card birth-form-modal-card" role="dialog" aria-modal="true"
@@ -414,10 +397,11 @@ const props = defineProps({
   error: String,
   resolvedLocation: Object,
   compactSummary: Boolean,
-  savedBirthData: Object
+  savedBirthData: Object,
+  editorRequest: Number
 })
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits(['submit', 'open-editor'])
 
 const localForm = reactive({
   date: '',
@@ -468,42 +452,17 @@ function applySavedBirthData(data) {
   localForm.useManualCoordinates = Boolean(data.useManualCoordinates)
 }
 
-const summaryDate = computed(() => {
-  if (!localForm.date) return 'Date not set'
-  const [year, month, day] = localForm.date.split('-')
-  if (!year || !month || !day) return localForm.date
-  return `${day}/${month}/${year}`
-})
-
-const summaryTime = computed(() => localForm.time || 'Time not set')
-
-const summaryLocation = computed(() => (
-  selectedLocation.value?.label
-  || props.resolvedLocation?.label
-  || localForm.address
-  || 'Location not set'
-))
-
-const summaryHouseSystem = computed(() => {
-  const labels = {
-    placidus: 'Placidus',
-    'whole-sign': 'Whole Sign',
-    koch: 'Koch'
-  }
-  return labels[localForm.houseSystem] || localForm.houseSystem
-})
-
-const summaryCoordinates = computed(() => {
-  const lat = selectedLocation.value?.lat ?? props.resolvedLocation?.lat ?? Number(localForm.lat)
-  const lon = selectedLocation.value?.lon ?? props.resolvedLocation?.lon ?? Number(localForm.lon)
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Pending'
-  return `${lat.toFixed(2)}, ${lon.toFixed(2)}`
-})
-
 watch(
   () => props.compactSummary,
   (value) => {
     if (!value) isEditingBirthInfo.value = false
+  }
+)
+
+watch(
+  () => props.editorRequest,
+  () => {
+    if (props.compactSummary) isEditingBirthInfo.value = true
   }
 )
 

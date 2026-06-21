@@ -30,20 +30,9 @@
           <input id="partner-date" v-model="localForm.date" class="input" type="date" required />
         </div>
 
-        <div class="row-2">
-          <div class="field">
-            <label class="label" for="partner-time">Time of birth</label>
-            <input id="partner-time" v-model="localForm.time" class="input" type="time" required />
-          </div>
-
-          <div class="field">
-            <label class="label" for="partner-house">House system</label>
-            <select id="partner-house" v-model="localForm.houseSystem" class="select">
-              <option value="placidus">Placidus</option>
-              <option value="whole-sign">Whole Sign</option>
-              <option value="koch">Koch</option>
-            </select>
-          </div>
+        <div class="field">
+          <label class="label" for="partner-time">Time of birth</label>
+          <input id="partner-time" v-model="localForm.time" class="input" type="time" required />
         </div>
 
         <div class="field autocomplete">
@@ -71,59 +60,85 @@
           </ul>
         </div>
 
-        <label class="checkbox-label">
-          <input v-model="localForm.useManualCoordinates" type="checkbox" />
-          Enter coordinates manually
-        </label>
-
-        <div v-if="localForm.useManualCoordinates" class="row-2">
-          <div class="field">
-            <label class="label" for="partner-lat">Latitude</label>
-            <input
-              id="partner-lat"
-              v-model="localForm.lat"
-              class="input"
-              type="number"
-              step="0.0001"
-              placeholder="41.8781"
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label class="label" for="partner-lon">Longitude</label>
-            <input
-              id="partner-lon"
-              v-model="localForm.lon"
-              class="input"
-              type="number"
-              step="0.0001"
-              placeholder="-87.6298"
-              required
-            />
-          </div>
+        <div class="advanced-toggle-row">
+          <button
+            class="text-button advanced-toggle"
+            :class="{ 'is-open': advancedOpen }"
+            type="button"
+            :aria-expanded="advancedOpen"
+            aria-controls="partner-advanced"
+            @click="toggleAdvanced"
+          >
+            <span>Advanced options</span>
+            <span class="chevron-icon" aria-hidden="true">expand_more</span>
+          </button>
+          <p class="advanced-toggle-copy">House system, manual coordinates, and timezone override.</p>
         </div>
 
-        <div class="field">
-          <label class="label" for="partner-timezone">Time zone override (optional)</label>
-          <input
-            id="partner-timezone"
-            v-model="localForm.timeZoneOverride"
-            class="input"
-            type="text"
-            placeholder="America/Chicago"
-            list="partner-timezone-options"
-          />
-          <datalist id="partner-timezone-options">
-            <option value="America/New_York"></option>
-            <option value="America/Chicago"></option>
-            <option value="America/Denver"></option>
-            <option value="America/Los_Angeles"></option>
-            <option value="Europe/London"></option>
-            <option value="Europe/Paris"></option>
-            <option value="Asia/Tokyo"></option>
-            <option value="Australia/Sydney"></option>
-          </datalist>
+        <div v-if="advancedOpen" id="partner-advanced" class="advanced-section">
+          <div class="field">
+            <label class="label" for="partner-house">House system</label>
+            <select id="partner-house" v-model="localForm.houseSystem" class="select">
+              <option value="placidus">Placidus</option>
+              <option value="whole-sign">Whole Sign</option>
+              <option value="koch">Koch</option>
+            </select>
+          </div>
+
+          <label class="checkbox-label">
+            <input v-model="localForm.useManualCoordinates" type="checkbox" />
+            Enter coordinates manually
+          </label>
+
+          <div v-if="localForm.useManualCoordinates" class="row-2">
+            <div class="field">
+              <label class="label" for="partner-lat">Latitude</label>
+              <input
+                id="partner-lat"
+                v-model="localForm.lat"
+                class="input"
+                type="number"
+                step="0.0001"
+                placeholder="41.8781"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="label" for="partner-lon">Longitude</label>
+              <input
+                id="partner-lon"
+                v-model="localForm.lon"
+                class="input"
+                type="number"
+                step="0.0001"
+                placeholder="-87.6298"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="partner-timezone">Time zone override (optional)</label>
+            <input
+              id="partner-timezone"
+              v-model="localForm.timeZoneOverride"
+              class="input"
+              type="text"
+              placeholder="America/Chicago"
+              list="partner-timezone-options"
+            />
+            <datalist id="partner-timezone-options">
+              <option value="America/New_York"></option>
+              <option value="America/Chicago"></option>
+              <option value="America/Denver"></option>
+              <option value="America/Los_Angeles"></option>
+              <option value="Europe/London"></option>
+              <option value="Europe/Paris"></option>
+              <option value="Asia/Tokyo"></option>
+              <option value="Australia/Sydney"></option>
+            </datalist>
+          </div>
         </div>
 
         <div class="row-flex-2">
@@ -154,7 +169,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { searchLocations } from '../services/geocoding'
 
 defineProps({
@@ -182,8 +197,11 @@ const locationResults = ref([])
 const isSearching = ref(false)
 const searchError = ref('')
 const selectedLocation = ref(null)
+const showAdvanced = ref(false)
 let searchTimeout
 let activeRequest = 0
+
+const advancedOpen = computed(() => showAdvanced.value || localForm.useManualCoordinates)
 
 watch(
   () => localForm.address,
@@ -225,6 +243,7 @@ watch(
   () => localForm.useManualCoordinates,
   (value) => {
     if (!value) return
+    showAdvanced.value = true
     clearTimeout(searchTimeout)
     isSearching.value = false
     searchError.value = ''
@@ -235,6 +254,11 @@ watch(
 
 function submitForm() {
   emit('submit', { ...localForm })
+}
+
+function toggleAdvanced() {
+  if (localForm.useManualCoordinates) return
+  showAdvanced.value = !showAdvanced.value
 }
 
 function selectLocation(result) {

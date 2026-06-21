@@ -14,13 +14,6 @@ import scorpioGlyph from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/sc
 import taurusGlyph from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/taurus.svg?raw'
 import virgoGlyph from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/virgo.svg?raw'
 
-const ELEMENT_COLORS = {
-  fire: ['#d46a59', '#f3b15d', '#f9e1b2'],
-  earth: ['#73946f', '#b4c98f', '#e7edd3'],
-  air: ['#6f8fc6', '#a8c2f1', '#e3ebff'],
-  water: ['#4d9ea5', '#86c4c8', '#dff6f7']
-}
-
 const ADJECTIVES = {
   fire: ['Solar', 'Ember', 'Radiant', 'Scarlet'],
   earth: ['Verdant', 'Rooted', 'Stone', 'Terra'],
@@ -44,10 +37,10 @@ const NOUNS = {
 }
 
 const ELEMENT_PALETTES = {
-  fire: ['#211018', '#7c2d12', '#f97316', '#fed7aa', '#fff7ed'],
-  earth: ['#101914', '#24513e', '#84a98c', '#d8f3dc', '#f7fee7'],
-  air: ['#101828', '#1d4ed8', '#7dd3fc', '#dbeafe', '#f8fbff'],
-  water: ['#0b1220', '#164e63', '#2dd4bf', '#ccfbf1', '#f0fdfa']
+  fire: ['#1f0a0d', '#651a1d', '#b63a1f', '#f08a2b', '#ffe09c'],
+  earth: ['#171007', '#4f3514', '#9c6b24', '#d6a53d', '#fff0bd'],
+  air: ['#10192c', '#273b68', '#7b6bb2', '#dfa43a', '#fff1c0'],
+  water: ['#0b1522', '#134766', '#1a7b87', '#d49a32', '#fff2c8']
 }
 
 const SIGN_GLYPHS = {
@@ -138,15 +131,18 @@ function getPalette(seed, primaryElement) {
   return selected.map((_, index) => selected[(index + shift) % selected.length])
 }
 
-function starField(seed) {
+function starField(seed, palette) {
+  const starPalette = [palette?.[4] || '#ffffff', palette?.[3] || '#dff7ff', '#ffffff']
+
   return Array.from({ length: 24 }, (_, index) => {
     const starSeed = hashString(`${seed}|star|${index}`)
     const x = 12 + (starSeed % 136)
     const y = 12 + ((starSeed >> 8) % 136)
     const radius = 0.45 + ((starSeed >> 16) % 10) / 10
     const opacity = 0.22 + ((starSeed >> 24) % 55) / 100
+    const fill = starPalette[index % starPalette.length]
 
-    return `<circle cx="${x}" cy="${y}" r="${radius.toFixed(2)}" fill="#fff" opacity="${opacity.toFixed(2)}" />`
+    return `<circle cx="${x}" cy="${y}" r="${radius.toFixed(2)}" fill="${fill}" opacity="${opacity.toFixed(2)}" />`
   }).join('')
 }
 
@@ -191,7 +187,7 @@ export function buildProfileAvatar(chart) {
   const moon = getPlacement(chart, 'moon')
   const asc = getPlacement(chart, 'asc')
   const seed = getChartSeed(chart)
-  const primaryElement = SIGN_INFO[sun?.sign]?.element || 'air'
+  const primaryElement = SIGN_INFO[sun?.sign]?.element || SIGN_INFO[moon?.sign]?.element || SIGN_INFO[asc?.sign]?.element || 'air'
   const palette = getPalette(seed, primaryElement)
   const rotation = (seed % 360 + 360) % 360
   const oppositeRotation = (rotation + 180) % 360
@@ -208,106 +204,126 @@ export function buildProfileAvatar(chart) {
     .join('')
     .slice(0, 2)
     .toUpperCase()
-  
+
   const mainGlyphMarkup = mainGlyph
-  ? buildGlyphUse(mainGlyph, {
-    x: 48,
-    y: 46,
-    size: 64,
-    color: '#ffffff',
-    opacity: 0.98,
-    filter: 'url(#symbolGlow)'
+    ? buildGlyphUse(mainGlyph, {
+        x: 48,
+        y: 46,
+        size: 64,
+        color: '#ffffff',
+        opacity: 0.98,
+        filter: 'url(#symbolGlow)'
+      })
+    : `<text x="80" y="99" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="66" font-weight="700" fill="#ffffff" filter="url(#symbolGlow)">✦</text>`
+
+  const moonGlyphMarkup = buildGlyphUse(moonSignGlyph, {
+    x: 116,
+    y: 37,
+    size: 16,
+    color: '#e8fbff',
+    opacity: 1
   })
-  : `<text x="80" y="99" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="66" font-weight="700" fill="#ffffff" filter="url(#symbolGlow)">✦</text>`
 
-const moonGlyphMarkup = buildGlyphUse(moonSignGlyph, {
-  x: 116,
-  y: 37,
-  size: 16,
-  color: '#e0f2fe',
-  opacity: 1
-})
-
-const ascGlyphMarkup = buildGlyphUse(ascSignGlyph, {
-  x: 34,
-  y: 111,
-  size: 16,
-  color: '#f8fafc',
-  opacity: 1
-})
+  const ascGlyphMarkup = buildGlyphUse(ascSignGlyph, {
+    x: 34,
+    y: 111,
+    size: 16,
+    color: '#f4f7ff',
+    opacity: 1
+  })
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${escapeAttribute(avatarLabel)}">
       <defs>
         <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(${rotation} 80 80)">
           <stop offset="0%" stop-color="${palette[0]}" />
-          <stop offset="45%" stop-color="${palette[1]}" />
-          <stop offset="100%" stop-color="${palette[2]}" />
+          <stop offset="34%" stop-color="${palette[1]}" />
+          <stop offset="68%" stop-color="${palette[2]}" />
+          <stop offset="100%" stop-color="${palette[3]}" />
         </linearGradient>
 
-        <radialGradient id="aura" cx="32%" cy="18%" r="82%">
-          <stop offset="0%" stop-color="${palette[4]}" stop-opacity="0.92" />
-          <stop offset="34%" stop-color="${palette[3]}" stop-opacity="0.26" />
+        <radialGradient id="aura" cx="32%" cy="18%" r="84%">
+          <stop offset="0%" stop-color="${palette[4]}" stop-opacity="0.96" />
+          <stop offset="26%" stop-color="${palette[4]}" stop-opacity="0.32" />
+          <stop offset="48%" stop-color="${palette[3]}" stop-opacity="0.42" />
           <stop offset="100%" stop-color="${palette[0]}" stop-opacity="0" />
         </radialGradient>
 
         <radialGradient id="core" cx="50%" cy="38%" r="64%">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28" />
-          <stop offset="74%" stop-color="#ffffff" stop-opacity="0.08" />
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34" />
+          <stop offset="58%" stop-color="#ffffff" stop-opacity="0.1" />
           <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
         </radialGradient>
+
+        <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="${palette[4]}" stop-opacity="0.88" />
+          <stop offset="45%" stop-color="${palette[3]}" stop-opacity="0.24" />
+          <stop offset="100%" stop-color="${palette[2]}" stop-opacity="0" />
+        </radialGradient>
+
+        <linearGradient id="orb" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.2" />
+          <stop offset="100%" stop-color="${palette[4]}" stop-opacity="0.16" />
+        </linearGradient>
 
         <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
           <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#020617" flood-opacity="0.34" />
         </filter>
 
         <filter id="symbolGlow" x="-60%" y="-60%" width="220%" height="220%">
-          <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ffffff" flood-opacity="0.42" />
-          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#020617" flood-opacity="0.30" />
+          <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="${palette[4]}" flood-opacity="0.48" />
+          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#020617" flood-opacity="0.28" />
         </filter>
       </defs>
 
       <rect width="160" height="160" rx="40" fill="url(#bg)" />
       <rect width="160" height="160" rx="40" fill="url(#aura)" />
+      <rect x="13" y="13" width="134" height="134" rx="30" fill="none" stroke="#fff3cf" stroke-opacity="0.16" />
 
-      <path d="M-18 126 C22 86 40 148 82 108 C116 74 130 34 180 62" fill="none" stroke="#ffffff" stroke-width="28" opacity="0.055" />
-      <path d="M-10 38 C32 22 55 42 82 28 C112 12 142 18 176 0" fill="none" stroke="#ffffff" stroke-width="18" opacity="0.06" />
+      <path d="M-18 126 C22 86 40 148 82 108 C116 74 130 34 180 62" fill="none" stroke="#fff1c2" stroke-width="28" opacity="0.075" />
+      <path d="M-10 38 C32 22 55 42 82 28 C112 12 142 18 176 0" fill="none" stroke="#ffd98a" stroke-width="18" opacity="0.08" />
+      <path d="M18 28 C40 8 61 10 80 28 C99 46 120 48 142 26" fill="none" stroke="${palette[4]}" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.36" />
+      <path d="M22 134 C53 114 105 112 138 136" fill="none" stroke="#fff4d2" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.2" />
 
-      ${starField(seed)}
+      ${starField(seed, palette)}
 
       <g transform="rotate(${oppositeRotation} 80 80)" opacity="0.64">
-        <circle cx="80" cy="80" r="66" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.24" stroke-dasharray="2 7" />
-        <circle cx="80" cy="80" r="52" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.26" />
-        <circle cx="80" cy="80" r="38" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.18" />
+        <circle cx="80" cy="80" r="66" fill="none" stroke="#fff5d2" stroke-width="1" stroke-opacity="0.24" stroke-dasharray="2 7" />
+        <circle cx="80" cy="80" r="52" fill="none" stroke="url(#orb)" stroke-width="1.5" stroke-opacity="0.42" />
+        <circle cx="80" cy="80" r="38" fill="none" stroke="#fff8ea" stroke-width="1" stroke-opacity="0.16" />
       </g>
 
       <g filter="url(#softShadow)">
-        <circle cx="80" cy="80" r="48" fill="url(#core)" stroke="#ffffff" stroke-width="1.4" stroke-opacity="0.48" />
-        <circle cx="80" cy="80" r="39" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.22" />
+        <circle cx="80" cy="80" r="50" fill="url(#halo)" opacity="0.72" />
+        <circle cx="80" cy="80" r="47" fill="url(#core)" stroke="#ffffff" stroke-width="1.4" stroke-opacity="0.48" />
+        <circle cx="80" cy="80" r="39" fill="none" stroke="#fff6df" stroke-width="1" stroke-opacity="0.24" />
       </g>
 
       ${mainGlyphMarkup}
 
-      <text x="80" y="125" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="17" font-weight="700" letter-spacing="0.08em" fill="#ffffff" opacity="0.86">
-        ${escapeText(monogram)}
-      </text>
+      <g transform="translate(80 122)">
+        <rect x="-18" y="-10" width="36" height="20" rx="10" fill="#fff3cf" fill-opacity="0.16" stroke="#fff7df" stroke-opacity="0.24" />
+        <text x="0" y="5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="17" font-weight="700" letter-spacing="0.08em" fill="#ffffff" opacity="0.92">
+          ${escapeText(monogram)}
+        </text>
+      </g>
 
       <g opacity="0.94">
-        <circle cx="37" cy="42" r="14" fill="#ffffff" fill-opacity="0.12" stroke="#ffffff" stroke-opacity="0.34" />
-        <text x="37" y="48" text-anchor="middle" font-family="Georgia, serif" font-size="17" fill="#fff7d6">☉</text>
+        <circle cx="37" cy="42" r="14" fill="#fff3cf" fill-opacity="0.18" stroke="#fff7df" stroke-opacity="0.28" />
+        <text x="37" y="48" text-anchor="middle" font-family="Georgia, serif" font-size="17" fill="#ffffff">☉</text>
       </g>
 
       <g opacity="0.84">
-        <circle cx="124" cy="45" r="13" fill="#ffffff" fill-opacity="0.10" stroke="#ffffff" stroke-opacity="0.30" />
+        <circle cx="124" cy="45" r="13" fill="#fff3cf" fill-opacity="0.14" stroke="#fff7df" stroke-opacity="0.24" />
         ${moonGlyphMarkup}
       </g>
 
       <g opacity="0.78">
-        <circle cx="42" cy="119" r="12" fill="#ffffff" fill-opacity="0.10" stroke="#ffffff" stroke-opacity="0.26" />
+        <circle cx="42" cy="119" r="12" fill="#fff3cf" fill-opacity="0.14" stroke="#fff7df" stroke-opacity="0.22" />
         ${ascGlyphMarkup}
       </g>
 
-      <rect x="1" y="1" width="158" height="158" rx="39" fill="none" stroke="#ffffff" stroke-opacity="0.28" />
+      <rect x="1" y="1" width="158" height="158" rx="39" fill="none" stroke="#fff8e5" stroke-opacity="0.3" />
     </svg>
   `.trim()
 

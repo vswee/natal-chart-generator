@@ -29,7 +29,7 @@
           <div class="daily-horoscope-card-head">
             <div>
               <p class="daily-horoscope-day">{{ featuredCard.dayLabel }}</p>
-              <h3 class="daily-horoscope-title">{{ featuredCard.headline }}</h3>
+              <h3 class="daily-horoscope-title">{{ props.profileIdentity.nickname ? `Dear ${props.profileIdentity.nickname}, ` : ''}}{{ featuredCard.headline }}</h3>
             </div>
             <p class="daily-horoscope-date">{{ featuredCard.dateLabel }}</p>
           </div>
@@ -108,6 +108,10 @@ const props = defineProps({
     default: () => []
   },
   chart: {
+    type: Object,
+    default: null
+  },
+  profileIdentity: {
     type: Object,
     default: null
   },

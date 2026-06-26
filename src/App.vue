@@ -7,11 +7,11 @@
           Natal chart app by Flat 18
         </div>
         <h1 class="hero-title">Natal Charts Generator</h1>
-          <p class="hero-copy">
-            A precise birth chart, simplified into the placements, patterns and timing that matter.
-            <span v-if="!chart">Enter your birth details to begin with a clean chart reading.</span>
-          </p>
-        </div>
+        <p class="hero-copy">
+          A precise birth chart, simplified into the placements, patterns and timing that matter.
+          <span v-if="!chart">Enter your birth details to begin with a clean chart reading.</span>
+        </p>
+      </div>
 
       <div class="profile-dock">
         <button class="profile-button" type="button" :aria-expanded="isProfileMenuOpen" @click="toggleProfileMenu">
@@ -20,7 +20,7 @@
             <span v-else aria-hidden="true">✦</span>
           </span>
           <span class="profile-copy">
-            <span class="profile-kicker">{{ profileIdentity?.nickname ? 'Welcome back' : 'Welcome'}}</span>
+            <span class="profile-kicker">{{ profileIdentity?.nickname ? 'Welcome back' : 'Welcome' }}</span>
             <strong class="profile-name">{{ profileIdentity?.nickname || 'Create your chart below' }}</strong>
             <!-- <span class="profile-subcopy">{{ profileStatusCopy }}</span> -->
           </span>
@@ -95,12 +95,8 @@
           </div>
 
           <div class="profile-menu-actions">
-            <button
-              :class="['button', 'profile-reset-button', { 'is-armed': isProfileResetArmed }]"
-              type="button"
-              :aria-pressed="isProfileResetArmed"
-              @click="handleProfileResetClick"
-            >
+            <button :class="['button', 'profile-reset-button', { 'is-armed': isProfileResetArmed }]" type="button"
+              :aria-pressed="isProfileResetArmed" @click="handleProfileResetClick">
               {{ isProfileResetArmed ? 'Are you sure? Clear data' : 'Delete data and reset' }}
             </button>
           </div>
@@ -111,40 +107,21 @@
 
     <div :class="['layout', { 'has-chart': chart, 'is-empty': !chart }]">
       <div class="stack">
-        <BirthForm
-          :loading="loading"
-          :error="error"
-          :resolved-location="resolvedLocation"
-          :saved-birth-data="savedBirthData"
-          :compact-summary="Boolean(chart)"
-          :editor-request="birthEditorRequest"
-          @submit="handleSubmit"
-          @open-editor="openBirthEditor"
-        />
+        <BirthForm :loading="loading" :error="error" :resolved-location="resolvedLocation"
+          :saved-birth-data="savedBirthData" :compact-summary="Boolean(chart)" :editor-request="birthEditorRequest"
+          @submit="handleSubmit" @open-editor="openBirthEditor" />
       </div>
 
       <section v-if="chart" class="results-grid">
         <template v-if="chart">
-          <DailyHoroscopeRail
-            :cards="dailyHoroscopeCards"
-            :chart="chart"
-            :refreshed-at="dailyHoroscopeRefreshedAt"
-            @go-share="scrollToShareSection"
-            @go-advanced="openAdvancedViewFromDaily"
-            @add-partner="openPartnerModal"
-          />
+          <DailyHoroscopeRail :cards="dailyHoroscopeCards" :chart="chart" :profile-identity="profileIdentity"
+            :refreshed-at="dailyHoroscopeRefreshedAt" @go-share="scrollToShareSection"
+            @go-advanced="openAdvancedViewFromDaily" @add-partner="openPartnerModal" />
 
-          <SimplifiedChart
-            ref="simplifiedChartRef"
-            :chart="chart"
-            :current-transits="currentTransits"
-            :partner-reports="partnerReports"
-            :resolved-location="resolvedLocation"
-            @media-generated="handleMediaGenerated"
-            @add-partner="openPartnerModal"
-            @select-partner="selectPartnerChart"
-            @remove-partner="removePartnerChart"
-          />
+          <SimplifiedChart ref="simplifiedChartRef" :chart="chart" :current-transits="currentTransits"
+            :partner-reports="partnerReports" :resolved-location="resolvedLocation"
+            @media-generated="handleMediaGenerated" @add-partner="openPartnerModal" @select-partner="selectPartnerChart"
+            @remove-partner="removePartnerChart" />
 
           <section ref="advancedEntryRef" class="panel advanced-entry">
             <div class="panel-inner advanced-entry-inner">
@@ -153,12 +130,8 @@
                 <h2 class="section-title">Full chart data</h2>
                 <p class="section-copy">Placements, aspects, houses, charts, compatibility and the PDF export.</p>
               </div>
-              <button
-                class="subtle-button advanced-view-button"
-                type="button"
-                :aria-expanded="isAdvancedView"
-                @click="isAdvancedView = !isAdvancedView"
-              >
+              <button class="subtle-button advanced-view-button" type="button" :aria-expanded="isAdvancedView"
+                @click="isAdvancedView = !isAdvancedView">
                 <IconAdjustmentsHorizontal :size="18" stroke-width="2" />
                 <span>{{ isAdvancedView ? 'Hide advanced view' : 'Open advanced view' }}</span>
               </button>
@@ -173,7 +146,8 @@
                     <h2 class="section-title">Chart details</h2>
                     <p class="section-copy">The birth details and coordinates used for this chart.</p>
                   </div>
-                  <button class="button advanced-download-button" type="button" :disabled="isDownloading" @click="downloadPdf">
+                  <button class="button advanced-download-button" type="button" :disabled="isDownloading"
+                    @click="downloadPdf">
                     {{ isDownloading ? 'Preparing PDF...' : 'Download chart PDF' }}
                   </button>
                 </div>
@@ -240,7 +214,8 @@
                   <section class="panel core-card">
                     <div class="panel-inner">
                       <h2 class="section-title">Core triad</h2>
-                      <p class="section-copy">The three main placements for identity, feelings and first impressions.</p>
+                      <p class="section-copy">The three main placements for identity, feelings and first impressions.
+                      </p>
 
                       <div class="core-list">
                         <article class="core-item">
@@ -311,12 +286,13 @@
                 <span class="advanced-accordion-chevron" aria-hidden="true"></span>
               </summary>
               <div class="advanced-accordion-body">
-                <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''" @add="openPartnerModal"
-                  @select="selectPartnerChart" @remove="removePartnerChart" />
+                <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''"
+                  @add="openPartnerModal" @select="selectPartnerChart" @remove="removePartnerChart" />
 
                 <div ref="comparisonDetailRef" class="compare-detail">
-                  <RelationshipPanel v-if="relationshipReport" :report="relationshipReport" primary-action-label="Add partner"
-                    secondary-action-label="Remove partner" @edit="openPartnerModal" @clear="removeActivePartner" />
+                  <RelationshipPanel v-if="relationshipReport" :report="relationshipReport"
+                    primary-action-label="Add partner" secondary-action-label="Remove partner" @edit="openPartnerModal"
+                    @clear="removeActivePartner" />
 
                   <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
                     :label-b="activePartner?.label || 'Partner'" />
@@ -357,7 +333,7 @@
         <li><button class="footer-link-button" type="button" @click="isPrivacyModalOpen = true">
             Privacy
           </button></li>
-        </ul>
+      </ul>
       <div class="footer-title">Attribution & licensing</div>
       <ul class="footer-list">
         <li>

@@ -873,6 +873,59 @@ function formatRetrogradeLabels(transits) {
   return `${labels.slice(0, -1).join(', ')}, and ${labels.at(-1)} are retrograde`
 }
 
+function normaliseGlyphKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function buildHoroscopeChips(dayKey, transit, moonSign, retrogrades) {
+  const chips = []
+
+  if (transit?.moon) {
+    const phaseName = transit.moon.phaseName || 'Moon phase'
+    chips.push({
+      key: `${dayKey}-moon-sign`,
+      type: 'moon',
+      iconKind: 'body',
+      icon: 'moon',
+      label: `Moon in ${moonSign}`
+    })
+    chips.push({
+      key: `${dayKey}-moon-phase`,
+      type: 'phase',
+      iconKind: 'phase',
+      icon: normaliseGlyphKey(phaseName),
+      label: phaseName
+    })
+  } else {
+    chips.push({
+      key: `${dayKey}-moon-unavailable`,
+      type: 'moon',
+      iconKind: 'body',
+      icon: 'moon',
+      label: 'Moon data unavailable'
+    })
+  }
+
+  retrogrades.forEach((placement) => {
+    if (!placement?.body) return
+    chips.push({
+      key: `${dayKey}-${placement.body}-retrograde`,
+      type: 'retrograde',
+      iconKind: 'body',
+      icon: placement.body,
+      stateIconKind: 'body',
+      stateIcon: 'retrograde',
+      label: `${toTitleCase(placement.body)} retrograde`
+    })
+  })
+
+  return chips
+}
+
 function buildHoroscopeCopy(dayKey, chartData, transits) {
   const natalSun = getPlacementSign(chartData, 'sun')
   const natalMoon = getPlacementSign(chartData, 'moon')
@@ -939,6 +992,7 @@ function buildHoroscopeCards(chartData, transitsList, baseDate) {
         ? `Moon in ${moonSign} · ${transit.moon.phaseName}`
         : 'Moon data unavailable',
       retrogradeLabel,
+      chips: buildHoroscopeChips(key, transit, moonSign, retrogrades),
       generatedAt: transit?.generatedAt || baseDate.toISOString()
     }
   })

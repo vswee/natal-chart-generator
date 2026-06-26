@@ -78,8 +78,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  align-items: center;
+  align-items: end;
   margin-top: 4px;
+  flex-shrink: 0;
+  flex-grow: 1;
 }
 
 .daily-horoscope-action {
@@ -97,7 +99,8 @@
 }
 
 .daily-horoscope-card {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   padding: 18px;
   border: 1px solid rgba(105, 92, 124, 0.08);
@@ -160,15 +163,51 @@
 .daily-horoscope-chip {
   display: inline-flex;
   align-items: center;
+  gap: 7px;
+  max-width: 100%;
   min-height: 30px;
-  padding: 0 10px;
+  padding: 0 10px 0 8px;
   border: 1px solid rgba(106, 92, 128, 0.08);
   border-radius: 999px;
   background: rgba(255, 252, 248, 0.78);
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.15;
+}
+
+.daily-horoscope-chip-icons {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  color: var(--text);
+  line-height: 0;
+}
+
+.daily-horoscope-chip-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.daily-horoscope-chip--phase .daily-horoscope-chip-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.daily-horoscope-chip-icon--state {
+  width: 11px;
+  height: 11px;
+  opacity: 0.72;
+  transform: translateY(1px);
+}
+
+.daily-horoscope-chip-label {
+  min-width: 0;
+}
+
+.daily-horoscope-chip.daily-horoscope-chip--retrograde {
+  color: var(--text);
 }
 
 @media (max-width: 720px) {

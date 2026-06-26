@@ -26,6 +26,15 @@ import northNodeBody from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/n
 import southNodeBody from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/south-node.svg?raw'
 import chironBody from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/chiron.svg?raw'
 import lilithBody from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/lilith.svg?raw'
+import retrogradeBody from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/retrograde.svg?raw'
+import newMoonPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/new-moon.svg?raw'
+import waxingCrescentPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/waxing-crescent.svg?raw'
+import firstQuarterPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/first-quarter.svg?raw'
+import waxingGibbousPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/waxing-gibbous.svg?raw'
+import fullMoonPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/full-moon.svg?raw'
+import waningGibbousPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/waning-gibbous.svg?raw'
+import lastQuarterPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/last-quarter.svg?raw'
+import waningCrescentPhase from '../assets/font/ZodiacFontFREE-All/svgs/sans-regular/waning-crescent.svg?raw'
 
 const SVG_VIEWBOX = '0 0 512 512'
 
@@ -60,11 +69,24 @@ const BODY_SVGS = {
   northNode: northNodeBody,
   southNode: southNodeBody,
   chiron: chironBody,
-  lilith: lilithBody
+  lilith: lilithBody,
+  retrograde: retrogradeBody
+}
+
+const PHASE_SVGS = {
+  'new-moon': newMoonPhase,
+  'waxing-crescent': waxingCrescentPhase,
+  'first-quarter': firstQuarterPhase,
+  'waxing-gibbous': waxingGibbousPhase,
+  'full-moon': fullMoonPhase,
+  'waning-gibbous': waningGibbousPhase,
+  'last-quarter': lastQuarterPhase,
+  'waning-crescent': waningCrescentPhase
 }
 
 function getSvgSource(kind, name) {
   if (kind === 'sign') return SIGN_SVGS[name] || ''
+  if (kind === 'phase') return PHASE_SVGS[name] || ''
   return BODY_SVGS[name] || ''
 }
 

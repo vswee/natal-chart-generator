@@ -36,9 +36,30 @@
 
           <p class="daily-horoscope-copy">{{ featuredCard.copy }}</p>
 
-          <div class="daily-horoscope-footer">
-            <span class="daily-horoscope-chip">{{ featuredCard.moonLabel }}</span>
-            <span v-if="featuredCard.retrogradeLabel" class="daily-horoscope-chip">{{ featuredCard.retrogradeLabel }}</span>
+          <div v-if="chipItems(featuredCard).length" class="daily-horoscope-footer">
+            <span
+              v-for="chip in chipItems(featuredCard)"
+              :key="chip.key"
+              :class="['daily-horoscope-chip', chip.type ? `daily-horoscope-chip--${chip.type}` : '']"
+            >
+              <span v-if="chip.icon || chip.stateIcon" class="daily-horoscope-chip-icons" aria-hidden="true">
+                <AstroGlyph
+                  v-if="chip.icon"
+                  class="daily-horoscope-chip-icon"
+                  :kind="chip.iconKind || 'body'"
+                  :body="chip.icon"
+                  :size="chip.iconSize || 14"
+                />
+                <AstroGlyph
+                  v-if="chip.stateIcon"
+                  class="daily-horoscope-chip-icon daily-horoscope-chip-icon--state"
+                  :kind="chip.stateIconKind || 'body'"
+                  :body="chip.stateIcon"
+                  :size="chip.stateIconSize || 11"
+                />
+              </span>
+              <span class="daily-horoscope-chip-label">{{ chip.label }}</span>
+            </span>
           </div>
 
           <div class="daily-horoscope-actions" aria-label="Daily horoscope actions">
@@ -88,9 +109,30 @@
 
           <p class="daily-horoscope-copy">{{ card.copy }}</p>
 
-          <div class="daily-horoscope-footer">
-            <span class="daily-horoscope-chip">{{ card.moonLabel }}</span>
-            <span v-if="card.retrogradeLabel" class="daily-horoscope-chip">{{ card.retrogradeLabel }}</span>
+          <div v-if="chipItems(card).length" class="daily-horoscope-footer">
+            <span
+              v-for="chip in chipItems(card)"
+              :key="chip.key"
+              :class="['daily-horoscope-chip', chip.type ? `daily-horoscope-chip--${chip.type}` : '']"
+            >
+              <span v-if="chip.icon || chip.stateIcon" class="daily-horoscope-chip-icons" aria-hidden="true">
+                <AstroGlyph
+                  v-if="chip.icon"
+                  class="daily-horoscope-chip-icon"
+                  :kind="chip.iconKind || 'body'"
+                  :body="chip.icon"
+                  :size="chip.iconSize || 14"
+                />
+                <AstroGlyph
+                  v-if="chip.stateIcon"
+                  class="daily-horoscope-chip-icon daily-horoscope-chip-icon--state"
+                  :kind="chip.stateIconKind || 'body'"
+                  :body="chip.stateIcon"
+                  :size="chip.stateIconSize || 11"
+                />
+              </span>
+              <span class="daily-horoscope-chip-label">{{ chip.label }}</span>
+            </span>
           </div>
         </article>
       </div>
@@ -100,6 +142,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import AstroGlyph from './AstroGlyph.vue'
 import CoStarStyleChartWheel from './CoStarStyleChartWheel.vue'
 
 const props = defineProps({
@@ -127,6 +170,36 @@ const featuredCard = computed(() => props.cards.find((card) => card.key === 'tod
 const timelineCards = computed(() => props.cards.filter((card) => card.key !== 'today').slice(0, 3))
 
 const activeKey = ref('yesterday')
+
+function chipItems(card) {
+  if (!card) return []
+
+  if (Array.isArray(card.chips) && card.chips.length) {
+    return card.chips.filter((chip) => chip?.label)
+  }
+
+  const fallbackChips = []
+  if (card.moonLabel) {
+    fallbackChips.push({
+      key: `${card.key || 'card'}-moon`,
+      type: 'moon',
+      iconKind: 'body',
+      icon: 'moon',
+      label: card.moonLabel
+    })
+  }
+  if (card.retrogradeLabel) {
+    fallbackChips.push({
+      key: `${card.key || 'card'}-retrograde`,
+      type: 'retrograde',
+      iconKind: 'body',
+      icon: 'retrograde',
+      label: card.retrogradeLabel
+    })
+  }
+
+  return fallbackChips
+}
 
 watch(
   timelineCards,

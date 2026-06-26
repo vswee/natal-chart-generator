@@ -18,6 +18,10 @@ import { computed } from 'vue'
 import { GLYPH_VIEWBOX, getGlyphInnerSvg } from '../utils/astro-glyphs'
 
 const props = defineProps({
+  kind: {
+    type: String,
+    default: 'body'
+  },
   body: {
     type: String,
     required: true
@@ -33,6 +37,6 @@ const props = defineProps({
 })
 
 const viewBox = GLYPH_VIEWBOX
-const glyphMarkup = computed(() => getGlyphInnerSvg('body', props.body))
+const glyphMarkup = computed(() => getGlyphInnerSvg(props.kind, props.body))
 const svgStyle = computed(() => (props.color && props.color !== 'currentColor' ? { color: props.color } : undefined))
 </script>

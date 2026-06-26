@@ -7,11 +7,11 @@ Live product: https://natal-chart.flat18.app/
 ## Files
 
 - `case-study.md` - detailed marketing case study for website use.
-- `screenshots/01-chart-overview.png` - populated chart overview, map, core triad, chart wheel, and summary scores.
-- `screenshots/02-transits-focus.png` - present-time transits and relationship/work/life focus areas.
-- `screenshots/03-relationship-comparison.png` - partner comparison and relationship category scores.
-- `screenshots/04-synastry-composite.png` - synastry aspects and composite chart view.
-- `screenshots/05-interpretation-notes.png` - major aspects and interpretation notes.
+- `screenshots/01-chart-overview.png` - top-of-page overview with the editorial hero, daily horoscope rail, and simplified chart summary.
+- `screenshots/02-transits-focus.png` - advanced daily context with elements and modes, present time, and focus areas.
+- `screenshots/03-relationship-comparison.png` - relationship chart with comparison basis and category score summaries.
+- `screenshots/04-synastry-composite.png` - synastry aspect list and composite chart details in the compatibility view.
+- `screenshots/05-interpretation-notes.png` - placement table, major aspects, and interpretation notes from the reference view.
 
 ## Sample data used
 
@@ -30,5 +30,4 @@ Partner chart:
 - Location: Dublin, Ireland
 - House system: Whole Sign
 
-The screenshots were generated from the local app UI on April 28, 2026.
-
+The screenshots were generated from the local app UI on June 24, 2026.

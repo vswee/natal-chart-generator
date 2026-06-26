@@ -1,4 +1,3 @@
-import SwissEph from 'swisseph-wasm'
 import tzLookup from 'tz-lookup'
 import { buildAspects } from '../utils/aspects'
 import { buildAspectPatterns } from '../utils/aspect-patterns'
@@ -50,6 +49,7 @@ let swePromise
 async function getSwissEph() {
   if (!swePromise) {
     swePromise = (async () => {
+      const { default: SwissEph } = await import('swisseph-wasm')
       const swe = new SwissEph()
       await swe.initSwissEph()
       return swe

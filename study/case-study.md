@@ -10,7 +10,7 @@ The app is useful because it reduces the friction between curiosity and insight.
 
 For Flat 18, the project is also a strong proof point: complex data products do not need to feel complex. With the right structure, even a dense symbolic system can become a polished product that supports exploration, comparison, trust, and repeat use.
 
-![Generated natal chart overview with map, core triad, chart wheel, and summary scores.](screenshots/01-chart-overview.png)
+![Top-of-page overview with the editorial hero, daily horoscope rail, and simplified chart summary.](screenshots/01-chart-overview.png)
 
 ## The problem
 
@@ -75,7 +75,7 @@ The app includes a present-time panel that compares the current sky with the nat
 
 This makes the product more useful than a static birth-chart generator. Users can return to the app and see how current planetary movement is activating different areas of the natal chart.
 
-![Present time panel and focus-area scoring for relationship, work, and life themes.](screenshots/02-transits-focus.png)
+![Advanced daily context with elements and modes, present time, and relationship, work, and life focus areas.](screenshots/02-transits-focus.png)
 
 ### Relationship and compatibility analysis
 
@@ -90,7 +90,7 @@ The categories are intentionally simple:
 
 Each category includes a score, a plain-language summary, and supporting cross-chart aspect highlights. This lets the user see both the headline and the reasoning behind it.
 
-![Relationship comparison with partner scores and category explanations.](screenshots/03-relationship-comparison.png)
+![Relationship chart with comparison basis and category score summaries.](screenshots/03-relationship-comparison.png)
 
 ### Synastry and composite chart depth
 
@@ -98,7 +98,7 @@ For users who want more than summary scores, the app exposes cross-chart synastr
 
 This is a strong example of progressive depth: the app keeps the first relationship view simple, then gives experienced users a path into the underlying data.
 
-![Synastry aspect list and composite chart details.](screenshots/04-synastry-composite.png)
+![Synastry aspect list and composite chart details in the compatibility view.](screenshots/04-synastry-composite.png)
 
 ### Interpretation notes and detailed data
 
@@ -106,7 +106,7 @@ The app includes placement notes, major aspects, and interpretation blocks gener
 
 This solves an important usability problem: raw placements are not enough for most users. The app turns calculated results into readable material without hiding the underlying structure.
 
-![Major aspects and interpretation notes generated from the sample chart.](screenshots/05-interpretation-notes.png)
+![Placement table, major aspects, and interpretation notes from the reference view.](screenshots/05-interpretation-notes.png)
 
 ## Key features
 
@@ -236,7 +236,7 @@ Partner chart:
 - Location: Dublin, Ireland
 - House system: Whole Sign
 
-Screenshots were generated from the local app UI on April 28, 2026.
+Screenshots were generated from the local app UI on June 24, 2026.
 
 ## Asset inventory
 
@@ -245,4 +245,3 @@ Screenshots were generated from the local app UI on April 28, 2026.
 - `screenshots/03-relationship-comparison.png`
 - `screenshots/04-synastry-composite.png`
 - `screenshots/05-interpretation-notes.png`
-

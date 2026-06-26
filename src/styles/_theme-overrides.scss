@@ -1977,16 +1977,13 @@ body::after {
   overflow: clip;
 }
 
-.simple-hero::before {
-  background:
-    radial-gradient(
-      circle at calc(78% + (var(--motion-x) * 22px)) calc(44% + (var(--motion-y) * 18px)),
-      transparent 0 165px,
-      rgba(17, 17, 17, 0.085) 166px,
-      transparent 168px
-    ),
-    linear-gradient(90deg, transparent 0 58%, rgba(17, 17, 17, 0.055) 58.08% 58.2%, transparent 58.32%);
-  transition: background 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+.simple-hero::before,
+.simple-hero.panel::before {
+  content: none;
+  display: none;
+  background: none;
+  opacity: 0;
+  transition: none;
 }
 
 .simple-title {

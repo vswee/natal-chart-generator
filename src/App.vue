@@ -125,9 +125,17 @@
 
       <section v-if="chart" class="results-grid">
         <template v-if="chart">
-          <DailyHoroscopeRail :cards="dailyHoroscopeCards" :refreshed-at="dailyHoroscopeRefreshedAt" />
+          <DailyHoroscopeRail
+            :cards="dailyHoroscopeCards"
+            :chart="chart"
+            :refreshed-at="dailyHoroscopeRefreshedAt"
+            @go-share="scrollToShareSection"
+            @go-advanced="openAdvancedViewFromDaily"
+            @add-partner="openPartnerModal"
+          />
 
           <SimplifiedChart
+            ref="simplifiedChartRef"
             :chart="chart"
             :current-transits="currentTransits"
             :partner-reports="partnerReports"
@@ -138,7 +146,7 @@
             @remove-partner="removePartnerChart"
           />
 
-          <section class="panel advanced-entry">
+          <section ref="advancedEntryRef" class="panel advanced-entry">
             <div class="panel-inner advanced-entry-inner">
               <div>
                 <p class="simple-kicker">Advanced</p>
@@ -749,6 +757,8 @@ const dailyHoroscopeRefreshedAt = ref('')
 const compositeChart = ref(null)
 const comparisonDetailRef = ref(null)
 const compatibilityAccordionRef = ref(null)
+const simplifiedChartRef = ref(null)
+const advancedEntryRef = ref(null)
 const isAdvancedView = ref(false)
 const savedBirthData = ref(null)
 const storedShareMedia = ref(null)
@@ -901,7 +911,8 @@ function buildHoroscopeCopy(dayKey, chartData, transits) {
   const copyMap = {
     yesterday: `Yesterday wanted less noise. ${natalMoonText} does better when you finish one open loop before adding another. ${retrogradeText}.`,
     today: `Today lands with the Moon in ${moonSign} and a ${moonPhase} feel. ${natalAscText} prefers a clean move, a short list, and one obvious yes.`,
-    tomorrow: `Tomorrow opens more space. ${natalSunText} gets traction from a direct choice, and the ${moonSign} Moon keeps the pace flexible. ${retrogradeText}.`
+    tomorrow: `Tomorrow opens more space. ${natalSunText} gets traction from a direct choice, and the ${moonSign} Moon keeps the pace flexible. ${retrogradeText}.`,
+    future: `The next day asks for a little more range. ${natalMoonText} can keep the body steady while the ${moonSign} Moon tests what is ready to grow. ${retrogradeText}.`
   }
 
   return copyMap[dayKey]
@@ -915,7 +926,8 @@ function buildHoroscopeHeadline(dayKey, chartData, transits) {
   const pools = {
     yesterday: ['Close the loop', 'Trim the drag', 'Leave less open'],
     today: ['Move with intent', 'Keep it simple', 'Choose the clean path'],
-    tomorrow: ['Make room to shift', 'Trust the turn', 'Let the pace change']
+    tomorrow: ['Make room to shift', 'Trust the turn', 'Let the pace change'],
+    future: ['Hold the wider view', 'Make space for growth', 'Follow the next signal']
   }
 
   const seed = `${dayKey}-${natalSun}-${moonSign}-${retrogrades}`
@@ -926,12 +938,13 @@ function buildHoroscopeHeadline(dayKey, chartData, transits) {
 
 function buildHoroscopeCards(chartData, transitsList, baseDate) {
   const labels = [
-    { key: 'yesterday', offset: -1 },
-    { key: 'today', offset: 0 },
-    { key: 'tomorrow', offset: 1 }
+    { key: 'yesterday', label: 'Yesterday', offset: -1 },
+    { key: 'today', label: 'Today', offset: 0 },
+    { key: 'tomorrow', label: 'Tomorrow', offset: 1 },
+    { key: 'future', label: 'Next up', offset: 2 }
   ]
 
-  return labels.map(({ key, offset }) => {
+  return labels.map(({ key, label, offset }) => {
     const transit = transitsList[offset + 1]
     const dayDate = createLocalDate(baseDate, offset)
     const moonSign = transit?.moon?.sign ? toTitleCase(transit.moon.sign) : 'Moon unknown'
@@ -942,7 +955,7 @@ function buildHoroscopeCards(chartData, transitsList, baseDate) {
 
     return {
       key,
-      dayLabel: toTitleCase(key),
+      dayLabel: label,
       dateLabel: formatShortDay(dayDate),
       headline: buildHoroscopeHeadline(key, chartData, transit),
       copy: buildHoroscopeCopy(key, chartData, transit),
@@ -980,7 +993,7 @@ async function refreshDailyContext() {
   const now = new Date()
 
   try {
-    const dates = [-1, 0, 1].map((offset) => createLocalDate(now, offset))
+    const dates = [-1, 0, 1, 2].map((offset) => createLocalDate(now, offset))
     const transits = await Promise.all(dates.map((date) => calculateCurrentTransits(chart.value, date)))
     if (token !== dailyRefreshToken) return
 
@@ -1451,6 +1464,25 @@ function handleMediaGenerated(payload) {
   cacheShareMedia(payload).catch((error) => {
     console.warn(error)
   })
+}
+
+function getElementFromRef(targetRef) {
+  return targetRef?.$el || targetRef || null
+}
+
+async function scrollToShareSection() {
+  await nextTick()
+  const target = getElementFromRef(simplifiedChartRef.value)
+  if (!target?.scrollIntoView) return
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+async function openAdvancedViewFromDaily() {
+  isAdvancedView.value = true
+  await nextTick()
+  const target = getElementFromRef(pdfTarget.value) || getElementFromRef(advancedEntryRef.value)
+  if (!target?.scrollIntoView) return
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function openPartnerModal() {

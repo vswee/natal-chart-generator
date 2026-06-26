@@ -32,7 +32,7 @@
 
       <div class="chart-wheel-wrap">
         <svg
-          class="chart-wheel"
+          :class="['chart-wheel', `chart-wheel--${variant}`]"
           :width="size"
           :height="size"
           :viewBox="`0 0 ${size} ${size}`"
@@ -65,7 +65,20 @@
               :x2="sign.end.x"
               :y2="sign.end.y"
             />
+            <g v-if="isCostarVariant" class="wheel-sign-labels">
+              <text
+                v-for="sign in signLabels"
+                :key="`sign-label-${sign.sign}`"
+                class="wheel-sign-label"
+                :x="sign.point.x"
+                :y="sign.point.y"
+                :transform="`rotate(${sign.rotation} ${sign.point.x} ${sign.point.y})`"
+              >
+                {{ sign.label }}
+              </text>
+            </g>
             <g
+              v-if="!isCostarVariant"
               v-for="sign in signGlyphs"
               :key="`sign-${sign.sign}`"
               class="sign-glyph"
@@ -96,17 +109,19 @@
                 @mouseleave="clearHover"
               />
             </g>
-            <text
-              v-for="house in houseLabels"
-              :key="`label-${house.index}`"
-              class="wheel-house-label"
-              :x="house.point.x"
-              :y="house.point.y"
-              @mouseenter="setHouseHover(house.index)"
-              @mouseleave="clearHover"
-            >
-              {{ house.index }}
-            </text>
+            <template v-if="!isCostarVariant">
+              <text
+                v-for="house in houseLabels"
+                :key="`label-${house.index}`"
+                class="wheel-house-label"
+                :x="house.point.x"
+                :y="house.point.y"
+                @mouseenter="setHouseHover(house.index)"
+                @mouseleave="clearHover"
+              >
+                {{ house.index }}
+              </text>
+            </template>
           </g>
 
           <g class="wheel-aspects">
@@ -149,6 +164,7 @@
                 <AstroGlyph :body="placement.body" :size="placement.glyphSize" class="placement-glyph" />
               </g>
               <text
+                v-if="!isCostarVariant"
                 class="placement-degree"
                 :x="placement.degreePoint.x"
                 :y="placement.degreePoint.y"
@@ -184,6 +200,11 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  variant: {
+    type: String,
+    default: 'default',
+    validator: (value) => ['default', 'costar'].includes(value)
+  },
   placements: {
     type: Array,
     required: true
@@ -212,6 +233,7 @@ const placementDegreeRadius = 102
 const aspectRadius = 92
 const defaultHoverText = 'Hover over a point or line for details.'
 const hoverText = ref('')
+const isCostarVariant = computed(() => props.variant === 'costar')
 
 const placementLabels = {
   sun: 'Sun',
@@ -306,10 +328,12 @@ const signSegments = computed(() =>
     const startAngle = angleForLongitude(index * 30)
     const endAngle = angleForLongitude((index + 1) * 30)
     const info = SIGN_INFO[sign] || { element: 'air' }
+    const outerRadius = isCostarVariant.value ? signOuterRadius : signBandOuterRadius
+    const innerRadius = isCostarVariant.value ? signInnerRadius : signOuterRadius
     return {
       sign,
       element: info.element,
-      path: describeRingSegment(startAngle, endAngle, signBandOuterRadius, signOuterRadius)
+      path: describeRingSegment(startAngle, endAngle, outerRadius, innerRadius)
     }
   })
 )
@@ -337,6 +361,21 @@ const signGlyphs = computed(() => {
       element: info.element,
       point: polarToPoint(angle, radius),
       size
+    }
+  })
+})
+
+const signLabels = computed(() => {
+  const radius = (signOuterRadius + signInnerRadius) / 2
+  return SIGNS.map((sign, index) => {
+    const angle = angleForLongitude(index * 30 + 15)
+    let rotation = angle
+    if (rotation > 90 && rotation < 270) rotation += 180
+    return {
+      sign,
+      label: sign.toUpperCase(),
+      point: polarToPoint(angle, radius),
+      rotation
     }
   })
 })

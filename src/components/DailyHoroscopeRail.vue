@@ -4,7 +4,7 @@
       <div class="daily-horoscope-header">
         <div>
           <h2 class="section-title">Daily horoscope</h2>
-          <p class="section-copy">Yesterday, today and tomorrow, tuned to your chart.</p>
+          <p class="section-copy">Today in focus, with the surrounding days kept close.</p>
         </div>
 
         <div class="daily-horoscope-meta">
@@ -13,9 +13,51 @@
         </div>
       </div>
 
-      <div class="daily-horoscope-tabs" role="tablist" aria-label="Daily horoscope days">
+      <div v-if="featuredCard && chart" class="daily-horoscope-feature">
+        <div class="daily-horoscope-chart" aria-hidden="true">
+          <CoStarStyleChartWheel
+            :embedded="true"
+            :show-chrome="false"
+            :decorative="true"
+            :placements="chart.placements"
+            :aspects="chart.aspects"
+            :cusps="chart.houseCusps"
+          />
+        </div>
+
+        <article class="daily-horoscope-card daily-horoscope-card--featured">
+          <div class="daily-horoscope-card-head">
+            <div>
+              <p class="daily-horoscope-day">{{ featuredCard.dayLabel }}</p>
+              <h3 class="daily-horoscope-title">{{ featuredCard.headline }}</h3>
+            </div>
+            <p class="daily-horoscope-date">{{ featuredCard.dateLabel }}</p>
+          </div>
+
+          <p class="daily-horoscope-copy">{{ featuredCard.copy }}</p>
+
+          <div class="daily-horoscope-footer">
+            <span class="daily-horoscope-chip">{{ featuredCard.moonLabel }}</span>
+            <span v-if="featuredCard.retrogradeLabel" class="daily-horoscope-chip">{{ featuredCard.retrogradeLabel }}</span>
+          </div>
+
+          <div class="daily-horoscope-actions" aria-label="Daily horoscope actions">
+            <button class="button daily-horoscope-action" type="button" @click="emit('go-share')">
+              Share your chart
+            </button>
+            <button class="subtle-button daily-horoscope-action" type="button" @click="emit('go-advanced')">
+              Advanced view
+            </button>
+            <button class="subtle-button daily-horoscope-action" type="button" @click="emit('add-partner')">
+              Romance + compatibility
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <div class="daily-horoscope-tabs" role="tablist" aria-label="Surrounding horoscope days">
         <button
-          v-for="card in cards"
+          v-for="card in timelineCards"
           :key="card.key"
           type="button"
           class="daily-horoscope-tab"
@@ -31,7 +73,7 @@
 
       <div class="daily-horoscope-cards">
         <article
-          v-for="card in cards"
+          v-for="card in timelineCards"
           :key="card.key"
           class="daily-horoscope-card"
           :class="{ 'is-active': activeKey === card.key }"
@@ -58,11 +100,16 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import CoStarStyleChartWheel from './CoStarStyleChartWheel.vue'
 
 const props = defineProps({
   cards: {
     type: Array,
     default: () => []
+  },
+  chart: {
+    type: Object,
+    default: null
   },
   refreshedAt: {
     type: String,
@@ -70,14 +117,18 @@ const props = defineProps({
   }
 })
 
-const activeKey = ref('today')
+const emit = defineEmits(['go-share', 'go-advanced', 'add-partner'])
+
+const featuredCard = computed(() => props.cards.find((card) => card.key === 'today') || props.cards[0] || null)
+const timelineCards = computed(() => props.cards.filter((card) => card.key !== 'today').slice(0, 3))
+
+const activeKey = ref('yesterday')
 
 watch(
-  () => props.cards,
+  timelineCards,
   (cards) => {
-    const current = Array.isArray(cards) ? cards : []
-    if (!current.some((card) => card.key === activeKey.value)) {
-      activeKey.value = current.find((card) => card.key === 'today')?.key || current[0]?.key || 'today'
+    if (!cards.some((card) => card.key === activeKey.value)) {
+      activeKey.value = cards[0]?.key || ''
     }
   },
   { immediate: true, deep: true }

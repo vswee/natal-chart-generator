@@ -10,15 +10,6 @@
         :aspects="chart.aspects"
         :cusps="chart.houseCusps"
       />
-      <div class="simple-hero-symbol simple-hero-symbol--sun" aria-hidden="true">
-        <AstroGlyph body="sun" :size="124" />
-      </div>
-      <div class="simple-hero-symbol simple-hero-symbol--moon" aria-hidden="true">
-        <AstroGlyph body="moon" :size="104" />
-      </div>
-      <div class="simple-hero-symbol simple-hero-symbol--asc" aria-hidden="true">
-        <AstroGlyph body="asc" :size="112" />
-      </div>
       <div class="panel-inner simple-hero-inner">
         <div class="simple-hero-copy">
           <p class="simple-kicker">Simple chart</p>

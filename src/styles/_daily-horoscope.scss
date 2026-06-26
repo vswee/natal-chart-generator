@@ -43,6 +43,53 @@
   display: none;
 }
 
+.daily-horoscope-feature {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.daily-horoscope-chart {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid rgba(105, 92, 124, 0.08);
+  border-radius: 24px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.daily-horoscope-chart .co-star-style-chart-wheel {
+  width: min(100%, 430px);
+}
+
+.daily-horoscope-card--featured {
+  align-content: start;
+  min-height: 100%;
+}
+
+.daily-horoscope-card--featured .daily-horoscope-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.daily-horoscope-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.daily-horoscope-action {
+  min-height: 42px;
+  max-width: none;
+  padding-inline: 14px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
 .daily-horoscope-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -187,12 +234,34 @@
     grid-template-columns: 1fr;
   }
 
+  .daily-horoscope-feature {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-horoscope-chart {
+    padding: 14px;
+  }
+
+  .daily-horoscope-chart .co-star-style-chart-wheel {
+    width: min(100%, 300px);
+  }
+
   .daily-horoscope-card {
     display: none;
   }
 
+  .daily-horoscope-card--featured,
   .daily-horoscope-card.is-active {
     display: grid;
+  }
+
+  .daily-horoscope-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .daily-horoscope-action {
+    width: 100%;
   }
 
   .daily-horoscope-card-head {

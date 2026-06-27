@@ -1,15 +1,8 @@
 <template>
   <section class="simplified-chart">
     <div class="simple-hero panel">
-      <ChartWheel
-        class="simple-hero-wheel"
-        :embedded="true"
-        :show-chrome="false"
-        :decorative="true"
-        :placements="chart.placements"
-        :aspects="chart.aspects"
-        :cusps="chart.houseCusps"
-      />
+      <ChartWheel class="simple-hero-wheel" :embedded="true" :show-chrome="false" :decorative="true"
+        :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
       <div class="panel-inner simple-hero-inner">
         <div class="simple-hero-copy">
           <p class="simple-kicker">Simple chart</p>
@@ -19,23 +12,13 @@
 
         <div class="simple-hero-actions">
           <div v-if="showShareThemeOptions" class="simple-share-theme" aria-label="Share card theme">
-            <button
-              class="simple-theme-button"
-              :class="{ 'is-active': shareTheme === 'light' }"
-              type="button"
-              :aria-pressed="shareTheme === 'light'"
-              @click="shareTheme = 'light'"
-            >
+            <button class="simple-theme-button" :class="{ 'is-active': shareTheme === 'light' }" type="button"
+              :aria-pressed="shareTheme === 'light'" @click="shareTheme = 'light'">
               <AstroGlyph body="sun" :size="18" />
               <span>Light</span>
             </button>
-            <button
-              class="simple-theme-button"
-              :class="{ 'is-active': shareTheme === 'dark' }"
-              type="button"
-              :aria-pressed="shareTheme === 'dark'"
-              @click="shareTheme = 'dark'"
-            >
+            <button class="simple-theme-button" :class="{ 'is-active': shareTheme === 'dark' }" type="button"
+              :aria-pressed="shareTheme === 'dark'" @click="shareTheme = 'dark'">
               <AstroGlyph body="moon" :size="18" />
               <span>Dark</span>
             </button>
@@ -44,13 +27,9 @@
             <IconShare3 :size="18" stroke-width="2" />
             <span>{{ isSharing ? 'Creating image...' : 'Share chart' }}</span>
           </button>
-          <button
-            class="button simple-share-button simple-gif-button"
-            :class="{ 'is-ready-to-save': generatedChartGifFile }"
-            type="button"
-            :disabled="isExporting"
-            @click="shareChartGif"
-          >
+          <button class="button simple-share-button simple-gif-button"
+            :class="{ 'is-ready-to-save': generatedChartGifFile }" type="button" :disabled="isExporting"
+            @click="shareChartGif">
             <IconSparkles :size="18" stroke-width="2" />
             <span>{{ chartGifButtonLabel }}</span>
           </button>
@@ -63,13 +42,9 @@
               <span :style="{ width: `${chartGifProgressPercent}%` }"></span>
             </div>
           </div>
-          <button
-            class="button simple-share-button simple-reel-button"
-            :class="{ 'is-ready-to-save': generatedReelFile }"
-            type="button"
-            :disabled="isExporting"
-            @click="shareReelVideo"
-          >
+          <button class="button simple-share-button simple-reel-button"
+            :class="{ 'is-ready-to-save': generatedReelFile }" type="button" :disabled="isExporting"
+            @click="shareReelVideo">
             <IconVideo :size="18" stroke-width="2" />
             <span>{{ reelButtonLabel }}</span>
           </button>
@@ -183,6 +158,10 @@
             <IconUsers :size="18" stroke-width="2" />
             <span>Add partner</span>
           </button>
+          <button class="subtle-button simple-icon-button" type="button" @click="emit('see-ideal-match')">
+            <IconUsers :size="18" stroke-width="2" />
+            <span>See ideal match</span>
+          </button>
         </div>
 
         <div v-if="partnerSummaries.length" class="simple-partner-grid">
@@ -190,6 +169,10 @@
             <div>
               <p class="simple-partner-name">{{ partner.label }}</p>
               <p class="simple-copy">{{ partner.summary }}</p>
+              <p v-if="partner.generatedSummary" class="simple-copy">
+                Generated theoretical {{ partner.generatedSummary.targetProfile.label }} · {{
+                  partner.generatedSummary.score }}/100
+              </p>
             </div>
             <div class="simple-partner-score">
               <span>{{ partner.score }}</span>
@@ -236,10 +219,14 @@
           <div v-for="item in shareCoreCards" :key="`share-${item.key}`" class="share-card-core-item">
             <div class="share-card-core-top">
               <span>{{ item.label }}</span>
-              <b><AstroGlyph :body="item.key" :size="28" /></b>
+              <b>
+                <AstroGlyph :body="item.key" :size="28" />
+              </b>
             </div>
             <strong>
-              <span v-if="item.placement" class="share-card-sign-symbol"><ZodiacIcon :sign="item.placement.sign" :size="28" /></span>
+              <span v-if="item.placement" class="share-card-sign-symbol">
+                <ZodiacIcon :sign="item.placement.sign" :size="28" />
+              </span>
               {{ item.signLabel }}
             </strong>
           </div>
@@ -272,18 +259,10 @@
     </div>
 
     <canvas ref="reelCanvasRef" class="reel-canvas" width="1080" height="1920" aria-hidden="true"></canvas>
-    <canvas ref="chartGifCanvasRef" class="chart-gif-canvas" :width="chartGifSize" :height="chartGifSize" aria-hidden="true"></canvas>
-    <video
-      ref="reelVideoRef"
-      class="reel-video-source"
-      :src="reelVideoSrc"
-      muted
-      playsinline
-      loop
-      preload="auto"
-      crossorigin="anonymous"
-      aria-hidden="true"
-    ></video>
+    <canvas ref="chartGifCanvasRef" class="chart-gif-canvas" :width="chartGifSize" :height="chartGifSize"
+      aria-hidden="true"></canvas>
+    <video ref="reelVideoRef" class="reel-video-source" :src="reelVideoSrc" muted playsinline loop preload="auto"
+      crossorigin="anonymous" aria-hidden="true"></video>
   </section>
 </template>
 
@@ -326,7 +305,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['add-partner', 'select-partner', 'remove-partner', 'media-generated'])
+const emit = defineEmits(['add-partner', 'see-ideal-match', 'select-partner', 'remove-partner', 'media-generated'])
 
 const appUrl = 'natal-chart.flat18.app'
 const shareCardRef = ref(null)
@@ -522,9 +501,9 @@ const CORE_DEFS = [
 
 const placementsByBody = computed(() => {
   const map = new Map()
-  ;(props.chart.placements || []).forEach((placement) => {
-    map.set(placement.body, placement)
-  })
+    ; (props.chart.placements || []).forEach((placement) => {
+      map.set(placement.body, placement)
+    })
   return map
 })
 

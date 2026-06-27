@@ -6,20 +6,27 @@
           <h2 class="section-title">Compare partners</h2>
           <p class="section-copy">A quick side-by-side view of each partner chart.</p>
         </div>
-        <button class="button" type="button" @click="emit('add')">Add partner chart</button>
+        <div class="compare-actions">
+          <button class="button" type="button" @click="emit('add')">Add partner chart</button>
+          <button class="subtle-button" type="button" :disabled="idealMatchLoading" @click="emit('see-ideal-match')">
+            {{ idealMatchLoading ? 'Generating ideal match…' : 'See ideal match' }}
+          </button>
+        </div>
       </div>
+<p v-if="idealMatchProgress" class="section-copy">
+  Searching theoretical match windows: {{ idealMatchProgress.percent }}%
+</p>
 
+<p v-if="idealMatchError" class="form-error">
+  {{ idealMatchError }}
+</p>
       <div v-if="!partners.length" class="compare-empty">
         <p>No partner charts yet. Add one to compare.</p>
       </div>
 
       <div v-else class="compare-grid">
-        <article
-          v-for="partner in partners"
-          :key="partner.id"
-          class="compare-card"
-          :class="{ 'is-active': partners.length > 1 && partner.id === activeId }"
-        >
+        <article v-for="partner in partners" :key="partner.id" class="compare-card"
+          :class="{ 'is-active': partners.length > 1 && partner.id === activeId }">
           <div class="compare-card-head">
             <div>
               <p class="compare-label">{{ partner.label }}</p>
@@ -27,14 +34,13 @@
                 {{ partner.report?.chartB?.date || '—' }}
                 {{ partner.report?.chartB?.time || '' }}
               </p>
+              <p v-if="partner.generatedSummary" class="compare-meta">
+  Generated theoretical {{ partner.generatedSummary.targetProfile.label }} · {{ partner.generatedSummary.score }}/100
+</p>
             </div>
             <div class="compare-actions">
-              <button
-                class="subtle-button"
-                type="button"
-                :disabled="partner.id === activeId"
-                @click="emit('select', partner.id)"
-              >
+              <button class="subtle-button" type="button" :disabled="partner.id === activeId"
+                @click="emit('select', partner.id)">
                 {{ partner.id === activeId ? 'Viewing' : 'View details' }}
               </button>
               <button class="subtle-button" type="button" @click="emit('remove', partner.id)">
@@ -68,8 +74,20 @@ defineProps({
   activeId: {
     type: String,
     default: ''
+  },
+  idealMatchLoading: {
+    type: Boolean,
+    default: false
+  },
+  idealMatchError: {
+    type: String,
+    default: ''
+  },
+  idealMatchProgress: {
+    type: Object,
+    default: null
   }
 })
 
-const emit = defineEmits(['add', 'select', 'remove'])
+const emit = defineEmits(['add', 'see-ideal-match', 'select', 'remove'])
 </script>

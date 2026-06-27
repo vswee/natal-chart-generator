@@ -63,15 +63,14 @@ export const COMPATIBILITY_TARGET_PROFILES = {
       compatibility: 0.25
     }
   }
-};
-
+}
 /**
  * Retrieves a compatibility target profile by key. Defaults to 'balancedMatch'.
  * @param {string} key The key of the desired profile.
  * @returns {object} The compatibility target profile object.
  */
 export function getCompatibilityTargetProfile(key) {
-  return COMPATIBILITY_TARGET_PROFILES[key] || COMPATIBILITY_TARGET_PROFILES.balancedMatch;
+  return COMPATIBILITY_TARGET_PROFILES[key] || COMPATIBILITY_TARGET_PROFILES.balancedMatch
 }
 
 /**
@@ -79,6 +78,6 @@ export function getCompatibilityTargetProfile(key) {
  * @returns {Array<object>} An array of profile objects.
  */
 export function listCompatibilityTargetProfiles() {
-  return Object.values(COMPATIBILITY_TARGET_PROFILES);
+  return Object.values(COMPATIBILITY_TARGET_PROFILES)
 }
 

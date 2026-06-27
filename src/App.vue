@@ -116,12 +116,12 @@
         <template v-if="chart">
           <DailyHoroscopeRail :cards="dailyHoroscopeCards" :chart="chart" :profile-identity="profileIdentity"
             :refreshed-at="dailyHoroscopeRefreshedAt" @go-share="scrollToShareSection"
-            @go-advanced="openAdvancedViewFromDaily" @add-partner="openPartnerModal" />
+            @go-advanced="openAdvancedViewFromDaily" @add-partner="openPartnerModal" @see-ideal-match="seeIdealMatch" />
 
           <SimplifiedChart ref="simplifiedChartRef" :chart="chart" :current-transits="currentTransits"
             :partner-reports="partnerReports" :resolved-location="resolvedLocation"
-            @media-generated="handleMediaGenerated" @add-partner="openPartnerModal" @select-partner="selectPartnerChart"
-            @remove-partner="removePartnerChart" />
+            @media-generated="handleMediaGenerated" @add-partner="openPartnerModal" @see-ideal-match="seeIdealMatch"
+            @select-partner="selectPartnerChart" @remove-partner="removePartnerChart" />
 
           <section ref="advancedEntryRef" class="panel advanced-entry">
             <div class="panel-inner advanced-entry-inner">
@@ -287,7 +287,9 @@
               </summary>
               <div class="advanced-accordion-body">
                 <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''"
-                  @add="openPartnerModal" @select="selectPartnerChart" @remove="removePartnerChart" />
+                  :ideal-match-loading="idealMatchLoading" :ideal-match-error="idealMatchError"
+                  :ideal-match-progress="idealMatchProgress" @add="openPartnerModal" @see-ideal-match="seeIdealMatch"
+                  @select="selectPartnerChart" @remove="removePartnerChart" />
 
                 <div ref="comparisonDetailRef" class="compare-detail">
                   <RelationshipPanel v-if="relationshipReport" :report="relationshipReport"
@@ -703,6 +705,7 @@ import SimplifiedChart from './components/SimplifiedChart.vue'
 import DailyHoroscopeRail from './components/DailyHoroscopeRail.vue'
 import { geocodeAddress } from './services/geocoding'
 import { calculateNatalChart, calculateCurrentTransits, calculateCompositeChart } from './services/astrology'
+import { searchCompatiblePartnerBirthData } from './services/reverse-compatibility'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
 import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
@@ -722,6 +725,9 @@ const partnerLoading = ref(false)
 const partnerError = ref('')
 const partnerResolvedLocation = ref(null)
 const isPartnerModalOpen = ref(false)
+const idealMatchLoading = ref(false)
+const idealMatchError = ref('')
+const idealMatchProgress = ref(null)
 const isAboutModalOpen = ref(false)
 const isPrivacyModalOpen = ref(false)
 const isProfileMenuOpen = ref(false)
@@ -1481,12 +1487,94 @@ async function handlePartnerSubmit(formData) {
         chart: chartData
       }
     ]
-    activePartnerId.value = id
+    addPartnerChartRecord({
+      label: formData.label?.trim() || buildNextPartnerLabel(),
+      chart: chartData
+    })
     isPartnerModalOpen.value = false
   } catch (err) {
     partnerError.value = err instanceof Error ? err.message : 'Something went wrong.'
   } finally {
     partnerLoading.value = false
+  }
+}
+
+async function seeIdealMatch() {
+  if (!chart.value) return
+
+  idealMatchLoading.value = true
+  idealMatchError.value = ''
+  idealMatchProgress.value = null
+
+  try {
+    const baseMeta = chart.value.meta || {}
+
+    if (baseMeta.lat === undefined || baseMeta.lon === undefined) {
+      throw new Error('The current chart needs a resolved birth location before an ideal match can be generated.')
+    }
+
+    const baseYear = Number(String(baseMeta.date || '').slice(0, 4))
+    const safeBaseYear = Number.isFinite(baseYear)
+      ? baseYear
+      : new Date().getFullYear() - 30
+
+    const search = await searchCompatiblePartnerBirthData({
+      baseChart: chart.value,
+      startDate: `${safeBaseYear - 5}-01-01`,
+      endDate: `${safeBaseYear + 5}-12-31`,
+      timeStepMinutes: 720,
+      targetProfileKey: 'balancedMatch',
+      maxResults: 1,
+      includeCompositeCharts: true,
+      candidateLocation: {
+        address: baseMeta.address || resolvedLocation.value?.label || 'Theoretical match location',
+        lat: baseMeta.lat,
+        lon: baseMeta.lon,
+        houseSystem: baseMeta.houseSystem || 'placidus',
+        timeZoneOverride: baseMeta.timeZoneOverride || ''
+      },
+      onProgress(progress) {
+        idealMatchProgress.value = progress
+      }
+    })
+
+    const best = search.results?.[0]
+
+    if (!best) {
+      throw new Error('No theoretical ideal match could be generated for this range.')
+    }
+
+    addPartnerChartRecord({
+      id: best.id,
+      label: buildNextPartnerLabel(),
+      chart: best.chart,
+      relationshipReport: best.relationshipReport,
+      compositeChart: best.compositeChart || null,
+      generated: true,
+      generatedKind: 'ideal-match',
+      generatedSummary: {
+        score: best.score,
+        targetProfile: search.targetProfile,
+        highlights: best.highlights,
+        cautions: best.cautions
+      }
+    })
+
+    isAdvancedView.value = true
+
+    await nextTick()
+
+    if (compatibilityAccordionRef.value) {
+      compatibilityAccordionRef.value.open = true
+      await nextTick()
+      compatibilityAccordionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  } catch (error) {
+    idealMatchError.value = error instanceof Error
+      ? error.message
+      : 'Unable to generate an ideal match.'
+  } finally {
+    idealMatchLoading.value = false
   }
 }
 
@@ -1543,6 +1631,31 @@ async function selectPartnerChart(id) {
   compatibilityAccordionRef.value.open = true
   await nextTick()
   compatibilityAccordionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function buildPartnerId() {
+  return globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function buildNextPartnerLabel() {
+  return `Partner ${partnerCharts.value.length + 1}`
+}
+
+function addPartnerChartRecord(payload) {
+  const id = payload.id || buildPartnerId()
+  const label = payload.label?.trim() || buildNextPartnerLabel()
+
+  partnerCharts.value = [
+    ...partnerCharts.value,
+    {
+      ...payload,
+      id,
+      label
+    }
+  ]
+
+  activePartnerId.value = id
+  return id
 }
 
 function removeActivePartner() {

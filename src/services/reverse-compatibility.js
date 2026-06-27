@@ -3,48 +3,248 @@
  * Handles the search for theoretically compatible partner birth data based on defined profiles.
  */
 
-import { calculateNatalChart, calculateCompositeChart } from './astrology';
-import { buildRelationshipReport } from '../utils/relationship';
-import { getCompatibilityTargetProfile, listCompatibilityTargetProfiles } from '../utils/compatibility-targets';
+import { calculateNatalChart, calculateCompositeChart } from './astrology'
+import { buildRelationshipReport } from '../utils/relationship'
+import { getCompatibilityTargetProfile } from '../utils/compatibility-targets'
 
-/**
- * @typedef {object} CandidateLocation
- * @property {string} address - Full geographical address string.
- * @property {number} lat - Latitude.
- * @property {number} lon - Longitude.
- * @property {'placidus' | 'koch' | 'whole-sign'} houseSystem - House system to use.
- * @property {?string} timeZoneOverride - Optional explicit Time Zone override (e.g., 'America/New_York').
- */
+const MAX_CANDIDATES = 10000
+const DEFAULT_TIME_STEP_MINUTES = 360
+const DEFAULT_MAX_RESULTS = 20
+const DEFAULT_TARGET_PROFILE_KEY = 'balancedMatch'
 
-/**
- * @typedef {object} SearchOptions
- * @property {object} baseChart - The user's natal chart object ({ meta: {...}, houseCusps: [], placements: [], ... }).
- * @property {Date} startDate - Start date for the search window.
- * @property {Date} endDate - End date for the search window.
- * @property {number} timeStepMinutes - The granularity of time steps in minutes (e.g., 360).
- * @property {CandidateLocation} candidateLocation - Location data for candidates.
- * @property {'romanticChemistry' | 'emotionalSafety' | 'longTermPartner' | 'highIntensity' | 'balancedMatch'} targetProfileKey - Key from COMPATIBILITY_TARGET_PROFILES.
- * @property {number} [maxResults=20] - Maximum number of top results to return.
- * @property {boolean} [includeCompositeCharts=false] - Whether to calculate and include composite charts for the final results.
- * @property {(progress: { completed: number, total: number, percent: number }) => void} [onProgress] - Callback function for progress tracking.
- */
-
-/**
- * Searches for theoretically compatible partner birth data within a constrained range.
- * This performs a brute-force search and ranks candidates based on the selected compatibility profile.
- * 
- * @param {SearchOptions} options - The parameters defining the search space and scoring criteria.
- * @returns {Promise<object>} Structured results containing ranked theoretical partner charts.
- */
-export async function searchCompatiblePartnerBirthData(options) {
-    // Implementation to follow...
+function clampTimeStepMinutes(value) {
+  const numeric = Number(value || DEFAULT_TIME_STEP_MINUTES)
+  if (!Number.isFinite(numeric)) return DEFAULT_TIME_STEP_MINUTES
+  return Math.max(60, Math.round(numeric))
 }
 
-/**
- * Placeholder for Coarse-to-Fine Search (Part 8).
- */
-export async function searchCompatiblePartnerBirthDataCoarseToFine(options) {
-  // To be implemented later.
-  throw new Error("Coarse-to-Fine search not yet implemented.");
+function normaliseDateInput(value, fallbackTime) {
+  if (!value) return null
+  if (value instanceof Date) return value
+  return new Date(`${value}T${fallbackTime}`)
 }
 
+function buildCandidateDateTimes(startDate, endDate, timeStepMinutes) {
+  const start = normaliseDateInput(startDate, '00:00:00')
+  const end = normaliseDateInput(endDate, '23:59:59')
+
+  if (!start || Number.isNaN(start.getTime())) {
+    throw new Error('A valid start date is required for ideal match generation.')
+  }
+
+  if (!end || Number.isNaN(end.getTime())) {
+    throw new Error('A valid end date is required for ideal match generation.')
+  }
+
+  if (end.getTime() < start.getTime()) {
+    throw new Error('The ideal match search end date must be after the start date.')
+  }
+
+  const stepMs = timeStepMinutes * 60 * 1000
+  const candidates = []
+
+  for (let time = start.getTime(); time <= end.getTime(); time += stepMs) {
+    const date = new Date(time)
+
+    candidates.push({
+      date: date.toISOString().slice(0, 10),
+      time: date.toISOString().slice(11, 16)
+    })
+  }
+
+  return candidates
+}
+
+function scoreRelationshipAgainstProfile(report, profile) {
+  if (!report?.categories?.length) return 0
+
+  const categoryMap = new Map(
+    report.categories.map((category) => [category.key, category])
+  )
+
+  let score = 0
+  let totalWeight = 0
+
+  Object.entries(profile.weights || {}).forEach(([key, weight]) => {
+    const category = categoryMap.get(key)
+    if (!category) return
+
+    score += category.score * weight
+    totalWeight += weight
+  })
+
+  if (!totalWeight) return 0
+  return Math.round(score / totalWeight)
+}
+
+function buildCandidateSummary(report) {
+  const categories = Array.isArray(report?.categories) ? report.categories : []
+  const highlights = []
+  const cautions = []
+
+  categories
+    .filter((category) => category.score >= 70)
+    .sort((a, b) => b.score - a.score)
+    .forEach((category) => {
+      if (category.summary) highlights.push(category.summary)
+
+      if (Array.isArray(category.highlights)) {
+        highlights.push(...category.highlights.slice(0, 2))
+      }
+    })
+
+  categories
+    .filter((category) => category.score < 55)
+    .sort((a, b) => a.score - b.score)
+    .forEach((category) => {
+      if (category.summary) cautions.push(category.summary)
+    })
+
+  return {
+    highlights: [...new Set(highlights)].slice(0, 5),
+    cautions: [...new Set(cautions)].slice(0, 3)
+  }
+}
+
+function buildResultId(candidate, index) {
+  return `ideal-partner-${candidate.date}-${candidate.time}-${index}`
+    .replace(/[^a-z0-9-]/gi, '-')
+    .toLowerCase()
+}
+
+function assertSearchOptions({ baseChart, startDate, endDate, candidateLocation }) {
+  if (!baseChart) {
+    throw new Error('A base natal chart is required to generate an ideal match.')
+  }
+
+  if (!startDate || !endDate) {
+    throw new Error('A start date and end date are required for ideal match generation.')
+  }
+
+  if (
+    !candidateLocation ||
+    candidateLocation.lat === undefined ||
+    candidateLocation.lon === undefined
+  ) {
+    throw new Error('A candidate birth location with latitude and longitude is required.')
+  }
+}
+
+export async function searchCompatiblePartnerBirthData(options = {}) {
+  const {
+    baseChart,
+    startDate,
+    endDate,
+    candidateLocation,
+    includeCompositeCharts = false,
+    onProgress
+  } = options
+
+  assertSearchOptions({
+    baseChart,
+    startDate,
+    endDate,
+    candidateLocation
+  })
+
+  const timeStepMinutes = clampTimeStepMinutes(options.timeStepMinutes)
+  const maxResults = Math.max(1, Number(options.maxResults || DEFAULT_MAX_RESULTS))
+  const targetProfile = getCompatibilityTargetProfile(
+    options.targetProfileKey || DEFAULT_TARGET_PROFILE_KEY
+  )
+  const candidates = buildCandidateDateTimes(startDate, endDate, timeStepMinutes)
+
+  if (candidates.length > MAX_CANDIDATES) {
+    throw new Error(
+      'This ideal match search is too broad. Please use a shorter date range or a larger time step.'
+    )
+  }
+
+  const scoredResults = []
+
+  for (let index = 0; index < candidates.length; index += 1) {
+    const candidate = candidates[index]
+    const candidateAddress = candidateLocation.address || 'Theoretical match location'
+    const houseSystem = candidateLocation.houseSystem || baseChart.meta?.houseSystem || 'placidus'
+
+    const chart = await calculateNatalChart({
+      date: candidate.date,
+      time: candidate.time,
+      address: candidateAddress,
+      lat: candidateLocation.lat,
+      lon: candidateLocation.lon,
+      houseSystem,
+      timeZoneOverride: candidateLocation.timeZoneOverride || ''
+    })
+
+    const report = buildRelationshipReport(baseChart, chart, {
+      labelA: baseChart.meta?.label || 'You',
+      labelB: 'Ideal Match'
+    })
+
+    const score = scoreRelationshipAgainstProfile(report, targetProfile)
+    const summary = buildCandidateSummary(report)
+
+    scoredResults.push({
+      id: buildResultId(candidate, index),
+      score,
+      candidate: {
+        date: candidate.date,
+        time: candidate.time,
+        address: candidateAddress,
+        lat: candidateLocation.lat,
+        lon: candidateLocation.lon,
+        houseSystem,
+        timeZone: chart.meta?.timeZone || null
+      },
+      categories: report?.categories || [],
+      relationshipReport: report,
+      highlights: summary.highlights.length
+        ? summary.highlights
+        : ['No single category dominates, but the overall pattern is balanced.'],
+      cautions: summary.cautions,
+      chart
+    })
+
+    if (
+      typeof onProgress === 'function' &&
+      (index === candidates.length - 1 || index % 50 === 0)
+    ) {
+      onProgress({
+        completed: index + 1,
+        total: candidates.length,
+        percent: Math.round(((index + 1) / candidates.length) * 100)
+      })
+    }
+  }
+
+  const results = scoredResults
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxResults)
+
+  if (includeCompositeCharts) {
+    for (const result of results) {
+      result.compositeChart = await calculateCompositeChart(baseChart, result.chart)
+    }
+  }
+
+  return {
+    targetProfile: {
+      key: targetProfile.key,
+      label: targetProfile.label,
+      description: targetProfile.description
+    },
+    searched: {
+      startDate,
+      endDate,
+      timeStepMinutes,
+      candidateCount: candidates.length,
+      location: candidateLocation
+    },
+    results
+  }
+}
+
+export async function searchCompatiblePartnerBirthDataCoarseToFine() {
+  throw new Error('Coarse-to-fine ideal match search is not implemented yet.')
+}

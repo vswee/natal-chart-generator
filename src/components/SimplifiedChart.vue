@@ -6,8 +6,12 @@
       <div class="panel-inner simple-hero-inner">
         <div class="simple-hero-copy">
           <p class="simple-kicker">Simple chart</p>
-          <h2 class="simple-title">{{ simpleTitle }}</h2>
-          <p class="simple-copy">{{ primarySummary }}</p>
+<h2 class="simple-title simple-title--iconic" :aria-label="simpleTitle">
+  <span v-for="part in simpleTitleParts" :key="part.key" class="simple-title-part">
+    <span class="simple-title-sign">{{ part.signLabel }}</span>
+    <AstroGlyph class="simple-title-icon" :body="part.body" :size="34" aria-hidden="true" />
+  </span>
+</h2>          <p class="simple-copy">{{ simpleTitle }}.<br>{{ primarySummary }}</p>
         </div>
 
         <div class="simple-hero-actions">
@@ -564,6 +568,24 @@ const simpleTitle = computed(() => {
   const asc = coreCards.value.find((item) => item.key === 'asc')?.signLabel || 'Rising'
   return `${sun} Sun, ${moon} Moon, ${asc} Rising`
 })
+
+const simpleTitleParts = computed(() => [
+  {
+    key: 'sun-title',
+    body: 'sun',
+    signLabel: coreCards.value.find((item) => item.key === 'sun')?.signLabel || 'Solar'
+  },
+  {
+    key: 'moon-title',
+    body: 'moon',
+    signLabel: coreCards.value.find((item) => item.key === 'moon')?.signLabel || 'Lunar'
+  },
+  {
+    key: 'asc-title',
+    body: 'asc',
+    signLabel: coreCards.value.find((item) => item.key === 'asc')?.signLabel || 'Rising'
+  }
+])
 
 const primarySummary = computed(() => {
   const sun = coreCards.value.find((item) => item.key === 'sun')

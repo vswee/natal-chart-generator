@@ -845,6 +845,25 @@ a {
   text-wrap: balance;
 }
 
+.simple-title--iconic {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.22em 0.36em;
+}
+
+.simple-title-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12em;
+}
+
+.simple-title-icon {
+  width: 0.86em;
+  height: 0.86em;
+  transform: translateY(0.04em);
+}
+
 .simple-copy {
   margin: 0;
   color: var(--muted);

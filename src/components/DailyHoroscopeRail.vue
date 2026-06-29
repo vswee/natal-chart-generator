@@ -54,8 +54,10 @@
             <button class="subtle-button daily-horoscope-action" type="button" @click="emit('add-partner')">
               Romance + compatibility
             </button>
-            <button class="subtle-button daily-horoscope-action" type="button" @click="emit('see-ideal-match')">
-              See ideal match
+            <button class="subtle-button daily-horoscope-action" type="button" :disabled="idealMatchLoading"
+              @click="emit('see-ideal-match')">
+              <span v-if="idealMatchLoading" class="button-spinner" aria-hidden="true"></span>
+              <span>{{ idealMatchLoading ? 'Generating match...' : 'See ideal match' }}</span>
             </button>
           </div>
         </article>
@@ -122,6 +124,10 @@ const props = defineProps({
   refreshedAt: {
     type: String,
     default: ''
+  },
+  idealMatchLoading: {
+    type: Boolean,
+    default: false
   }
 })
 

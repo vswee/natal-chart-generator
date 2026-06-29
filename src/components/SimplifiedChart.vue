@@ -163,9 +163,10 @@
     <IconUsers :size="18" stroke-width="2" />
     <span>Add partner</span>
   </button>
-  <button class="subtle-button simple-icon-button" type="button" @click="emit('see-ideal-match')">
-    <IconUsers :size="18" stroke-width="2" />
-    <span>See ideal match</span>
+  <button class="subtle-button simple-icon-button" type="button" :disabled="idealMatchLoading" @click="emit('see-ideal-match')">
+    <span v-if="idealMatchLoading" class="button-spinner" aria-hidden="true"></span>
+    <IconUsers v-else :size="18" stroke-width="2" />
+    <span>{{ idealMatchLoading ? 'Generating match...' : 'See ideal match' }}</span>
   </button>
 </div>
         </div>
@@ -173,7 +174,19 @@
         <div v-if="partnerSummaries.length" class="simple-partner-grid">
           <article v-for="partner in partnerSummaries" :key="partner.id" class="simple-partner-card">
             <div>
-              <p class="simple-partner-name">{{ partner.label }}</p>
+              <p class="simple-partner-name">
+                <span>{{ partner.generatedSummary ? `Nickname: ${partner.label}` : partner.label }}</span>
+                <span
+                  v-if="partner.generatedSummary"
+                  class="info-toggle partner-nickname-info"
+                  role="img"
+                  tabindex="0"
+                  aria-label="Generated partner nickname"
+                  :title="generatedNicknameHelp"
+                >
+                  info
+                </span>
+              </p>
               <p class="simple-copy">{{ partner.summary }}</p>
               <p v-if="partner.generatedSummary" class="simple-copy">
                 Generated theoretical {{ partner.generatedSummary.targetProfile.label }} · {{
@@ -308,12 +321,17 @@ const props = defineProps({
   resolvedLocation: {
     type: Object,
     default: null
+  },
+  idealMatchLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
 const emit = defineEmits(['add-partner', 'see-ideal-match', 'select-partner', 'remove-partner', 'media-generated'])
 
 const appUrl = 'natal-chart.flat18.app'
+const generatedNicknameHelp = 'This nickname is generated from the partner chart using the same Sun, Moon and Ascendant nickname logic as your profile.'
 const shareCardRef = ref(null)
 const reelCanvasRef = ref(null)
 const chartGifCanvasRef = ref(null)

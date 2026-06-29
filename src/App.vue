@@ -115,11 +115,11 @@
       <section v-if="chart" class="results-grid">
         <template v-if="chart">
           <DailyHoroscopeRail :cards="dailyHoroscopeCards" :chart="chart" :profile-identity="profileIdentity"
-            :refreshed-at="dailyHoroscopeRefreshedAt" @go-share="scrollToShareSection"
+            :refreshed-at="dailyHoroscopeRefreshedAt" :ideal-match-loading="idealMatchLoading" @go-share="scrollToShareSection"
             @go-advanced="openAdvancedViewFromDaily" @add-partner="openPartnerModal" @see-ideal-match="seeIdealMatch" />
 
           <SimplifiedChart ref="simplifiedChartRef" :chart="chart" :current-transits="currentTransits"
-            :partner-reports="partnerReports" :resolved-location="resolvedLocation"
+            :partner-reports="partnerReports" :resolved-location="resolvedLocation" :ideal-match-loading="idealMatchLoading"
             @media-generated="handleMediaGenerated" @add-partner="openPartnerModal" @see-ideal-match="seeIdealMatch"
             @select-partner="selectPartnerChart" @remove-partner="removePartnerChart" />
 
@@ -705,12 +705,12 @@ import SimplifiedChart from './components/SimplifiedChart.vue'
 import DailyHoroscopeRail from './components/DailyHoroscopeRail.vue'
 import { geocodeAddress } from './services/geocoding'
 import { calculateNatalChart, calculateCurrentTransits, calculateCompositeChart } from './services/astrology'
-import { searchCompatiblePartnerBirthData } from './services/reverse-compatibility'
+import { buildIdealMatchCandidateKey, searchCompatiblePartnerBirthData } from './services/reverse-compatibility'
 import worldMap from './assets/img/3-Equirectangular_projection_world_map_without_borders.svg'
 import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
 import { buildCrossAspects } from './utils/aspects'
-import { buildProfileIdentity } from './utils/profile'
+import { buildProfileIdentity, buildProfileNickname } from './utils/profile'
 import { clearStoredProfile, readStoredProfile, writeStoredProfile } from './utils/storage'
 
 const loading = ref(false)
@@ -1488,18 +1488,8 @@ async function handlePartnerSubmit(formData) {
       timeZoneOverride: formData.timeZoneOverride
     })
 
-    const label = formData.label?.trim() || `Partner ${partnerCharts.value.length + 1}`
-    const id = (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`)
-    partnerCharts.value = [
-      ...partnerCharts.value,
-      {
-        id,
-        label,
-        chart: chartData
-      }
-    ]
     addPartnerChartRecord({
-      label: formData.label?.trim() || buildNextPartnerLabel(),
+      label: formData.label?.trim(),
       chart: chartData
     })
     isPartnerModalOpen.value = false
@@ -1529,6 +1519,15 @@ async function seeIdealMatch() {
       ? baseYear
       : new Date().getFullYear() - 30
 
+    const candidateLocation = {
+      address: baseMeta.address || resolvedLocation.value?.label || 'Theoretical match location',
+      lat: baseMeta.lat,
+      lon: baseMeta.lon,
+      houseSystem: baseMeta.houseSystem || 'placidus',
+      timeZoneOverride: baseMeta.timeZoneOverride || ''
+    }
+    const excludedCandidateKeys = buildExistingIdealMatchCandidateKeys(candidateLocation)
+
     const search = await searchCompatiblePartnerBirthData({
       baseChart: chart.value,
       startDate: `${safeBaseYear - 5}-01-01`,
@@ -1536,14 +1535,10 @@ async function seeIdealMatch() {
       timeStepMinutes: 720,
       targetProfileKey: 'balancedMatch',
       maxResults: 1,
+      minAgeYears: 18,
+      excludeCandidateKeys: excludedCandidateKeys,
       includeCompositeCharts: true,
-      candidateLocation: {
-        address: baseMeta.address || resolvedLocation.value?.label || 'Theoretical match location',
-        lat: baseMeta.lat,
-        lon: baseMeta.lon,
-        houseSystem: baseMeta.houseSystem || 'placidus',
-        timeZoneOverride: baseMeta.timeZoneOverride || ''
-      },
+      candidateLocation,
       onProgress(progress) {
         idealMatchProgress.value = progress
       }
@@ -1552,17 +1547,21 @@ async function seeIdealMatch() {
     const best = search.results?.[0]
 
     if (!best) {
-      throw new Error('No theoretical ideal match could be generated for this range.')
+      throw new Error(
+        excludedCandidateKeys.length
+          ? 'No additional theoretical ideal matches could be generated for this range.'
+          : 'No theoretical ideal match could be generated for this range.'
+      )
     }
 
     addPartnerChartRecord({
       id: best.id,
-      label: buildNextPartnerLabel(),
       chart: best.chart,
       relationshipReport: best.relationshipReport,
       compositeChart: best.compositeChart || null,
       generated: true,
       generatedKind: 'ideal-match',
+      generatedCandidate: best.candidate,
       generatedSummary: {
         score: best.score,
         targetProfile: search.targetProfile,
@@ -1652,9 +1651,30 @@ function buildNextPartnerLabel() {
   return `Partner ${partnerCharts.value.length + 1}`
 }
 
+function buildPartnerChartNickname(chartData) {
+  if (!chartData) return ''
+  return buildProfileNickname(chartData)
+}
+
+function buildExistingIdealMatchCandidateKeys(candidateLocation) {
+  return partnerCharts.value
+    .filter((partner) => partner.generatedKind === 'ideal-match')
+    .map((partner) => {
+      if (partner.generatedCandidate?.key) return partner.generatedCandidate.key
+      const candidate = partner.generatedCandidate || partner.chart?.meta
+      if (!candidate) return ''
+      return buildIdealMatchCandidateKey(candidate, {
+        candidateLocation,
+        houseSystem: candidateLocation.houseSystem,
+        timeZoneOverride: candidateLocation.timeZoneOverride
+      })
+    })
+    .filter(Boolean)
+}
+
 function addPartnerChartRecord(payload) {
   const id = payload.id || buildPartnerId()
-  const label = payload.label?.trim() || buildNextPartnerLabel()
+  const label = payload.label?.trim() || buildPartnerChartNickname(payload.chart) || buildNextPartnerLabel()
 
   partnerCharts.value = [
     ...partnerCharts.value,

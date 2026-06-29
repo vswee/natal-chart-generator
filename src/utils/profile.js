@@ -43,6 +43,9 @@ const ELEMENT_PALETTES = {
   water: ['#0b1522', '#134766', '#1a7b87', '#d49a32', '#fff2c8']
 }
 
+const AVATAR_FOREGROUND = '#ffffff'
+const MIN_AVATAR_TEXT_CONTRAST = 4.5
+
 const SIGN_GLYPHS = {
   aries: ariesGlyph,
   taurus: taurusGlyph,
@@ -131,6 +134,57 @@ function getPalette(seed, primaryElement) {
   return selected.map((_, index) => selected[(index + shift) % selected.length])
 }
 
+function parseHexColor(color) {
+  const match = String(color || '').trim().match(/^#?([0-9a-f]{6})$/i)
+  if (!match) return null
+
+  const value = match[1]
+  return {
+    r: Number.parseInt(value.slice(0, 2), 16),
+    g: Number.parseInt(value.slice(2, 4), 16),
+    b: Number.parseInt(value.slice(4, 6), 16)
+  }
+}
+
+function toLinearChannel(value) {
+  const channel = value / 255
+  return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+}
+
+function getRelativeLuminance(color) {
+  const rgb = parseHexColor(color)
+  if (!rgb) return 0
+
+  return (0.2126 * toLinearChannel(rgb.r)) + (0.7152 * toLinearChannel(rgb.g)) + (0.0722 * toLinearChannel(rgb.b))
+}
+
+function getContrastRatio(colorA, colorB) {
+  const luminanceA = getRelativeLuminance(colorA)
+  const luminanceB = getRelativeLuminance(colorB)
+  const lighter = Math.max(luminanceA, luminanceB)
+  const darker = Math.min(luminanceA, luminanceB)
+
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
+function isReadableOnWhite(color) {
+  return getContrastRatio(color, AVATAR_FOREGROUND) >= MIN_AVATAR_TEXT_CONTRAST
+}
+
+function chooseAvatarBackground(palette) {
+  const readableColor = palette.find(isReadableOnWhite)
+  if (readableColor) return readableColor
+
+  return '#111827'
+}
+
+function chooseAvatarAccent(palette, background) {
+  const readableColor = palette.find((color) => color !== background && isReadableOnWhite(color))
+  if (readableColor) return readableColor
+
+  return background === '#111827' ? '#1f2937' : '#111827'
+}
+
 
 function getPlacement(chart, body) {
   return chart?.placements?.find?.((placement) => placement.body === body) || null
@@ -189,71 +243,71 @@ export function buildProfileAvatar(chart) {
     .slice(0, 2)
     .toUpperCase()
 
-const mainGlyphMarkup = mainGlyph
-  ? buildGlyphUse(mainGlyph, {
-      x: 38,
-      y: 33,
-      size: 84,
-      color: '#f7f1df',
-      opacity: 1
-    })
-  : `<text x="80" y="102" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="78" font-weight="700" fill="#f7f1df">✦</text>`
+  const mainGlyphMarkup = mainGlyph
+    ? buildGlyphUse(mainGlyph, {
+        x: 38,
+        y: 33,
+        size: 84,
+        color: AVATAR_FOREGROUND,
+        opacity: 1
+      })
+    : `<text x="80" y="102" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="78" font-weight="700" fill="${AVATAR_FOREGROUND}">✦</text>`
 
-const moonGlyphMarkup = buildGlyphUse(moonSignGlyph, {
-  x: 115,
-  y: 115,
-  size: 20,
-  color: '#f7f1df',
-  opacity: 1
-})
+  const moonGlyphMarkup = buildGlyphUse(moonSignGlyph, {
+    x: 115,
+    y: 115,
+    size: 20,
+    color: AVATAR_FOREGROUND,
+    opacity: 1
+  })
 
-const ascGlyphMarkup = buildGlyphUse(ascSignGlyph, {
-  x: 25,
-  y: 115,
-  size: 20,
-  color: '#f7f1df',
-  opacity: 1
-})
+  const ascGlyphMarkup = buildGlyphUse(ascSignGlyph, {
+    x: 25,
+    y: 115,
+    size: 20,
+    color: AVATAR_FOREGROUND,
+    opacity: 1
+  })
   
-  const background = palette[0]
-const foreground = '#f7f1df'
-const accent = palette[3]
+  const background = chooseAvatarBackground(palette)
+  const foreground = AVATAR_FOREGROUND
+  const accent = chooseAvatarAccent(palette, background)
 
-const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${escapeAttribute(avatarLabel)}">
-    <rect width="160" height="160" rx="24" fill="${background}" />
-    <rect x="10" y="10" width="140" height="140" rx="16" fill="none" stroke="${foreground}" stroke-opacity="0.18" stroke-width="2" />
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${escapeAttribute(avatarLabel)}">
+      <rect width="160" height="160" rx="24" fill="${background}" />
+      <rect x="10" y="10" width="140" height="140" rx="16" fill="none" stroke="${foreground}" stroke-opacity="0.18" stroke-width="2" />
 
-    <path d="M24 28H78" stroke="${foreground}" stroke-opacity="0.28" stroke-width="3" stroke-linecap="square" />
-    <path d="M82 132H136" stroke="${foreground}" stroke-opacity="0.28" stroke-width="3" stroke-linecap="square" />
+      <path d="M24 28H78" stroke="${foreground}" stroke-opacity="0.28" stroke-width="3" stroke-linecap="square" />
+      <path d="M82 132H136" stroke="${foreground}" stroke-opacity="0.28" stroke-width="3" stroke-linecap="square" />
 
-    <g opacity="0.98">
-      ${mainGlyphMarkup}
-    </g>
+      <g opacity="0.98">
+        ${mainGlyphMarkup}
+      </g>
 
-    <g>
-      <rect x="18" y="18" width="30" height="30" rx="2" fill="${foreground}" fill-opacity="0.08" stroke="${foreground}" stroke-opacity="0.24" />
-      <text x="33" y="39" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="800" fill="${foreground}">☉</text>
-    </g>
+      <g>
+        <rect x="18" y="18" width="30" height="30" rx="2" fill="${foreground}" fill-opacity="0.08" stroke="${foreground}" stroke-opacity="0.24" />
+        <text x="33" y="39" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="800" fill="${foreground}">☉</text>
+      </g>
 
-    <g>
-      <rect x="112" y="112" width="30" height="30" rx="2" fill="${foreground}" fill-opacity="0.08" stroke="${foreground}" stroke-opacity="0.24" />
-      ${moonGlyphMarkup}
-    </g>
+      <g>
+        <rect x="112" y="112" width="30" height="30" rx="2" fill="${foreground}" fill-opacity="0.08" stroke="${foreground}" stroke-opacity="0.24" />
+        ${moonGlyphMarkup}
+      </g>
 
-    <g>
-      <rect x="18" y="112" width="30" height="30" rx="2" fill="${foreground}" fill-opacity="0.08" stroke="${foreground}" stroke-opacity="0.24" />
-      ${ascGlyphMarkup}
-    </g>
+      <g>
+        <rect x="18" y="112" width="30" height="30" rx="2" fill="${foreground}" fill-opacity="0.08" stroke="${foreground}" stroke-opacity="0.24" />
+        ${ascGlyphMarkup}
+      </g>
 
-    <g>
-      <rect x="57" y="119" width="46" height="24" rx="2" fill="${accent}" />
-      <text x="80" y="136" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="900" letter-spacing="0.08em" fill="${background}">
-        ${escapeText(monogram)}
-      </text>
-    </g>
-  </svg>
-`.trim()
+      <g>
+        <rect x="57" y="119" width="46" height="24" rx="2" fill="${accent}" />
+        <text x="80" y="136" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="900" letter-spacing="0.08em" fill="${foreground}">
+          ${escapeText(monogram)}
+        </text>
+      </g>
+    </svg>
+  `.trim()
 
   return {
     src: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,

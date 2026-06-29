@@ -8,8 +8,10 @@
         </div>
         <div class="compare-actions">
           <button class="button" type="button" @click="emit('add')">Add partner chart</button>
-          <button class="subtle-button" type="button" :disabled="idealMatchLoading" @click="emit('see-ideal-match')">
-            {{ idealMatchLoading ? 'Generating ideal match…' : 'See ideal match' }}
+          <button class="subtle-button reverse-generate-button" type="button" :disabled="idealMatchLoading"
+            @click="emit('see-ideal-match')">
+            <span v-if="idealMatchLoading" class="button-spinner" aria-hidden="true"></span>
+            <span>{{ idealMatchLoading ? 'Generating ideal match...' : 'See ideal match' }}</span>
           </button>
         </div>
       </div>
@@ -29,7 +31,19 @@
           :class="{ 'is-active': partners.length > 1 && partner.id === activeId }">
           <div class="compare-card-head">
             <div>
-              <p class="compare-label">{{ partner.label }}</p>
+              <p class="compare-label">
+                <span>{{ partner.generatedSummary ? `Nickname: ${partner.label}` : partner.label }}</span>
+                <span
+                  v-if="partner.generatedSummary"
+                  class="info-toggle partner-nickname-info"
+                  role="img"
+                  tabindex="0"
+                  aria-label="Generated partner nickname"
+                  :title="generatedNicknameHelp"
+                >
+                  info
+                </span>
+              </p>
               <p class="compare-meta">
                 {{ partner.report?.chartB?.date || '—' }}
                 {{ partner.report?.chartB?.time || '' }}
@@ -90,4 +104,6 @@ defineProps({
 })
 
 const emit = defineEmits(['add', 'see-ideal-match', 'select', 'remove'])
+
+const generatedNicknameHelp = 'This nickname is generated from the partner chart using the same Sun, Moon and Ascendant nickname logic as your profile.'
 </script>

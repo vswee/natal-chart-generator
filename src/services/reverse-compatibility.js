@@ -11,6 +11,7 @@ const MAX_CANDIDATES = 10000
 const DEFAULT_TIME_STEP_MINUTES = 360
 const DEFAULT_MAX_RESULTS = 20
 const DEFAULT_TARGET_PROFILE_KEY = 'balancedMatch'
+const DEFAULT_MIN_AGE_YEARS = 18
 
 function clampTimeStepMinutes(value) {
   const numeric = Number(value || DEFAULT_TIME_STEP_MINUTES)
@@ -22,6 +23,26 @@ function normaliseDateInput(value, fallbackTime) {
   if (!value) return null
   if (value instanceof Date) return value
   return new Date(`${value}T${fallbackTime}`)
+}
+
+function formatDateInput(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getLatestBirthDateForMinimumAge(minAgeYears, referenceDate = new Date()) {
+  const latest = new Date(referenceDate)
+  latest.setHours(0, 0, 0, 0)
+  latest.setFullYear(latest.getFullYear() - minAgeYears)
+  return formatDateInput(latest)
+}
+
+function clampSearchEndDateForAge(endDate, minAgeYears, referenceDate) {
+  if (!minAgeYears) return endDate
+  const latestBirthDate = getLatestBirthDateForMinimumAge(minAgeYears, referenceDate)
+  return String(endDate) < latestBirthDate ? endDate : latestBirthDate
 }
 
 function buildCandidateDateTimes(startDate, endDate, timeStepMinutes) {
@@ -112,6 +133,49 @@ function buildResultId(candidate, index) {
     .toLowerCase()
 }
 
+function normaliseCoordinateKey(value) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return String(value || '').trim()
+  return numeric.toFixed(6)
+}
+
+export function buildIdealMatchCandidateKey(candidate = {}, context = {}) {
+  const meta = candidate.meta || {}
+  const location = context.candidateLocation || context.location || {}
+  const date = candidate.date || meta.date || ''
+  const time = candidate.time || meta.time || ''
+  const lat = candidate.lat ?? meta.lat ?? location.lat ?? ''
+  const lon = candidate.lon ?? meta.lon ?? location.lon ?? ''
+  const houseSystem = candidate.houseSystem || meta.houseSystem || context.houseSystem || location.houseSystem || ''
+  const timeZoneOverride = candidate.timeZoneOverride || meta.timeZoneOverride || context.timeZoneOverride || location.timeZoneOverride || ''
+
+  return [
+    date,
+    time,
+    normaliseCoordinateKey(lat),
+    normaliseCoordinateKey(lon),
+    houseSystem,
+    timeZoneOverride
+  ]
+    .map((part) => String(part).trim().toLowerCase())
+    .join('|')
+}
+
+function buildExcludedCandidateKeySet(options) {
+  const keys = new Set(options.excludeCandidateKeys || [])
+
+  ;(options.excludeCandidates || []).forEach((candidate) => {
+    const key = buildIdealMatchCandidateKey(candidate, {
+      candidateLocation: options.candidateLocation,
+      houseSystem: candidate?.houseSystem,
+      timeZoneOverride: candidate?.timeZoneOverride
+    })
+    if (key) keys.add(key)
+  })
+
+  return keys
+}
+
 function assertSearchOptions({ baseChart, startDate, endDate, candidateLocation }) {
   if (!baseChart) {
     throw new Error('A base natal chart is required to generate an ideal match.')
@@ -152,7 +216,13 @@ export async function searchCompatiblePartnerBirthData(options = {}) {
   const targetProfile = getCompatibilityTargetProfile(
     options.targetProfileKey || DEFAULT_TARGET_PROFILE_KEY
   )
-  const candidates = buildCandidateDateTimes(startDate, endDate, timeStepMinutes)
+  const minAgeYears = Math.max(0, Number(options.minAgeYears ?? DEFAULT_MIN_AGE_YEARS))
+  const effectiveEndDate = clampSearchEndDateForAge(endDate, minAgeYears, options.referenceDate)
+  const candidates = buildCandidateDateTimes(startDate, effectiveEndDate, timeStepMinutes)
+  const excludedCandidateKeys = buildExcludedCandidateKeySet({
+    ...options,
+    candidateLocation
+  })
 
   if (candidates.length > MAX_CANDIDATES) {
     throw new Error(
@@ -166,6 +236,25 @@ export async function searchCompatiblePartnerBirthData(options = {}) {
     const candidate = candidates[index]
     const candidateAddress = candidateLocation.address || 'Theoretical match location'
     const houseSystem = candidateLocation.houseSystem || baseChart.meta?.houseSystem || 'placidus'
+    const candidateKey = buildIdealMatchCandidateKey(candidate, {
+      candidateLocation,
+      houseSystem,
+      timeZoneOverride: candidateLocation.timeZoneOverride || ''
+    })
+
+    if (excludedCandidateKeys.has(candidateKey)) {
+      if (
+        typeof onProgress === 'function' &&
+        (index === candidates.length - 1 || index % 50 === 0)
+      ) {
+        onProgress({
+          completed: index + 1,
+          total: candidates.length,
+          percent: Math.round(((index + 1) / candidates.length) * 100)
+        })
+      }
+      continue
+    }
 
     const chart = await calculateNatalChart({
       date: candidate.date,
@@ -189,6 +278,7 @@ export async function searchCompatiblePartnerBirthData(options = {}) {
       id: buildResultId(candidate, index),
       score,
       candidate: {
+        key: candidateKey,
         date: candidate.date,
         time: candidate.time,
         address: candidateAddress,
@@ -236,9 +326,11 @@ export async function searchCompatiblePartnerBirthData(options = {}) {
     },
     searched: {
       startDate,
-      endDate,
+      endDate: effectiveEndDate,
       timeStepMinutes,
       candidateCount: candidates.length,
+      excludedCandidateCount: excludedCandidateKeys.size,
+      minAgeYears,
       location: candidateLocation
     },
     results

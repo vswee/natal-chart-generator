@@ -873,12 +873,30 @@ a {
 
 .simple-share-button,
 .simple-icon-button,
-.advanced-view-button {
+.advanced-view-button,
+.reverse-generate-button,
+.daily-horoscope-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   white-space: nowrap;
+}
+
+.button-spinner {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: buttonSpinnerRotate 0.75s linear infinite;
+}
+
+@keyframes buttonSpinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .simple-share-button {
@@ -1142,6 +1160,21 @@ a {
   color: var(--text);
   font-weight: 800;
   letter-spacing: -0.01em;
+}
+
+.simple-partner-name,
+.compare-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.partner-nickname-info {
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  font-size: 15px;
+  cursor: help;
 }
 
 .simple-section {

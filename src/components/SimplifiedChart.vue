@@ -163,12 +163,16 @@
     <IconUsers :size="18" stroke-width="2" />
     <span>Add partner</span>
   </button>
-  <button class="subtle-button simple-icon-button" type="button" :disabled="idealMatchLoading" @click="emit('see-ideal-match')">
-    <span v-if="idealMatchLoading" class="button-spinner" aria-hidden="true"></span>
+  <button class="subtle-button simple-icon-button" type="button" :disabled="idealMatchStateBusy"
+    :aria-busy="idealMatchStateBusy" @click="handleSeeIdealMatchClick">
+    <span v-if="idealMatchStateBusy" class="button-spinner" aria-hidden="true"></span>
     <IconUsers v-else :size="18" stroke-width="2" />
-    <span>{{ idealMatchLoading ? 'Generating match...' : 'See ideal match' }}</span>
+    <span>{{ idealMatchStateBusy ? 'Generating match...' : 'See ideal match' }}</span>
   </button>
 </div>
+          <p v-if="idealMatchStateBusy" class="simple-compare-status" role="status" aria-live="polite">
+            Generating the partner chart…
+          </p>
         </div>
 
         <div v-if="partnerSummaries.length" class="simple-partner-grid">
@@ -193,9 +197,14 @@
                   partner.generatedSummary.score }}/100
               </p>
             </div>
-            <div class="simple-partner-score">
-              <span>{{ partner.score }}</span>
-              <small>match</small>
+            <div class="simple-partner-score" :class="`is-${partner.scoreTone}`">
+              <div class="simple-partner-score-header">
+                <span class="simple-partner-score-label">{{ partner.scoreLabel }}</span>
+                <span class="simple-partner-score-value">{{ partner.score }}/100</span>
+              </div>
+              <div class="simple-partner-score-meter" :aria-label="`${partner.scoreLabel}, ${partner.score} out of 100`">
+                <span :style="{ width: `${partner.score}%` }"></span>
+              </div>
             </div>
             <div class="simple-partner-actions">
               <button class="subtle-button" type="button" @click="emit('select-partner', partner.id)">View</button>
@@ -286,7 +295,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { IconShare3, IconSparkles, IconUsers, IconVideo } from '@tabler/icons-vue'
 import { GIFEncoder, applyPalette, quantize } from 'gifenc'
 import html2canvas from 'html2canvas'
@@ -332,6 +341,7 @@ const emit = defineEmits(['add-partner', 'see-ideal-match', 'select-partner', 'r
 
 const appUrl = 'natal-chart.flat18.app'
 const generatedNicknameHelp = 'This nickname is generated from the partner chart using the same Sun, Moon and Ascendant nickname logic as your profile.'
+const idealMatchButtonBusy = ref(false)
 const shareCardRef = ref(null)
 const reelCanvasRef = ref(null)
 const chartGifCanvasRef = ref(null)
@@ -346,6 +356,7 @@ const chartGifProgress = ref(0)
 const shareTheme = ref('light')
 const showShareThemeOptions = false
 const reelVideoSrc = '/share-loops/instagram-reel-loop.mp4'
+let idealMatchScrollListener = null
 const REEL_WIDTH = 1080
 const REEL_HEIGHT = 1920
 const chartGifSize = CHART_GIF_SIZE
@@ -358,6 +369,28 @@ const REEL_SAFE = {
   left: 72
 }
 const reelGlyphAssets = ref(null)
+const idealMatchStateBusy = computed(() => idealMatchButtonBusy.value || props.idealMatchLoading)
+
+function clearIdealMatchBusy() {
+  idealMatchButtonBusy.value = false
+}
+
+async function handleSeeIdealMatchClick() {
+  if (idealMatchButtonBusy.value) return
+
+  idealMatchButtonBusy.value = true
+  await nextTick()
+  await new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.setTimeout(resolve, 0))
+  })
+  await new Promise((resolve) => window.setTimeout(resolve, 120))
+
+  emit('see-ideal-match')
+}
+
+onBeforeUnmount(() => {
+  clearIdealMatchBusy()
+})
 
 function drawCenteredGlyph(ctx, image, centerX, centerY, size) {
   if (!image) return
@@ -758,6 +791,20 @@ const yearPrediction = computed(() => {
   return `${yearLabel.value} looks like a year of opening doors through ${jupiterHouse.toLowerCase()} while building stronger discipline around ${saturnHouse.toLowerCase()}.`
 })
 
+function getMatchLabel(score) {
+  if (score >= 85) return 'Very strong match'
+  if (score >= 70) return 'Strong match'
+  if (score >= 55) return 'Mixed match'
+  return 'Needs more context'
+}
+
+function getMatchTone(score) {
+  if (score >= 85) return 'excellent'
+  if (score >= 70) return 'strong'
+  if (score >= 55) return 'mixed'
+  return 'light'
+}
+
 const partnerSummaries = computed(() => props.partnerReports.map((partner) => {
   const categories = partner.report?.categories || []
   const score = categories.length
@@ -769,9 +816,25 @@ const partnerSummaries = computed(() => props.partnerReports.map((partner) => {
     id: partner.id,
     label: partner.label,
     score,
+    scoreLabel: getMatchLabel(score),
+    scoreTone: getMatchTone(score),
     summary: strongest?.summary || 'Add partner details to compare your simplified charts.'
   }
 }))
+
+watch(
+  () => props.idealMatchLoading,
+  (value) => {
+    if (value) {
+      idealMatchButtonBusy.value = true
+      return
+    }
+
+    if (idealMatchButtonBusy.value) {
+      clearIdealMatchBusy()
+    }
+  }
+)
 
 watch([simpleTitle, primarySummary, todayPrediction, yearPrediction], () => {
   clearGeneratedReel()

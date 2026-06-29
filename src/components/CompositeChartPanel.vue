@@ -1,5 +1,14 @@
 <template>
-  <section class="panel">
+  <section class="panel compatibility-section-card">
+    <div v-if="sectionBadges.length" class="compatibility-section-badges">
+      <span
+        v-for="badge in sectionBadges"
+        :key="badge.label"
+        :class="['badge', 'compatibility-section-badge', badge.variant ? `compatibility-section-badge--${badge.variant}` : '']"
+      >
+        {{ badge.label }}
+      </span>
+    </div>
     <div class="panel-inner">
       <div class="composite-header">
         <div>
@@ -83,6 +92,10 @@ const props = defineProps({
   composite: {
     type: Object,
     required: false
+  },
+  sectionBadges: {
+    type: Array,
+    default: () => []
   }
 })
 

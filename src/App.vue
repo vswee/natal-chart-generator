@@ -288,18 +288,21 @@
               <div class="advanced-accordion-body">
                 <PartnerComparePanel :partners="partnerReports" :active-id="activePartner?.id || ''"
                   :ideal-match-loading="idealMatchLoading" :ideal-match-error="idealMatchError"
-                  :ideal-match-progress="idealMatchProgress" @add="openPartnerModal" @see-ideal-match="seeIdealMatch"
-                  @select="selectPartnerChart" @remove="removePartnerChart" />
+                  :ideal-match-progress="idealMatchProgress" :section-badges="compatibilityRelationshipBadges"
+                  @add="openPartnerModal" @see-ideal-match="seeIdealMatch" @select="selectPartnerChart"
+                  @remove="removePartnerChart" />
 
                 <div ref="comparisonDetailRef" class="compare-detail">
                   <RelationshipPanel v-if="relationshipReport" :report="relationshipReport"
-                    primary-action-label="Add partner" secondary-action-label="Remove partner" @edit="openPartnerModal"
+                    primary-action-label="Add partner" secondary-action-label="Remove partner"
+                    :section-badges="compatibilityRelationshipAndYouBadges" @edit="openPartnerModal"
                     @clear="removeActivePartner" />
 
                   <SynastryAspectList v-if="activePartner" :aspects="synastryAspects" :label-a="'You'"
-                    :label-b="activePartner?.label || 'Partner'" />
+                    :label-b="activePartner?.label || 'Partner'" :section-badges="compatibilityRelationshipAndYouBadges" />
 
-                  <CompositeChartPanel v-if="compositeChart" :composite="compositeChart" />
+                  <CompositeChartPanel v-if="compositeChart" :composite="compositeChart"
+                    :section-badges="compatibilityRelationshipBadges" />
                 </div>
               </div>
             </details>
@@ -613,8 +616,8 @@
             </div>
             <h3 class="about-title">Your chart stays local unless you delete it</h3>
             <p class="about-copy">
-              Birth date, birth time, birthplace, chart data, nickname, avatar and cached share media can be saved to
-              localStorage on this device. Nothing is sent to our servers.
+              Birth date, birth time, birthplace, chart data, partner charts, nickname, avatar and cached share media
+              can be saved to localStorage on this device. Nothing is sent to our servers.
             </p>
             <div class="about-divider" aria-hidden="true"></div>
             <p class="about-copy">
@@ -792,6 +795,19 @@ const activePartner = computed(() => {
   const match = partnerCharts.value.find((partner) => partner.id === activePartnerId.value)
   return match || partnerCharts.value[0]
 })
+const compatibilityRelationshipBadge = computed(() => ({
+  label: `Relationship ${activePartner.value?.label || 'chart'}`,
+  variant: 'relationship'
+}))
+const compatibilityYouBadge = {
+  label: 'You',
+  variant: 'you'
+}
+const compatibilityRelationshipBadges = computed(() => [compatibilityRelationshipBadge.value])
+const compatibilityRelationshipAndYouBadges = computed(() => [
+  compatibilityRelationshipBadge.value,
+  compatibilityYouBadge
+])
 
 const partnerReports = computed(() => {
   if (!chart.value) return []
@@ -1097,13 +1113,15 @@ function buildProfileRecord({ chartData, birthData, location, shareMedia = null 
 
   const profile = buildProfileIdentity(chartData)
   return {
-    version: 1,
+    version: 2,
     updatedAt: new Date().toISOString(),
     profile,
     birthData: cloneStoredBirthData(birthData),
     resolvedLocation: cloneResolvedLocation(location),
     chart: chartData,
-    shareMedia
+    shareMedia,
+    partnerCharts: partnerCharts.value,
+    activePartnerId: activePartnerId.value
   }
 }
 
@@ -1169,6 +1187,8 @@ function restoreStoredState() {
   savedBirthData.value = stored.birthData || null
   resolvedLocation.value = stored.resolvedLocation || null
   chart.value = stored.chart || null
+  partnerCharts.value = Array.isArray(stored.partnerCharts) ? stored.partnerCharts : []
+  activePartnerId.value = stored.activePartnerId || partnerCharts.value[0]?.id || ''
 
   if (stored.chart) {
     refreshDailyContext()
@@ -1507,6 +1527,11 @@ async function seeIdealMatch() {
   idealMatchError.value = ''
   idealMatchProgress.value = null
 
+  await nextTick()
+  await new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.setTimeout(resolve, 0))
+  })
+
   try {
     const baseMeta = chart.value.meta || {}
 
@@ -1628,11 +1653,27 @@ function removePartnerChart(id) {
   if (activePartnerId.value === id) {
     activePartnerId.value = partnerCharts.value[0]?.id || ''
   }
+  if (chart.value) {
+    persistProfileRecord(buildProfileRecord({
+      chartData: chart.value,
+      birthData: savedBirthData.value,
+      location: resolvedLocation.value,
+      shareMedia: storedShareMedia.value
+    }))
+  }
 }
 
 async function selectPartnerChart(id) {
   activePartnerId.value = id
   isAdvancedView.value = true
+  if (chart.value) {
+    persistProfileRecord(buildProfileRecord({
+      chartData: chart.value,
+      birthData: savedBirthData.value,
+      location: resolvedLocation.value,
+      shareMedia: storedShareMedia.value
+    }))
+  }
 
   await nextTick()
 
@@ -1686,6 +1727,16 @@ function addPartnerChartRecord(payload) {
   ]
 
   activePartnerId.value = id
+
+  if (chart.value) {
+    persistProfileRecord(buildProfileRecord({
+      chartData: chart.value,
+      birthData: savedBirthData.value,
+      location: resolvedLocation.value,
+      shareMedia: storedShareMedia.value
+    }))
+  }
+
   return id
 }
 

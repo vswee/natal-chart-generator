@@ -1,5 +1,14 @@
 <template>
-  <section class="panel aspect-wrap">
+  <section class="panel aspect-wrap compatibility-section-card">
+    <div v-if="sectionBadges.length" class="compatibility-section-badges">
+      <span
+        v-for="badge in sectionBadges"
+        :key="badge.label"
+        :class="['badge', 'compatibility-section-badge', badge.variant ? `compatibility-section-badge--${badge.variant}` : '']"
+      >
+        {{ badge.label }}
+      </span>
+    </div>
     <div class="panel-inner">
       <div class="synastry-header">
         <div>
@@ -81,6 +90,10 @@ const props = defineProps({
   labelB: {
     type: String,
     required: true
+  },
+  sectionBadges: {
+    type: Array,
+    default: () => []
   }
 })
 

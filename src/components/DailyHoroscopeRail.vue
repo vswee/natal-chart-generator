@@ -54,11 +54,12 @@
             <button class="subtle-button daily-horoscope-action" type="button" @click="emit('add-partner')">
               Romance + compatibility
             </button>
-            <button class="subtle-button daily-horoscope-action" type="button" :disabled="idealMatchLoading"
-              @click="emit('see-ideal-match')">
-              <span v-if="idealMatchLoading" class="button-spinner" aria-hidden="true"></span>
-              <span>{{ idealMatchLoading ? 'Generating match...' : 'See ideal match' }}</span>
+            <button class="subtle-button daily-horoscope-action" type="button" :disabled="idealMatchStateBusy"
+              :aria-busy="idealMatchStateBusy" @click="handleSeeIdealMatchClick">
+              <span v-if="idealMatchStateBusy" class="button-spinner" aria-hidden="true"></span>
+              <span>{{ idealMatchStateBusy ? 'Generating match...' : 'See ideal match' }}</span>
             </button>
+            <span v-if="idealMatchStateBusy" class="daily-horoscope-action-status">Generating the partner chart…</span>
           </div>
         </article>
       </div>
@@ -104,7 +105,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import AstroGlyph from './AstroGlyph.vue'
 import CoStarStyleChartWheel from './CoStarStyleChartWheel.vue'
 
@@ -135,8 +136,31 @@ const emit = defineEmits(['go-share', 'go-advanced', 'add-partner', 'see-ideal-m
 
 const featuredCard = computed(() => props.cards.find((card) => card.key === 'today') || props.cards[0] || null)
 const timelineCards = computed(() => props.cards.filter((card) => card.key !== 'today').slice(0, 3))
+const idealMatchButtonBusy = ref(false)
+const idealMatchStateBusy = computed(() => idealMatchButtonBusy.value || props.idealMatchLoading)
 
 const activeKey = ref('yesterday')
+
+function clearIdealMatchBusy() {
+  idealMatchButtonBusy.value = false
+}
+
+async function handleSeeIdealMatchClick() {
+  if (idealMatchButtonBusy.value) return
+
+  idealMatchButtonBusy.value = true
+  await nextTick()
+  await new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.setTimeout(resolve, 0))
+  })
+  await new Promise((resolve) => window.setTimeout(resolve, 120))
+
+  emit('see-ideal-match')
+}
+
+onBeforeUnmount(() => {
+  clearIdealMatchBusy()
+})
 
 function chipItems(card) {
   if (!card) return []
@@ -176,6 +200,19 @@ watch(
     }
   },
   { immediate: true, deep: true }
+)
+
+watch(
+  () => props.idealMatchLoading,
+  (value) => {
+    if (value) {
+      idealMatchButtonBusy.value = true
+      return
+    }
+
+    if (!idealMatchButtonBusy.value) return
+    clearIdealMatchBusy()
+  }
 )
 
 const refreshedLabel = computed(() => {

@@ -1,5 +1,14 @@
 <template>
-  <section class="panel compare-panel">
+  <section class="panel compare-panel compatibility-section-card">
+    <div v-if="sectionBadges.length" class="compatibility-section-badges">
+      <span
+        v-for="badge in sectionBadges"
+        :key="badge.label"
+        :class="['badge', 'compatibility-section-badge', badge.variant ? `compatibility-section-badge--${badge.variant}` : '']"
+      >
+        {{ badge.label }}
+      </span>
+    </div>
     <div class="panel-inner">
       <div class="compare-header">
         <div>
@@ -15,6 +24,9 @@
           </button>
         </div>
       </div>
+      <p v-if="idealMatchStateBusy" class="simple-compare-status" role="status" aria-live="polite">
+        Generating the partner chart…
+      </p>
       <p v-if="idealMatchProgress" class="section-copy">
         Searching theoretical match windows: {{ idealMatchProgress.percent }}%
       </p>
@@ -48,13 +60,15 @@
               </p>
             </div>
             <div class="compare-actions">
-              <IconX class="subtle-button" type="button" @click="emit('remove', partner.id)" stroke={2} />
               <template v-if="partner.id !== activeId">
                 <button class="subtle-button" type="button" :disabled="partner.id === activeId"
                   @click="emit('select', partner.id)">
                   {{ partner.id === activeId ? 'Viewing' : 'Details' }}
                 </button>
               </template>
+              <button class="subtle-button" type="button" @click="emit('remove', partner.id)">
+                Remove
+              </button>
             </div>
           </div>
 
@@ -76,8 +90,8 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { IconX } from '@tabler/icons-vue';
-defineProps({
+
+const props = defineProps({
   partners: {
     type: Array,
     required: true
@@ -97,6 +111,10 @@ defineProps({
   idealMatchProgress: {
     type: Object,
     default: null
+  },
+  sectionBadges: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -105,44 +123,20 @@ const emit = defineEmits(['add', 'see-ideal-match', 'select', 'remove'])
 const generatedNicknameHelp = 'This nickname is generated from the partner chart using the same Sun, Moon and Ascendant nickname logic as your profile.'
 const idealMatchButtonBusy = ref(false)
 const idealMatchStateBusy = computed(() => idealMatchButtonBusy.value || props.idealMatchLoading)
-let idealMatchScrollListener = null
-let idealMatchScrollTimeout = 0
-let idealMatchScrollBaseline = 0
 
 function clearIdealMatchBusy() {
   idealMatchButtonBusy.value = false
-  if (idealMatchScrollListener) {
-    window.removeEventListener('scroll', idealMatchScrollListener)
-    idealMatchScrollListener = null
-  }
-  if (idealMatchScrollTimeout) {
-    window.clearTimeout(idealMatchScrollTimeout)
-    idealMatchScrollTimeout = 0
-  }
 }
 
 async function handleSeeIdealMatchClick() {
   if (idealMatchButtonBusy.value) return
 
   idealMatchButtonBusy.value = true
-  idealMatchScrollBaseline = window.scrollY
   await nextTick()
-  await new Promise((resolve) => window.requestAnimationFrame(resolve))
-
-  if (idealMatchScrollListener) {
-    window.removeEventListener('scroll', idealMatchScrollListener)
-  }
-
-  idealMatchScrollListener = () => {
-    if (!idealMatchButtonBusy.value) return
-    if (Math.abs(window.scrollY - idealMatchScrollBaseline) > 2) {
-      clearIdealMatchBusy()
-    }
-  }
-
-  window.addEventListener('scroll', idealMatchScrollListener, { passive: true })
-  if (idealMatchScrollTimeout) window.clearTimeout(idealMatchScrollTimeout)
-  idealMatchScrollTimeout = window.setTimeout(clearIdealMatchBusy, 15000)
+  await new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.setTimeout(resolve, 0))
+  })
+  await new Promise((resolve) => window.setTimeout(resolve, 120))
 
   emit('see-ideal-match')
 }

@@ -1,5 +1,5 @@
 <template>
-  <section class="panel birth-form-panel"
+  <section class="panel birth-form-panel no-animate"
     :class="{ 'is-compact': props.compactSummary, 'is-editing': isEditingBirthInfo }">
     <div class="panel-inner">
       <template v-if="props.compactSummary">
@@ -301,10 +301,24 @@
 
         <aside class="birth-form-rail" aria-hidden="true">
           <div class="birth-form-rail-graphic">
-            <div class="empty-state-orbit birth-form-orbit">
-              <span class="empty-state-ring empty-state-ring--outer"></span>
-              <span class="empty-state-ring empty-state-ring--inner"></span>
-              <span class="empty-state-core"></span>
+            <div class="birth-form-orbit" aria-hidden="true">
+              <span class="birth-form-orbit-ring birth-form-orbit-ring--outer"></span>
+              <span class="birth-form-orbit-ring birth-form-orbit-ring--middle"></span>
+              <span class="birth-form-orbit-ring birth-form-orbit-ring--inner"></span>
+              <span class="birth-form-orbit-core"></span>
+
+              <span class="birth-form-orbit-track birth-form-orbit-track--one">
+                <span class="birth-form-orbit-planet birth-form-orbit-planet--one"></span>
+              </span>
+              <span class="birth-form-orbit-track birth-form-orbit-track--two">
+                <span class="birth-form-orbit-planet birth-form-orbit-planet--two"></span>
+              </span>
+              <span class="birth-form-orbit-track birth-form-orbit-track--three">
+                <span class="birth-form-orbit-planet birth-form-orbit-planet--three"></span>
+              </span>
+              <span class="birth-form-orbit-track birth-form-orbit-track--four">
+                <span class="birth-form-orbit-planet birth-form-orbit-planet--four"></span>
+              </span>
             </div>
             <div class="birth-form-rail-caption">
               <!-- <p class="birth-form-kicker">Chart field</p> -->

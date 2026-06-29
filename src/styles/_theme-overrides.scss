@@ -248,7 +248,7 @@ a {
   overflow: hidden;
 }
 
-.panel::before {
+.panel:not(.no-animate)::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1155,6 +1155,15 @@ a {
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
+}
+
+.simple-compare-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
 }
 
 .simple-date {

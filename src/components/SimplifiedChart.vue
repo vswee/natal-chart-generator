@@ -158,14 +158,16 @@
             <p class="simple-kicker">Partner chart</p>
             <h2 class="section-title">Compare simplified charts</h2>
           </div>
-          <button class="subtle-button simple-icon-button" type="button" @click="emit('add-partner')">
-            <IconUsers :size="18" stroke-width="2" />
-            <span>Add partner</span>
-          </button>
-          <button class="subtle-button simple-icon-button" type="button" @click="emit('see-ideal-match')">
-            <IconUsers :size="18" stroke-width="2" />
-            <span>See ideal match</span>
-          </button>
+<div class="simple-compare-actions">
+  <button class="subtle-button simple-icon-button" type="button" @click="emit('add-partner')">
+    <IconUsers :size="18" stroke-width="2" />
+    <span>Add partner</span>
+  </button>
+  <button class="subtle-button simple-icon-button" type="button" @click="emit('see-ideal-match')">
+    <IconUsers :size="18" stroke-width="2" />
+    <span>See ideal match</span>
+  </button>
+</div>
         </div>
 
         <div v-if="partnerSummaries.length" class="simple-partner-grid">

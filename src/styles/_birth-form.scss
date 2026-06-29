@@ -167,18 +167,119 @@
 }
 
 .birth-form-orbit {
+  position: relative;
   justify-self: center;
   align-self: start;
-  width: 162px;
+  width: 168px;
+  aspect-ratio: 1;
   margin: 0;
+  border-radius: 50%;
 }
 
-.birth-form-orbit .empty-state-ring {
-  border-color: rgba(105, 92, 124, 0.12);
+.birth-form-orbit-ring,
+.birth-form-orbit-track,
+.birth-form-orbit-core,
+.birth-form-orbit-planet {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
 }
 
-.birth-form-orbit .empty-state-core {
-  inset: 38%;
+.birth-form-orbit-ring {
+  inset: 0;
+  border: 1px solid rgba(105, 92, 124, 0.13);
+}
+
+.birth-form-orbit-ring--middle {
+  inset: 18px;
+  border-color: rgba(105, 92, 124, 0.11);
+}
+
+.birth-form-orbit-ring--inner {
+  inset: 38px;
+  border-color: rgba(105, 92, 124, 0.1);
+}
+
+.birth-form-orbit-core {
+  inset: 60px;
+  background:
+    radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.72), transparent 0 9px),
+    linear-gradient(145deg, rgba(172, 140, 89, 0.96), rgba(82, 65, 104, 0.92));
+  border: 1px solid rgba(105, 92, 124, 0.18);
+  box-shadow: 0 14px 32px rgba(69, 54, 91, 0.16);
+  z-index: 3;
+}
+
+.birth-form-orbit-track {
+  inset: 0;
+  animation: birth-form-orbit-spin 22s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.birth-form-orbit-track--two {
+  inset: 18px;
+  animation-duration: 16s;
+  animation-direction: reverse;
+}
+
+.birth-form-orbit-track--three {
+  inset: 38px;
+  animation-duration: 11s;
+}
+
+.birth-form-orbit-track--four {
+  inset: 28px;
+  animation-duration: 28s;
+  animation-direction: reverse;
+}
+
+.birth-form-orbit-planet {
+  top: 50%;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  background: rgba(105, 92, 124, 0.76);
+  box-shadow: 0 0 0 4px rgba(105, 92, 124, 0.08);
+}
+
+.birth-form-orbit-planet--two {
+  width: 10px;
+  height: 10px;
+  right: -5px;
+  margin-top: -5px;
+  background: rgba(172, 140, 89, 0.86);
+  box-shadow: 0 0 0 5px rgba(172, 140, 89, 0.1);
+}
+
+.birth-form-orbit-planet--three {
+  width: 6px;
+  height: 6px;
+  right: -3px;
+  margin-top: -3px;
+  background: rgba(73, 80, 112, 0.78);
+  box-shadow: 0 0 0 4px rgba(73, 80, 112, 0.08);
+}
+
+.birth-form-orbit-planet--four {
+  width: 7px;
+  height: 7px;
+  right: -3.5px;
+  margin-top: -3.5px;
+  background: rgba(130, 109, 160, 0.78);
+  box-shadow: 0 0 0 4px rgba(130, 109, 160, 0.08);
+}
+
+@keyframes birth-form-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .birth-form-orbit-track {
+    animation: none;
+  }
 }
 
 .birth-form-rail-caption {

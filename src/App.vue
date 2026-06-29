@@ -13,7 +13,7 @@
         </p>
       </div>
 
-      <div class="profile-dock">
+      <div ref="profileDockRef" class="profile-dock">
         <button class="profile-button" type="button" :aria-expanded="isProfileMenuOpen" @click="toggleProfileMenu">
           <span class="profile-avatar">
             <img v-if="profileIdentity" :src="profileIdentity.avatarSrc" :alt="profileIdentity.avatarLabel" />
@@ -732,6 +732,7 @@ const isAboutModalOpen = ref(false)
 const isPrivacyModalOpen = ref(false)
 const isProfileMenuOpen = ref(false)
 const isProfileResetArmed = ref(false)
+const profileDockRef = ref(null)
 const birthEditorRequest = ref(0)
 const currentTransits = ref(null)
 const dailyHoroscopeCards = ref([])
@@ -1182,6 +1183,16 @@ function toggleProfileMenu() {
   }
 
   isProfileMenuOpen.value = !isProfileMenuOpen.value
+}
+
+function handleProfileDocumentPointerDown(event) {
+  if (!isProfileMenuOpen.value) return
+
+  const profileDock = profileDockRef.value
+  if (profileDock && profileDock.contains(event.target)) return
+
+  isProfileMenuOpen.value = false
+  isProfileResetArmed.value = false
 }
 
 function formatStoredAt(value) {
@@ -1789,6 +1800,7 @@ onMounted(() => {
   window.addEventListener('focus', handleDailyContextRefresh)
   window.addEventListener('pageshow', handleDailyContextRefresh)
   document.addEventListener('visibilitychange', handleVisibilityDailyRefresh)
+    document.addEventListener('pointerdown', handleProfileDocumentPointerDown, true)
 })
 
 onBeforeUnmount(() => {
@@ -1796,5 +1808,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('focus', handleDailyContextRefresh)
   window.removeEventListener('pageshow', handleDailyContextRefresh)
   document.removeEventListener('visibilitychange', handleVisibilityDailyRefresh)
+    document.removeEventListener('pointerdown', handleProfileDocumentPointerDown, true)
 })
 </script>

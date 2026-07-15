@@ -1,9 +1,9 @@
 <template>
   <section class="panel reading-wrap">
     <div class="panel-inner">
-      <h2 class="section-title">Interpretation notes</h2>
+      <h2 class="section-title">Reading notes</h2>
       <p class="section-copy">
-        Short notes based on placements, aspects and the overall chart pattern.
+        Short notes based on placements, aspects and chart patterns.
       </p>
     </div>
 

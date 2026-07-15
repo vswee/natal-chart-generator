@@ -12,7 +12,7 @@
     <div class="panel-inner">
       <div class="composite-header">
         <div>
-          <h2 class="section-title">Composite chart</h2>
+          <h2 class="section-title">Composite relationship chart</h2>
           <p class="section-copy">A midpoint chart that reads the relationship as its own whole.</p>
         </div>
         <button class="info-toggle" type="button" aria-label="About composite charts" @click="openInfo">

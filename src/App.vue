@@ -127,8 +127,10 @@
             <div class="panel-inner advanced-entry-inner">
               <div>
                 <p class="simple-kicker">Advanced</p>
-                <h2 class="section-title">Full chart data</h2>
-                <p class="section-copy">Placements, aspects, houses, charts, compatibility and the PDF export.</p>
+                <h2 class="section-title">Chart overview</h2>
+                <p class="section-copy">
+                  Summary scores, element balance, current sky and deeper chart readings.
+                </p>
               </div>
               <button class="subtle-button advanced-view-button" type="button" :aria-expanded="isAdvancedView"
                 @click="isAdvancedView = !isAdvancedView">
@@ -257,7 +259,10 @@
 
                 <div class="summary-row">
                   <ChartWheel :placements="chart.placements" :aspects="chart.aspects" :cusps="chart.houseCusps" />
-                  <SummaryGauges :metrics="chart.metrics" />
+                  <div class="card-grid vertical">
+                    <SummaryGauges :metrics="chart.metrics" />
+                    <ElementModePanel :placements="chart.placements" />
+                  </div>
                 </div>
               </div>
             </section>
@@ -265,15 +270,36 @@
             <details class="panel advanced-accordion" open>
               <summary class="advanced-accordion-summary">
                 <div>
-                  <span class="advanced-accordion-kicker">Open first</span>
-                  <h3>Daily context</h3>
+                  <span class="advanced-accordion-kicker">Live</span>
+                  <h3>Current sky</h3>
                 </div>
                 <span class="advanced-accordion-chevron" aria-hidden="true"></span>
               </summary>
               <div class="advanced-accordion-body">
-                <ElementModePanel :placements="chart.placements" />
                 <PresentTimePanel v-if="currentTransits" :transits="currentTransits" />
-                <FocusAreas :areas="chart.focusAreas" />
+              </div>
+            </details>
+
+            <details class="panel advanced-accordion">
+              <summary class="advanced-accordion-summary">
+                <div>
+                  <span class="advanced-accordion-kicker">Read next</span>
+                  <h3>Natal reading</h3>
+                </div>
+                <span class="advanced-accordion-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="advanced-accordion-body">
+                <div class="card-grid vertical">
+                  <FocusAreas :areas="chart.focusAreas" />
+                  <AstroDepthPanel
+                    :extra-points="chart.extraPoints"
+                    :dignities="chart.dignities"
+                    :dispositors="chart.dispositors"
+                    :chart-ruler="chart.chartRuler"
+                    :aspect-patterns="chart.aspectPatterns"
+                  />
+                  <InterpretationPanel :items="chart.interpretations" />
+                </div>
               </div>
             </details>
 
@@ -311,7 +337,7 @@
               <summary class="advanced-accordion-summary">
                 <div>
                   <span class="advanced-accordion-kicker">Reference</span>
-                  <h3>Placements, aspects, and readings</h3>
+                  <h3>Chart reference</h3>
                 </div>
                 <span class="advanced-accordion-chevron" aria-hidden="true"></span>
               </summary>
@@ -320,8 +346,6 @@
                   <PlacementTable :placements="chart.placements" />
                   <AspectList :aspects="chart.aspects" />
                 </div>
-
-                <InterpretationPanel :items="chart.interpretations" />
               </div>
             </details>
           </div>
@@ -692,6 +716,7 @@ import { jsPDF } from 'jspdf'
 import BirthForm from './components/BirthForm.vue'
 import SummaryGauges from './components/SummaryGauges.vue'
 import FocusAreas from './components/FocusAreas.vue'
+import AstroDepthPanel from './components/AstroDepthPanel.vue'
 import RelationshipPanel from './components/RelationshipPanel.vue'
 import PartnerModal from './components/PartnerModal.vue'
 import PlacementTable from './components/PlacementTable.vue'

@@ -3,8 +3,8 @@
     <div class="panel-inner">
       <div class="depth-header">
         <div>
-          <h2 class="section-title">Astro depth</h2>
-          <p class="section-copy">Extra points, rulerships and larger chart patterns.</p>
+          <h2 class="section-title">Chart structure</h2>
+          <p class="section-copy">Extended points, rulerships and larger chart patterns.</p>
         </div>
       </div>
 

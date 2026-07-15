@@ -1,9 +1,9 @@
 <template>
   <section class="panel">
     <div class="panel-inner">
-      <h2 class="section-title">Relationship, work & life</h2>
+      <h2 class="section-title">Focus areas</h2>
       <p class="section-copy">
-        A quick look at how the chart leans in relationships, work and direction.
+        A quick look at how the chart leans in relationships, work and life direction.
       </p>
 
       <div class="focus-grid">

@@ -3,7 +3,7 @@
     <div class="panel-inner">
       <div class="present-header">
         <div>
-          <h2 class="section-title">Present time</h2>
+          <h2 class="section-title">Current sky</h2>
           <p class="section-copy">
             A quick look at the current sky against this natal chart.
           </p>
@@ -49,7 +49,6 @@
           </div>
           <p v-else class="present-empty">No house data available.</p>
         </article>
-      <div class="gauge-list">
 
         <article class="present-card">
           <div class="present-card-head">
@@ -93,7 +92,6 @@
           </div>
           <p v-else class="present-empty">No major planets are retrograde right now.</p>
         </article>
-      </div>
       </div>
     </div>
 

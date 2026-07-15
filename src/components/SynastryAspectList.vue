@@ -12,7 +12,7 @@
     <div class="panel-inner">
       <div class="synastry-header">
         <div>
-          <h2 class="section-title">Synastry aspects</h2>
+          <h2 class="section-title">Synastry details</h2>
           <p class="section-copy">Aspects between two charts, filtered by type and closeness.</p>
         </div>
         <button class="info-toggle" type="button" aria-label="About synastry" @click="openInfo">

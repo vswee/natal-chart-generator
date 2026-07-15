@@ -12,7 +12,7 @@
     <div class="panel-inner">
       <div class="relationship-header">
         <div>
-          <h2 class="section-title">Relationship chart</h2>
+          <h2 class="section-title">Compatibility overview</h2>
           <p class="section-copy">
             Compare two birth charts to look at compatibility, friendship, romance and chemistry.
           </p>

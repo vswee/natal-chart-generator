@@ -6,9 +6,9 @@
           <span class="brand-dot"></span>
           Natal chart app by Flat 18
         </div>
-        <h1 class="hero-title">Natal Charts Generator</h1>
+        <h1 class="hero-title">Free Natal Chart Calculator</h1>
         <p class="hero-copy">
-          A precise birth chart, simplified into the placements, patterns and timing that matter.
+          A precise birth chart calculator for natal charts, synastry, compatibility, and transits.
           <span v-if="!chart">Enter your birth details to begin with a clean chart reading.</span>
         </p>
       </div>
@@ -30,6 +30,10 @@
         <div v-if="isProfileMenuOpen" class="profile-menu" role="menu" aria-label="Profile actions">
           <p class="profile-menu-note">
             Your chart and all your data stay on this device.
+          </p>
+          <p class="profile-menu-note profile-menu-note--strong">
+            Share a link if you want to move this saved profile to another device. Anyone who opens the URL will be
+            able to import the same locally stored data.
           </p>
 
           <div v-if="profileIdentity" class="profile-card">
@@ -95,6 +99,10 @@
           </div>
 
           <div class="profile-menu-actions">
+            <button class="button profile-share-button" type="button" @click="openShareProfileModal">
+              <IconShare3 :size="16" stroke-width="2" />
+              <span>Share profile link</span>
+            </button>
             <button :class="['button', 'profile-reset-button', { 'is-armed': isProfileResetArmed }]" type="button"
               :aria-pressed="isProfileResetArmed" @click="handleProfileResetClick">
               {{ isProfileResetArmed ? 'Are you sure? Clear data' : 'Delete data and reset' }}
@@ -352,6 +360,71 @@
         </template>
       </section>
     </div>
+
+    <section class="seo-section" aria-labelledby="seo-section-title">
+      <div class="seo-intro">
+        <p class="simple-kicker">SEO</p>
+        <h2 id="seo-section-title" class="section-title">Birth chart calculator, synastry chart, and natal reading in one page</h2>
+        <p class="section-copy">
+          This app is built to answer the search terms people actually use: free natal chart calculator, birth chart
+          reading, synastry compatibility, and daily transits. It calculates charts in the browser and keeps the page
+          focused on one clear experience instead of forcing users through a multi-page flow.
+        </p>
+      </div>
+
+      <div class="seo-grid">
+        <article class="seo-card">
+          <h3>Free natal chart calculator</h3>
+          <p>
+            Enter your birth date, time, and birthplace to generate a natal chart with planets, signs, houses, aspects,
+            and a readable summary of the core placements.
+          </p>
+        </article>
+
+        <article class="seo-card">
+          <h3>Synastry and compatibility</h3>
+          <p>
+            Compare two charts to explore relationship compatibility, synastry aspects, and the chart patterns that
+            shape attraction, friction, and long-term dynamics.
+          </p>
+        </article>
+
+        <article class="seo-card">
+          <h3>Transits and timing</h3>
+          <p>
+            See current transits and daily horoscope-style timing so the page can capture both natal chart and current
+            sky searches.
+          </p>
+        </article>
+
+        <article class="seo-card">
+          <h3>Common questions</h3>
+          <p>
+            Birth time matters for the Ascendant and house cusps. If you do not know the exact time, the app still
+            gives useful chart insight while making the uncertainty clear.
+          </p>
+        </article>
+      </div>
+
+      <div class="seo-faq" aria-label="Frequently asked questions">
+        <details class="seo-faq-item">
+          <summary>What does a natal chart calculator do?</summary>
+          <p>It turns your birth date, time, and place into an astrology chart with sign, house, and aspect placements.</p>
+        </details>
+        <details class="seo-faq-item">
+          <summary>Can I use this as a synastry chart calculator?</summary>
+          <p>Yes. The compatibility section compares two charts and highlights the relationship patterns between them.</p>
+        </details>
+        <details class="seo-faq-item">
+          <summary>Does this work as a free birth chart report?</summary>
+          <p>Yes. The app is positioned as a free natal chart calculator with readings, transits, and shareable outputs.</p>
+        </details>
+        <details class="seo-faq-item">
+          <summary>Why do search engines care about this copy?</summary>
+          <p>Because it gives the page clear topical signals, matching the exact words people type when looking for astrology tools.</p>
+        </details>
+      </div>
+    </section>
 
     <footer class="app-footer">
       <div class="footer-title">Docs</div>
@@ -690,6 +763,36 @@
       </div>
     </div>
 
+    <div v-if="isShareProfileModalOpen" class="modal-overlay" @click.self="isShareProfileModalOpen = false">
+      <div class="modal-card about-modal" role="dialog" aria-modal="true" aria-labelledby="share-profile-title">
+        <div class="modal-header">
+          <div>
+            <p class="modal-kicker">Share</p>
+            <h3 id="share-profile-title" class="modal-title">Share your saved profile</h3>
+          </div>
+          <button class="subtle-button" type="button" @click="isShareProfileModalOpen = false">Close</button>
+        </div>
+
+        <p class="modal-copy">
+          This creates a URL that contains the current locally stored profile data on this device. Anyone who opens it
+          will be able to import the same chart and partner data.
+        </p>
+
+        <p v-if="shareProfileError" class="error">
+          {{ shareProfileError }}
+        </p>
+
+        <div v-if="shareProfileUrl" class="share-profile-box">
+          <label class="label" for="share-profile-url">Profile link</label>
+          <textarea id="share-profile-url" class="input share-profile-url" rows="4" readonly
+            :value="shareProfileUrl"></textarea>
+          <div class="profile-menu-actions">
+            <button class="button" type="button" @click="copyShareProfileUrl">Copy link</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <PartnerModal :open="isPartnerModalOpen" :loading="partnerLoading" :error="partnerError"
       :resolved-location="partnerResolvedLocation" @submit="handlePartnerSubmit" @close="closePartnerModal" />
   </main>
@@ -708,6 +811,7 @@ import {
   IconNorthStar,
   IconPlanet,
   IconShieldCheck,
+  IconShare3,
   IconSparkles,
   IconStars
 } from '@tabler/icons-vue'
@@ -739,7 +843,14 @@ import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
 import { buildCrossAspects } from './utils/aspects'
 import { buildProfileIdentity, buildProfileNickname } from './utils/profile'
-import { clearStoredProfile, readStoredProfile, writeStoredProfile } from './utils/storage'
+import {
+  buildSharedProfileUrl,
+  clearStoredProfile,
+  decodeSharedProfilePayload,
+  extractSharedProfileTokenFromUrl,
+  readStoredProfile,
+  writeStoredProfile
+} from './utils/storage'
 
 const loading = ref(false)
 const error = ref('')
@@ -758,6 +869,9 @@ const idealMatchError = ref('')
 const idealMatchProgress = ref(null)
 const isAboutModalOpen = ref(false)
 const isPrivacyModalOpen = ref(false)
+const isShareProfileModalOpen = ref(false)
+const shareProfileUrl = ref('')
+const shareProfileError = ref('')
 const isProfileMenuOpen = ref(false)
 const isProfileResetArmed = ref(false)
 const profileDockRef = ref(null)
@@ -1150,6 +1264,89 @@ function buildProfileRecord({ chartData, birthData, location, shareMedia = null 
   }
 }
 
+function sanitizeImportedProfileRecord(record) {
+  if (!record || typeof record !== 'object') return null
+  if (!record.chart || typeof record.chart !== 'object') return null
+
+  return {
+    version: Number(record.version) || 2,
+    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : new Date().toISOString(),
+    profile: record.profile || buildProfileIdentity(record.chart),
+    birthData: cloneStoredBirthData(record.birthData),
+    resolvedLocation: cloneResolvedLocation(record.resolvedLocation),
+    chart: record.chart,
+    shareMedia: record.shareMedia && typeof record.shareMedia === 'object' ? record.shareMedia : null,
+    partnerCharts: Array.isArray(record.partnerCharts) ? record.partnerCharts : [],
+    activePartnerId: typeof record.activePartnerId === 'string' ? record.activePartnerId : ''
+  }
+}
+
+function applyImportedProfileRecord(record) {
+  const nextRecord = sanitizeImportedProfileRecord(record)
+  if (!nextRecord) return false
+
+  storedProfileRecord.value = nextRecord
+  storedShareMedia.value = nextRecord.shareMedia || null
+  savedBirthData.value = nextRecord.birthData || null
+  resolvedLocation.value = nextRecord.resolvedLocation || null
+  chart.value = nextRecord.chart || null
+  partnerCharts.value = Array.isArray(nextRecord.partnerCharts) ? nextRecord.partnerCharts : []
+  activePartnerId.value = nextRecord.activePartnerId || partnerCharts.value[0]?.id || ''
+
+  writeStoredProfile(nextRecord)
+
+  if (nextRecord.chart) {
+    refreshDailyContext()
+  }
+
+  return true
+}
+
+function buildCurrentSharePayload() {
+  const source = storedProfileRecord.value || (chart.value
+    ? buildProfileRecord({
+      chartData: chart.value,
+      birthData: savedBirthData.value,
+      location: resolvedLocation.value,
+      shareMedia: storedShareMedia.value
+    })
+    : null)
+
+  const payload = sanitizeImportedProfileRecord(source)
+  if (!payload) return null
+  payload.shareMedia = null
+  return payload
+}
+
+function openShareProfileModal() {
+  shareProfileError.value = ''
+  const payload = buildCurrentSharePayload()
+  if (!payload) {
+    shareProfileError.value = 'Generate a chart first so there is a profile to share.'
+    shareProfileUrl.value = ''
+    isShareProfileModalOpen.value = true
+    return
+  }
+
+  shareProfileUrl.value = buildSharedProfileUrl(payload, window.location.href.split('#')[0])
+  isShareProfileModalOpen.value = true
+}
+
+async function copyShareProfileUrl() {
+  if (!shareProfileUrl.value) return
+
+  try {
+    await navigator.clipboard.writeText(shareProfileUrl.value)
+  } catch (error) {
+    const tempInput = document.createElement('textarea')
+    tempInput.value = shareProfileUrl.value
+    document.body.appendChild(tempInput)
+    tempInput.select()
+    document.execCommand('copy')
+    tempInput.remove()
+  }
+}
+
 function persistProfileRecord(nextRecord) {
   storedProfileRecord.value = nextRecord
   storedShareMedia.value = nextRecord?.shareMedia || null
@@ -1218,6 +1415,13 @@ function restoreStoredState() {
   if (stored.chart) {
     refreshDailyContext()
   }
+}
+
+function clearSharedProfileFromUrl() {
+  if (typeof window === 'undefined') return
+  const cleanUrl = new URL(window.location.href)
+  cleanUrl.searchParams.delete('profile')
+  window.history.replaceState({}, document.title, `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`)
 }
 
 function toggleProfileMenu() {
@@ -1892,11 +2096,26 @@ function teardownLineMotion() {
 
 onMounted(() => {
   restoreStoredState()
+  const sharedToken = extractSharedProfileTokenFromUrl()
+  if (sharedToken) {
+    const imported = decodeSharedProfilePayload(sharedToken)
+    if (imported) {
+      const hasExistingData = Boolean(storedProfileRecord.value || chart.value || savedBirthData.value)
+      const message = hasExistingData
+        ? 'This link contains a saved profile. Opening it will replace the data currently stored on this device. Do you want to continue?'
+        : 'This link contains a saved profile. Do you want to load it on this device?'
+
+      if (window.confirm(message)) {
+        applyImportedProfileRecord(imported)
+      }
+    }
+    clearSharedProfileFromUrl()
+  }
   setupLineMotion()
   window.addEventListener('focus', handleDailyContextRefresh)
   window.addEventListener('pageshow', handleDailyContextRefresh)
   document.addEventListener('visibilitychange', handleVisibilityDailyRefresh)
-    document.addEventListener('pointerdown', handleProfileDocumentPointerDown, true)
+  document.addEventListener('pointerdown', handleProfileDocumentPointerDown, true)
 })
 
 onBeforeUnmount(() => {
@@ -1904,6 +2123,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('focus', handleDailyContextRefresh)
   window.removeEventListener('pageshow', handleDailyContextRefresh)
   document.removeEventListener('visibilitychange', handleVisibilityDailyRefresh)
-    document.removeEventListener('pointerdown', handleProfileDocumentPointerDown, true)
+  document.removeEventListener('pointerdown', handleProfileDocumentPointerDown, true)
 })
 </script>

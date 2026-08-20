@@ -668,6 +668,76 @@ a {
   border-bottom-color: rgba(84, 70, 108, 0.48);
 }
 
+.seo-section {
+  display: grid;
+  gap: 22px;
+  margin-top: 34px;
+  padding: 28px;
+  border: 1px solid rgba(105, 92, 124, 0.08);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(181, 173, 236, 0.1), transparent 28%),
+    rgba(255, 252, 248, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.seo-intro {
+  display: grid;
+  gap: 10px;
+  max-width: 80ch;
+}
+
+.seo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.seo-card {
+  padding: 18px 18px 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(105, 92, 124, 0.06);
+}
+
+.seo-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.seo-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.seo-faq {
+  display: grid;
+  gap: 10px;
+}
+
+.seo-faq-item {
+  padding: 0 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(105, 92, 124, 0.06);
+}
+
+.seo-faq-item summary {
+  padding: 16px 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.seo-faq-item p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  line-height: 1.68;
+}
+
 .about-modal {
   border-radius: 30px;
   background:
@@ -1926,6 +1996,7 @@ body::after {
 .profile-birth-summary,
 .profile-birth-summary-card,
 .profile-cache,
+.share-profile-box,
 .birth-summary-compact,
 .birth-form-fields,
 .birth-advanced-panel {
@@ -1933,6 +2004,11 @@ body::after {
   border-radius: var(--radius-lg);
   background: #fff;
   box-shadow: none;
+}
+
+.profile-menu-note--strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .birth-form-form {
@@ -1996,6 +2072,52 @@ body::after {
 .text-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 18px rgba(17, 17, 17, 0.08);
+}
+
+.profile-menu-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-share-button,
+.profile-reset-button {
+  width: 100%;
+}
+
+.profile-share-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.profile-share-button svg {
+  flex: 0 0 auto;
+}
+
+.share-profile-box {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(219, 228, 240, 0.38), transparent 28%),
+    rgba(255, 255, 255, 0.84);
+}
+
+.share-profile-url {
+  min-height: 130px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  resize: vertical;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.share-profile-box .profile-menu-actions {
+  padding-top: 2px;
 }
 
 .meta-card,

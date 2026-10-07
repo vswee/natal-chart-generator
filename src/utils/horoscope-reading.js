@@ -2,7 +2,7 @@ import { buildCrossAspects } from './aspects'
 import { toTitleCase } from './zodiac'
 
 const TRANSIT_DRIVES = {
-  sun: 'a wish to express yourself',
+  sun: 'a desire for self-expression',
   moon: 'strong feelings',
   mercury: 'quick thoughts and words',
   venus: 'a desire for closeness',
@@ -12,6 +12,19 @@ const TRANSIT_DRIVES = {
   uranus: 'a desire for change',
   neptune: 'your imagination and ideals',
   pluto: 'a need to get to the heart of things'
+}
+
+const TRANSIT_AREAS = {
+  sun: 'your confidence and sense of direction',
+  moon: 'your feelings',
+  mercury: 'your thoughts and conversations',
+  venus: 'your relationships and values',
+  mars: 'your motivation and actions',
+  jupiter: 'your outlook and openness to growth',
+  saturn: 'your commitments and boundaries',
+  uranus: 'your independence and appetite for change',
+  neptune: 'your imagination and ideals',
+  pluto: 'power and deep change'
 }
 
 const NATAL_FOCUS = {
@@ -45,11 +58,11 @@ const SIGN_TONES = {
 }
 
 const ASPECT_GUIDANCE = {
-  conjunction: (drive, focus) => `can blend ${drive} with ${focus}, making this part of life more noticeable.`,
-  sextile: (drive, focus) => `can open a way to bring ${drive} into ${focus}; a small, deliberate step may help.`,
-  square: (drive, focus) => `can put ${drive} at odds with ${focus}; pause and consider what both sides need before reacting.`,
-  trine: (drive, focus) => `can help ${drive} flow more easily into ${focus}; use the momentum to make a practical step forward.`,
-  opposition: (drive, focus) => `can pull ${drive} and ${focus} in different directions; give both sides a hearing before deciding what to say or do.`
+  conjunction: (drive, focus) => `can bring ${focus} to the foreground, energized by ${drive}. Notice where you want to direct the extra attention.`,
+  sextile: (drive, focus) => `can open an opportunity to use ${drive} in support of ${focus}. A small step can help put it to work.`,
+  square: (drive, focus) => `can create tension between ${drive} and ${focus}. Pause and look for a response that respects both.`,
+  trine: (drive, focus) => `can help ${drive} support ${focus}. Use the easier flow to make one practical move.`,
+  opposition: (drive, focus) => `can make it hard to balance ${drive} with ${focus}. Give both a hearing before responding.`
 }
 
 const DAILY_MOON_CUES = {
@@ -80,12 +93,14 @@ function describeTransitGroup(aspects, transitMap, natalMap) {
   if (!transit) return ''
 
   const transitName = toTitleCase(transit.body)
+  const article = ['sun', 'moon'].includes(transit.body) ? 'The ' : ''
   const signText = transit.sign ? ` in ${toTitleCase(transit.sign)}` : ''
   const signTone = SIGN_TONES[transit.sign] || 'distinctive'
   const houseText = Number.isInteger(Number(transit.house)) && Number(transit.house) >= 1 && Number(transit.house) <= 12
-    ? `, with ${houseFocus(Number(transit.house))} in focus`
+    ? `, especially around ${houseFocus(Number(transit.house))}`
     : ''
-  const introduction = `The ${transitName}${signText} brings a ${signTone} tone to the day${houseText}.`
+  const transitArea = TRANSIT_AREAS[transit.body] || 'your priorities'
+  const introduction = `${article}${transitName}${signText} brings a ${signTone} quality to ${transitArea}${houseText}.`
   const impactSentences = aspects.map((aspect) => {
     const natal = natalMap.get(aspect.bodyB)
     if (!natal) return ''
@@ -94,8 +109,8 @@ function describeTransitGroup(aspects, transitMap, natalMap) {
     const drive = TRANSIT_DRIVES[aspect.bodyA] || 'a shift in priorities'
     const focus = NATAL_FOCUS[aspect.bodyB] || 'your personal priorities'
     const guidance = ASPECT_GUIDANCE[aspect.type]?.(drive, focus) || `Notice how this transit affects ${focus}.`
-    const article = aspect.type === 'opposition' ? 'An' : 'A'
-    return `${article} ${aspect.type} to your natal ${natalName} ${guidance}`
+    const aspectArticle = aspect.type === 'opposition' ? 'An' : 'A'
+    return `${aspectArticle} ${aspect.type} to your natal ${natalName} ${guidance}`
   }).filter(Boolean)
 
   return [introduction, ...impactSentences].join(' ')

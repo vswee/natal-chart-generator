@@ -842,6 +842,7 @@ import worldMap from './assets/img/3-Equirectangular_projection_world_map_withou
 import { toTitleCase } from './utils/zodiac'
 import { buildRelationshipReport } from './utils/relationship'
 import { buildCrossAspects } from './utils/aspects'
+import { buildHoroscopeReading } from './utils/horoscope-reading'
 import { buildProfileIdentity, buildProfileNickname } from './utils/profile'
 import {
   buildSharedProfileUrl,
@@ -1025,16 +1026,6 @@ function getPlacementSign(chartData, body) {
   return placement?.sign ? toTitleCase(placement.sign) : ''
 }
 
-function formatRetrogradeLabels(transits) {
-  const retrogrades = Array.isArray(transits?.retrogrades) ? transits.retrogrades : []
-  if (!retrogrades.length) return 'Most planets are direct'
-
-  const labels = retrogrades.map((placement) => toTitleCase(placement.body))
-  if (labels.length === 1) return `${labels[0]} is retrograde`
-  if (labels.length === 2) return `${labels[0]} and ${labels[1]} are retrograde`
-  return `${labels.slice(0, -1).join(', ')}, and ${labels.at(-1)} are retrograde`
-}
-
 function normaliseGlyphKey(value) {
   return String(value || '')
     .trim()
@@ -1088,25 +1079,8 @@ function buildHoroscopeChips(dayKey, transit, moonSign, retrogrades) {
   return chips
 }
 
-function buildHoroscopeCopy(dayKey, chartData, transits) {
-  const natalSun = getPlacementSign(chartData, 'sun')
-  const natalMoon = getPlacementSign(chartData, 'moon')
-  const natalAsc = getPlacementSign(chartData, 'asc')
-  const natalMoonText = natalMoon ? `Moon in ${natalMoon}` : 'your Moon'
-  const natalAscText = natalAsc ? `Ascendant in ${natalAsc}` : 'your Ascendant'
-  const natalSunText = natalSun ? `Sun in ${natalSun}` : 'your Sun'
-  const moonSign = transits?.moon?.sign ? toTitleCase(transits.moon.sign) : 'the current Moon'
-  const moonPhase = transits?.moon?.phaseName ? transits.moon.phaseName.toLowerCase() : 'current'
-  const retrogradeText = formatRetrogradeLabels(transits)
-
-  const copyMap = {
-    yesterday: `Yesterday wanted less noise. ${natalMoonText} does better when you finish one open loop before adding another. ${retrogradeText}.`,
-    today: `Today lands with the Moon in ${moonSign} and a ${moonPhase} feel. ${natalAscText} prefers a clean move, a short list, and one obvious yes.`,
-    tomorrow: `Tomorrow opens more space. ${natalSunText} gets traction from a direct choice, and the ${moonSign} Moon keeps the pace flexible. ${retrogradeText}.`,
-    future: `The next day asks for a little more range. ${natalMoonText} can keep the body steady while the ${moonSign} Moon tests what is ready to grow. ${retrogradeText}.`
-  }
-
-  return copyMap[dayKey]
+function buildHoroscopeCopy(chartData, transits) {
+  return buildHoroscopeReading(chartData, transits)
 }
 
 function buildHoroscopeHeadline(dayKey, chartData, transits) {
@@ -1149,7 +1123,7 @@ function buildHoroscopeCards(chartData, transitsList, baseDate) {
       dayLabel: label,
       dateLabel: formatShortDay(dayDate),
       headline: buildHoroscopeHeadline(key, chartData, transit),
-      copy: buildHoroscopeCopy(key, chartData, transit),
+      copy: buildHoroscopeCopy(chartData, transit),
       moonLabel: transit?.moon
         ? `Moon in ${moonSign} · ${transit.moon.phaseName}`
         : 'Moon data unavailable',

@@ -125,6 +125,17 @@ Known specific entries currently cover:
 - `sun:trine:moon` -> Sun trine Moon
 - `venus:conjunction:mars` -> Venus conjunct Mars
 
+## Daily horoscope readings
+
+Daily copy should connect current transits to the user's natal chart instead of relying on day-based generic advice. Use the reusable builder in `src/utils/horoscope-reading.js`:
+
+- Describe a transiting planet's role in everyday terms, then name the natal planet or angle it is contacting.
+- Explain the aspect in the same sentence or the next one: conjunctions combine themes, sextiles open opportunities, squares add friction, trines make cooperation easier, and oppositions call for balance.
+- Use the transit's natal house as a practical life-area cue when available.
+- Keep the reading to one or two clear influences. Prefer close aspects and distinct natal targets so the copy stays focused.
+- When no close transit-to-natal aspect is available, use the Moon sign as a gentle fallback rather than inventing a specific prediction.
+- Keep language tentative and useful. Readings should describe themes to notice, not promise outcomes.
+
 ### Summary overrides
 
 Known chart-wide summary entries currently cover:

@@ -42,6 +42,35 @@ npm run build
 npm run preview
 ```
 
+## Deployment
+
+The production site is deployed with Cloudflare Pages from the `vswee/natal-chart-generator` GitHub repository.
+
+- Cloudflare Pages project: `natal-chart-generator`
+- Production branch: `master`
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Production domain: [natal-chart.flat18.app](https://natal-chart.flat18.app/)
+
+Cloudflare Pages automatically builds and deploys commits pushed to `master`:
+
+```bash
+git push origin master
+```
+
+For a manual direct upload, build locally and deploy the output directory with Wrangler:
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name natal-chart-generator --branch master
+```
+
+Wrangler must be authenticated to the Cloudflare account with Pages write access. It can use a saved `wrangler login` session or the `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` environment variables. Keep API tokens out of the repository. Check the deployment in Cloudflare Pages or list recent deployments with:
+
+```bash
+npx wrangler pages deployment list --project-name natal-chart-generator
+```
+
 ## Tech Stack
 
 - Vue 3

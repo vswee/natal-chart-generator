@@ -52,13 +52,19 @@ The production site is deployed with Cloudflare Pages from the `vswee/natal-char
 - Build output directory: `dist`
 - Production domain: [natal-chart.flat18.app](https://natal-chart.flat18.app/)
 
-Cloudflare Pages automatically builds and deploys commits pushed to `master`:
+### Production release
+
+Commit the reviewed release changes to `master`, then push the branch. Cloudflare Pages automatically builds and deploys it:
 
 ```bash
 git push origin master
 ```
 
-For a manual direct upload, build locally and deploy the output directory with Wrangler:
+In the Cloudflare dashboard, open **Workers & Pages → `natal-chart-generator` → Deployments**. Confirm the latest row is marked **Production**, shows the expected commit, and has a successful status. The production deployment is aliased to `natal-chart.flat18.app`.
+
+### Manual direct upload
+
+If a direct upload is needed instead of the Git-triggered build, build locally and deploy `dist` with Wrangler:
 
 ```bash
 npm run build

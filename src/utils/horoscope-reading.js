@@ -96,11 +96,12 @@ function describeTransitGroup(aspects, transitMap, natalMap) {
   const article = ['sun', 'moon'].includes(transit.body) ? 'The ' : ''
   const signText = transit.sign ? ` in ${toTitleCase(transit.sign)}` : ''
   const signTone = SIGN_TONES[transit.sign] || 'distinctive'
+  const toneArticle = /^[aeiou]/i.test(signTone) ? 'an' : 'a'
   const houseText = Number.isInteger(Number(transit.house)) && Number(transit.house) >= 1 && Number(transit.house) <= 12
     ? `, especially around ${houseFocus(Number(transit.house))}`
     : ''
   const transitArea = TRANSIT_AREAS[transit.body] || 'your priorities'
-  const introduction = `${article}${transitName}${signText} brings a ${signTone} quality to ${transitArea}${houseText}.`
+  const introduction = `${article}${transitName}${signText} brings ${toneArticle} ${signTone} quality to ${transitArea}${houseText}.`
   const impactSentences = aspects.map((aspect) => {
     const natal = natalMap.get(aspect.bodyB)
     if (!natal) return ''

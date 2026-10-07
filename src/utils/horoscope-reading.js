@@ -1,40 +1,55 @@
 import { buildCrossAspects } from './aspects'
 import { toTitleCase } from './zodiac'
 
-const PLANET_THEMES = {
-  sun: 'identity and confidence',
-  moon: 'feelings and emotional needs',
-  mercury: 'thinking and communication',
-  venus: 'connection, pleasure, and values',
-  mars: 'drive and action',
-  jupiter: 'growth and possibility',
-  saturn: 'responsibility and boundaries',
-  uranus: 'freedom and change',
-  neptune: 'imagination and ideals',
-  pluto: 'power and deep change',
-  asc: 'your outward style and first steps',
-  mc: 'ambition and public direction'
+const TRANSIT_DRIVES = {
+  sun: 'a wish to express yourself',
+  moon: 'strong feelings',
+  mercury: 'quick thoughts and words',
+  venus: 'a desire for closeness',
+  mars: 'an urge to act',
+  jupiter: 'the pull toward growth',
+  saturn: 'a need to be practical',
+  uranus: 'a desire for change',
+  neptune: 'your imagination and ideals',
+  pluto: 'a need to get to the heart of things'
 }
 
-const TRANSIT_EFFECTS = {
-  sun: 'brings attention to',
-  moon: 'stirs',
-  mercury: 'gets you thinking and talking about',
-  venus: 'draws you toward',
-  mars: 'adds energy to',
-  jupiter: 'opens up',
-  saturn: 'asks you to take a steadier approach to',
-  uranus: 'shakes up',
-  neptune: 'softens the edges around',
-  pluto: 'intensifies'
+const NATAL_FOCUS = {
+  sun: 'your confidence and sense of direction',
+  moon: 'your need for emotional security',
+  mercury: 'clear thinking and communication',
+  venus: 'connection and what you value',
+  mars: 'how you use your energy',
+  jupiter: 'your willingness to grow',
+  saturn: 'your responsibilities and limits',
+  uranus: 'your need for independence',
+  neptune: 'your ideals and intuition',
+  pluto: 'deep changes and personal power',
+  asc: 'how you present yourself and begin things',
+  mc: 'your ambitions and public direction'
+}
+
+const SIGN_TONES = {
+  aries: 'direct, energetic',
+  taurus: 'steady, comfort-seeking',
+  gemini: 'curious, quick-moving',
+  cancer: 'protective, sensitive',
+  leo: 'warm, expressive',
+  virgo: 'practical, detail-focused',
+  libra: 'cooperative, relationship-minded',
+  scorpio: 'intense, perceptive',
+  sagittarius: 'open, adventurous',
+  capricorn: 'grounded, goal-focused',
+  aquarius: 'independent, unconventional',
+  pisces: 'intuitive, imaginative'
 }
 
 const ASPECT_GUIDANCE = {
-  conjunction: (transitTheme, natalTheme) => `${transitTheme} and ${natalTheme} combine, making this area especially noticeable.`,
-  sextile: (transitTheme, natalTheme) => `There is an opening between ${transitTheme} and ${natalTheme}; a small initiative may help you use it.`,
-  square: (transitTheme, natalTheme) => `${transitTheme} and ${natalTheme} may pull against each other, so a pause before reacting can help.`,
-  trine: (transitTheme, natalTheme) => `${transitTheme} and ${natalTheme} tend to work together easily, so progress may feel more natural.`,
-  opposition: (transitTheme, natalTheme) => `${transitTheme} and ${natalTheme} can pull your attention in different directions; finding a middle ground helps.`
+  conjunction: (drive, focus) => `can blend ${drive} with ${focus}, making this part of life more noticeable.`,
+  sextile: (drive, focus) => `can open a way to bring ${drive} into ${focus}; a small, deliberate step may help.`,
+  square: (drive, focus) => `can put ${drive} at odds with ${focus}; pause and consider what both sides need before reacting.`,
+  trine: (drive, focus) => `can help ${drive} flow more easily into ${focus}; use the momentum to make a practical step forward.`,
+  opposition: (drive, focus) => `can pull ${drive} and ${focus} in different directions; give both sides a hearing before deciding what to say or do.`
 }
 
 const DAILY_MOON_CUES = {
@@ -52,7 +67,7 @@ const DAILY_MOON_CUES = {
   pisces: 'rest, imagination, and sensitivity'
 }
 
-const TRANSIT_BODIES = Object.keys(TRANSIT_EFFECTS)
+const TRANSIT_BODIES = Object.keys(TRANSIT_DRIVES)
 const TRANSIT_PRIORITY = { moon: 0, mercury: 1, venus: 2, mars: 3, sun: 4, jupiter: 5, saturn: 6, uranus: 7, neptune: 8, pluto: 9 }
 const NATAL_PRIORITY = { moon: 0, sun: 1, asc: 2, mercury: 3, venus: 4, mars: 5, mc: 6, jupiter: 7, saturn: 8, uranus: 9, neptune: 10, pluto: 11 }
 
@@ -60,24 +75,30 @@ function placementMap(placements) {
   return new Map((Array.isArray(placements) ? placements : []).map((placement) => [placement.body, placement]))
 }
 
-function describeAspect(aspect, transitMap, natalMap) {
-  const transit = transitMap.get(aspect.bodyA)
-  const natal = natalMap.get(aspect.bodyB)
-  if (!transit || !natal) return ''
+function describeTransitGroup(aspects, transitMap, natalMap) {
+  const transit = transitMap.get(aspects[0]?.bodyA)
+  if (!transit) return ''
 
-  const transitName = toTitleCase(aspect.bodyA)
-  const natalName = toTitleCase(aspect.bodyB)
-  const transitTheme = PLANET_THEMES[aspect.bodyA] || 'change and attention'
-  const natalTheme = PLANET_THEMES[aspect.bodyB] || 'personal priorities'
-  const effect = TRANSIT_EFFECTS[aspect.bodyA] || 'brings attention to'
+  const transitName = toTitleCase(transit.body)
   const signText = transit.sign ? ` in ${toTitleCase(transit.sign)}` : ''
+  const signTone = SIGN_TONES[transit.sign] || 'distinctive'
   const houseText = Number.isInteger(Number(transit.house)) && Number(transit.house) >= 1 && Number(transit.house) <= 12
-    ? `, especially around ${houseFocus(Number(transit.house))}`
+    ? `, with ${houseFocus(Number(transit.house))} in focus`
     : ''
-  const aspectName = aspect.type === 'conjunction' ? 'A conjunction' : `A ${aspect.type}`
+  const introduction = `The ${transitName}${signText} brings a ${signTone} tone to the day${houseText}.`
+  const impactSentences = aspects.map((aspect) => {
+    const natal = natalMap.get(aspect.bodyB)
+    if (!natal) return ''
 
-  const guidance = ASPECT_GUIDANCE[aspect.type]?.(transitTheme, natalTheme) || 'Notice how these two themes affect each other.'
-  return `${transitName}${signText} (${transitTheme}) ${effect} your natal ${natalName} (${natalTheme})${houseText}. ${aspectName}: ${guidance}`
+    const natalName = toTitleCase(aspect.bodyB)
+    const drive = TRANSIT_DRIVES[aspect.bodyA] || 'a shift in priorities'
+    const focus = NATAL_FOCUS[aspect.bodyB] || 'your personal priorities'
+    const guidance = ASPECT_GUIDANCE[aspect.type]?.(drive, focus) || `Notice how this transit affects ${focus}.`
+    const article = aspect.type === 'opposition' ? 'An' : 'A'
+    return `${article} ${aspect.type} to your natal ${natalName} ${guidance}`
+  }).filter(Boolean)
+
+  return [introduction, ...impactSentences].join(' ')
 }
 
 function houseFocus(house) {
@@ -102,7 +123,7 @@ function getTransitAspects(chart, transits) {
   const natalPlacements = Array.isArray(chart?.placements) ? chart.placements : []
   const transitPlacements = (Array.isArray(transits?.placements) ? transits.placements : [])
     .filter((placement) => TRANSIT_BODIES.includes(placement.body))
-  const natalTargets = natalPlacements.filter((placement) => Object.hasOwn(PLANET_THEMES, placement.body))
+  const natalTargets = natalPlacements.filter((placement) => Object.hasOwn(NATAL_FOCUS, placement.body))
   const transitMap = placementMap(transitPlacements)
   const natalMap = placementMap(natalTargets)
   const aspects = buildCrossAspects(transitPlacements, natalTargets)
@@ -122,7 +143,14 @@ function getTransitAspects(chart, transits) {
     if (selected.length === 2) break
   }
 
-  return selected.map((aspect) => describeAspect(aspect, transitMap, natalMap)).filter(Boolean)
+  const groups = new Map()
+  for (const aspect of selected) {
+    const group = groups.get(aspect.bodyA) || []
+    group.push(aspect)
+    groups.set(aspect.bodyA, group)
+  }
+
+  return [...groups.values()].map((aspects) => describeTransitGroup(aspects, transitMap, natalMap)).filter(Boolean)
 }
 
 export function buildHoroscopeReading(chart, transits) {
